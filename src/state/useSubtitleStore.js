@@ -23,7 +23,7 @@ const createInitialState = () => ({
  * @returns {Object} Store API
  */
 export function useSubtitleStore() {
-  const [state, setState] = useState(createInitialState);
+  const [state, setState] = useState(createInitialState());
   
   // Load mock data
   const loadSubtitles = useCallback(() => {
