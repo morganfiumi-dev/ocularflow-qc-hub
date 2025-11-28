@@ -26,9 +26,21 @@ export default defineConfig(({ mode }) => ({
     },
     force: true, // Force re-optimization on every start to clear cache
   },
+  define: {
+    // Ensure React is treated as a singleton
+    'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : 'development'),
+  },
   build: {
     commonjsOptions: {
       include: [/node_modules/],
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Force React into a single chunk
+          'react-vendor': ['react', 'react-dom'],
+        },
+      },
     },
   },
 }));
