@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => ({
     dedupe: ['react', 'react-dom', '@tanstack/react-query'],
   },
   optimizeDeps: {
-    force: true, // Force re-optimization
     include: ['react', 'react-dom', '@trpc/react-query', '@tanstack/react-query'],
     esbuildOptions: {
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
