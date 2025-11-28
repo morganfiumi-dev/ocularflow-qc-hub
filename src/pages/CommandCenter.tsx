@@ -15,46 +15,11 @@ import {
   PlayCircle,
   Layers
 } from 'lucide-react';
+import { trpc } from '../lib/trpc';
 
 /**
- * Mock data for demo
+ * Mock data for recent activity (static for now)
  */
-const ACTIVE_TITLES = [
-  {
-    id: 'WT-2024-001',
-    name: 'The Witcher S03E08',
-    status: 'in-progress',
-    progress: 65,
-    language: 'EN → ES',
-    assignee: 'Maria Garcia',
-    deadline: '2024-12-15',
-    issues: 12,
-    segments: 486
-  },
-  {
-    id: 'ST-2024-042',
-    name: 'Stranger Things S05E01',
-    status: 'review',
-    progress: 95,
-    language: 'EN → FR',
-    assignee: 'Jean Dupont',
-    deadline: '2024-12-10',
-    issues: 3,
-    segments: 612
-  },
-  {
-    id: 'BR-2024-118',
-    name: 'Breaking Bad: El Camino',
-    status: 'pending',
-    progress: 0,
-    language: 'EN → DE',
-    assignee: 'Klaus Weber',
-    deadline: '2024-12-20',
-    issues: 0,
-    segments: 892
-  }
-];
-
 const RECENT_ACTIVITY = [
   { action: 'QC Completed', title: 'The Crown S06E10', time: '2 hours ago', user: 'Sarah Chen' },
   { action: 'Issues Resolved', title: 'Ozark S04E14', time: '5 hours ago', user: 'Mike Ross' },
@@ -63,6 +28,14 @@ const RECENT_ACTIVITY = [
 
 export default function CommandCenter() {
   const navigate = useNavigate();
+  
+  // Fetch projects from tRPC backend
+  const { data: projectsData, isLoading } = trpc.projects.list.useQuery({
+    limit: 10,
+    offset: 0,
+  });
+  
+  const projects = (projectsData as any)?.projects || [];
 
   const getStatusConfig = (status: string) => {
     const configs = {
@@ -87,6 +60,17 @@ export default function CommandCenter() {
     };
     return configs[status as keyof typeof configs] || configs.pending;
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="text-cyan-500 font-mono animate-pulse text-lg">
+          LOADING PROJECTS...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -124,7 +108,7 @@ export default function CommandCenter() {
           <StatCard
             icon={Film}
             label="Active Titles"
-            value="3"
+            value={projects.length.toString()}
             trend="+2 this week"
             color="cyan"
           />
@@ -161,25 +145,29 @@ export default function CommandCenter() {
                   Active Titles
                 </h2>
                 <span className="text-xs text-slate-500">
-                  {ACTIVE_TITLES.length} titles
+                  {projects.length} titles
                 </span>
               </div>
               
               <div className="divide-y divide-slate-800">
-                {ACTIVE_TITLES.map((title) => {
-                  const statusConfig = getStatusConfig(title.status);
+                {projects.map((project) => {
+                  const statusConfig = getStatusConfig(project.status);
+                  const stats = 'stats' in project ? project.stats : { totalAssets: 0, completedAssets: 0, totalIssues: 0 };
+                  const progress = stats.totalAssets > 0 
+                    ? Math.round((stats.completedAssets / stats.totalAssets) * 100) 
+                    : 0;
                   
                   return (
                     <div
-                      key={title.id}
+                      key={project.id}
                       className="p-6 hover:bg-slate-800/30 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/asset-map/${title.id}`)}
+                      onClick={() => navigate(`/asset-map/${project.id}`)}
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-base font-semibold text-slate-100">
-                              {title.name}
+                              {project.name}
                             </h3>
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}>
                               {statusConfig.label}
@@ -188,15 +176,13 @@ export default function CommandCenter() {
                           <div className="flex items-center gap-4 text-xs text-slate-500">
                             <span className="flex items-center gap-1">
                               <Film className="w-3 h-3" />
-                              {title.id}
+                              {project.id.slice(0, 8)}
                             </span>
-                            <span>{title.language}</span>
-                            <span>•</span>
-                            <span>{title.assignee}</span>
+                            <span>{project.metadata.originalLanguage}</span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              Due {new Date(title.deadline).toLocaleDateString()}
+                              {new Date(project.updatedAt).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
@@ -217,16 +203,16 @@ export default function CommandCenter() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-slate-500">
-                            {title.segments} segments • {title.issues} issues
+                            {stats.totalAssets} assets • {stats.totalIssues} issues
                           </span>
                           <span className="text-slate-400 font-semibold">
-                            {title.progress}%
+                            {progress}%
                           </span>
                         </div>
                         <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-500"
-                            style={{ width: `${title.progress}%` }}
+                            style={{ width: `${progress}%` }}
                           />
                         </div>
                       </div>

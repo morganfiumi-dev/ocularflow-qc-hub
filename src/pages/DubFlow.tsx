@@ -9,57 +9,33 @@ import { ArrowLeft, Zap } from 'lucide-react';
 import { AudioPanel } from '../components/dubflow/AudioPanel';
 import { Waveform } from '../components/dubflow/Waveform';
 import { Inspector } from '../components/dubflow/Inspector';
-
-/**
- * Mock issue data
- */
-const MOCK_ISSUES = [
-  {
-    id: 1,
-    time: '00:01:02:12',
-    timeSeconds: 62.5,
-    type: 'Clipping',
-    severity: 'high' as const,
-    description: 'Audio levels exceed 0dB, causing distortion in the dialogue.',
-    suggestedFix: 'Apply limiter or reduce gain by 3-6dB in this section.'
-  },
-  {
-    id: 2,
-    time: '00:02:11:04',
-    timeSeconds: 131.17,
-    type: 'Silence Gap',
-    severity: 'medium' as const,
-    description: 'Unexpected silence detected for 1.2 seconds during dialogue.',
-    suggestedFix: 'Check source material and fill gap with room tone if needed.'
-  },
-  {
-    id: 3,
-    time: '00:04:55:19',
-    timeSeconds: 295.79,
-    type: 'Timing Offset',
-    severity: 'low' as const,
-    description: 'Dialogue timing is 0.3s ahead of mouth movements.',
-    suggestedFix: 'Shift audio track backward by 300ms to sync with video.'
-  },
-  {
-    id: 4,
-    time: '00:03:22:08',
-    timeSeconds: 202.33,
-    type: 'Background Noise',
-    severity: 'medium' as const,
-    description: 'Ambient noise spike during quiet dialogue moment.',
-    suggestedFix: 'Apply noise reduction or re-record in controlled environment.'
-  }
-];
+import { trpc } from '../lib/trpc';
 
 export default function DubFlow() {
   const { assetId } = useParams<{ assetId: string }>();
   const navigate = useNavigate();
+  
+  // Fetch audio track from tRPC backend
+  const { data: audioTrack, isLoading } = trpc.media.getAudioTrack.useQuery(
+    { assetId: assetId || '' },
+    { enabled: !!assetId }
+  );
+  
+  // Map backend issues to component format
+  const issues = audioTrack?.issues.map(issue => ({
+    id: issue.id,
+    time: issue.timecode,
+    timeSeconds: issue.timeSeconds,
+    type: issue.type,
+    severity: issue.severity,
+    description: issue.description,
+    suggestedFix: issue.suggestedFix || '',
+  })) || [];
 
   // Playback state
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration] = useState(420); // 7 minutes mock
+  const duration = audioTrack?.metadata.duration || 420;
   const [volume, setVolume] = useState(75);
   const [zoomLevel, setZoomLevel] = useState(1);
 
@@ -121,11 +97,22 @@ export default function DubFlow() {
 
   const handleSelectIssue = (id: number) => {
     setSelectedIssueId(id);
-    const issue = MOCK_ISSUES.find(i => i.id === id);
+    const issue = issues.find(i => i.id === id);
     if (issue) {
       handleSeek(issue.timeSeconds);
     }
   };
+  
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <div className="text-cyan-500 font-mono animate-pulse text-lg">
+          LOADING AUDIO TRACK...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
@@ -170,8 +157,8 @@ export default function DubFlow() {
             isPlaying={isPlaying}
             currentTime={currentTime}
             duration={duration}
-            language="EN-US"
-            codec="AAC 256kbps"
+            language={audioTrack?.metadata.language || 'EN-US'}
+            codec={audioTrack?.metadata.codec || 'AAC'}
             onTogglePlay={handleTogglePlay}
             onJumpBackward={handleJumpBackward}
             onJumpForward={handleJumpForward}
@@ -189,14 +176,14 @@ export default function DubFlow() {
             onSeek={handleSeek}
             onZoomIn={handleZoomIn}
             onZoomOut={handleZoomOut}
-            issues={MOCK_ISSUES}
+            issues={issues}
           />
         </div>
 
         {/* RIGHT: Inspector */}
         <div className="col-span-3 overflow-hidden">
           <Inspector
-            issues={MOCK_ISSUES}
+            issues={issues}
             selectedIssueId={selectedIssueId}
             onSelectIssue={handleSelectIssue}
             notes={notes}

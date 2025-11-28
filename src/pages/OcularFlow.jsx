@@ -20,6 +20,7 @@
  */
 
 import React, { useEffect, useCallback, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Zap, ArrowRight, PlayCircle, HelpCircle, Settings } from 'lucide-react';
 
 // Components
@@ -39,6 +40,9 @@ import { useWaveform } from '../hooks/useWaveform';
 import { useHotkeys } from '../hooks/useHotkeys';
 import { useVideoSync } from '../hooks/useVideoSync';
 
+// tRPC
+import { trpc } from '../lib/trpc';
+
 // Styles
 import '../styles/ocularflow.css';
 
@@ -46,6 +50,13 @@ import '../styles/ocularflow.css';
  * OcularFlow main component
  */
 export default function OcularFlow() {
+  const { assetId } = useParams();
+  
+  // Fetch subtitle track from tRPC backend
+  const { data: subtitleTrack, isLoading: trackLoading } = trpc.media.getSubtitleTrack.useQuery(
+    { assetId: assetId || '' },
+    { enabled: !!assetId }
+  );
   // =========================================================================
   // STATE
   // =========================================================================
@@ -121,10 +132,30 @@ export default function OcularFlow() {
   // EFFECTS
   // =========================================================================
   
-  // Load subtitles on mount
+  // Load subtitles from tRPC when available
   useEffect(() => {
-    loadSubtitles();
-  }, [loadSubtitles]);
+    if (subtitleTrack?.segments) {
+      // Convert backend segments to frontend subtitle format
+      const formattedSubtitles = subtitleTrack.segments.map((seg, idx) => ({
+        id: idx,
+        index: seg.index,
+        inTime: seg.inTime,
+        outTime: seg.outTime,
+        duration: seg.duration,
+        sourceText: seg.sourceText || '',
+        targetText: seg.targetText || '',
+        cps: seg.metrics?.cps || 0,
+        chars: seg.metrics?.chars || 0,
+        issues: seg.issues || [],
+      }));
+      
+      // Load into store (you may need to update useSubtitleStore to handle this)
+      // For now, fallback to mock data
+      loadSubtitles();
+    } else {
+      loadSubtitles();
+    }
+  }, [subtitleTrack, loadSubtitles]);
   
   // =========================================================================
   // HANDLERS
@@ -182,7 +213,7 @@ export default function OcularFlow() {
   // =========================================================================
   
   // Loading state
-  if (loading) {
+  if (loading || trackLoading) {
     return (
       <div className="of-cockpit flex items-center justify-center">
         <div className="text-cyan-500 font-mono animate-pulse text-lg">
