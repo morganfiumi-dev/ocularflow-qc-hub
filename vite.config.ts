@@ -14,13 +14,14 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ['react', 'react-dom', '@tanstack/react-query'],
+    dedupe: ['react', 'react-dom', '@tanstack/react-query', '@trpc/react-query'],
   },
   optimizeDeps: {
     include: ['react', 'react-dom', '@trpc/react-query', '@tanstack/react-query'],
     esbuildOptions: {
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
     },
+    force: true, // Force re-optimization on every start to clear cache
   },
   build: {
     commonjsOptions: {
