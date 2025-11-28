@@ -4,26 +4,48 @@
  */
 
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { LayoutGrid, Network } from 'lucide-react';
 import { CardView } from '../components/assetmap/CardView';
 import { TreeView } from '../components/assetmap/TreeView';
 import { Asset } from '../components/assetmap/AssetCard';
-
-/**
- * Mock asset data
- */
-const MOCK_ASSETS: Asset[] = [
-  { id: "master-vid", name: "Master Video", type: "master", language: null, status: "OK" },
-  { id: "en-dub", name: "English Dub", type: "audio", language: "EN", status: "Ready" },
-  { id: "de-dub", name: "German Dub", type: "audio", language: "DE", status: "Ready" },
-  { id: "en-sub", name: "EN Subtitles", type: "subtitle", language: "EN", status: "QC Required" },
-  { id: "es-sub", name: "ES Subtitles", type: "subtitle", language: "ES", status: "QC Required" },
-  { id: "metadata-fn", name: "Forced Narrative", type: "metadata", language: null, status: "OK" }
-];
+import { trpc } from '../lib/trpc';
 
 export default function AssetMap() {
+  const { titleId } = useParams<{ titleId: string }>();
   const [view, setView] = useState<"card" | "tree">("card");
-  const titleName = "Demo Project Title";
+  
+  // Fetch project and asset tree from tRPC backend
+  const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
+    { id: titleId || '' },
+    { enabled: !!titleId }
+  );
+  
+  const { data: assetTree, isLoading: treeLoading } = trpc.assets.getTree.useQuery(
+    { projectId: titleId || '' },
+    { enabled: !!titleId }
+  );
+  
+  const titleName = project?.name || 'Loading...';
+  const assets: Asset[] = assetTree?.flatList.map(asset => ({
+    id: asset.id,
+    name: asset.name,
+    type: asset.type,
+    language: asset.language || null,
+    status: asset.status === 'ready' ? 'Ready' : asset.status === 'qc-required' ? 'QC Required' : 'OK',
+  })) || [];
+  
+  const isLoading = projectLoading || treeLoading;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <div className="text-cyan-500 font-mono animate-pulse text-lg">
+          LOADING ASSET MAP...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-8">
@@ -67,9 +89,9 @@ export default function AssetMap() {
 
       {/* Content Views */}
       {view === "card" ? (
-        <CardView assets={MOCK_ASSETS} />
+        <CardView assets={assets} />
       ) : (
-        <TreeView assets={MOCK_ASSETS} />
+        <TreeView assets={assets} />
       )}
     </div>
   );
