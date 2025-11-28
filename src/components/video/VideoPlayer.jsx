@@ -14,10 +14,20 @@ export function VideoPlayer({
   contextType = 'DIALOGUE',
   className = ''
 }) {
+  // Demo video URL (using a public domain video)
+  const demoVideoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+  
   return (
     <div className={`of-video-stage ${className}`}>
-      {/* Video placeholder */}
-      <span className="of-video-placeholder">[ VIDEO SIGNAL ]</span>
+      {/* Video element */}
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        src={demoVideoUrl}
+        controls
+        crossOrigin="anonymous"
+      >
+        Your browser does not support video playback.
+      </video>
       
       {/* Context type badge */}
       {contextType && contextType !== 'DIALOGUE' && (

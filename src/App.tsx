@@ -2,7 +2,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { httpBatchLink } from '@trpc/client';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import GlobalNav from "./components/GlobalNav";
 import CommandCenter from "./pages/CommandCenter";
@@ -10,7 +9,7 @@ import AssetMap from "./pages/AssetMap";
 import DubFlow from "./pages/DubFlow";
 import NotFound from "./pages/NotFound";
 import OcularFlow from "./pages/OcularFlow";
-import { trpc } from './lib/trpc';
+import { trpc, createMockTRPCClient } from './lib/trpc-mock';
 
 // Create clients outside component to ensure single instance
 const queryClient = new QueryClient({
@@ -23,13 +22,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const trpcClient = trpc.createClient({
-  links: [
-    httpBatchLink({
-      url: import.meta.env.VITE_API_URL || 'http://localhost:3000/trpc',
-    }),
-  ],
-});
+const trpcClient = createMockTRPCClient();
 
 const App = () => (
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
