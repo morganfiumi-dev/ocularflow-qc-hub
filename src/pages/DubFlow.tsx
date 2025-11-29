@@ -15,7 +15,6 @@ import { AudioPlaybackControls } from '../components/dubflow/AudioPlaybackContro
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
-import { useVideoState } from '../state/useVideoState';
 import { calculateClipScore, calculateAssetScore, getScoreColor } from '../utils/qcScoring';
 
 export default function DubFlow() {
@@ -140,36 +139,55 @@ export default function DubFlow() {
 
   const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
 
-  // Video state (for playback)
-  const isPlaying = useVideoState((state) => state.isPlaying);
-  const currentTime = useVideoState((state) => state.currentTime);
-  const playbackRate = useVideoState((state) => state.playbackRate);
-  const volume = useVideoState((state) => state.volume);
-  const muted = useVideoState((state) => state.muted);
-  const togglePlayback = useVideoState((state) => state.togglePlayback);
-  const seek = useVideoState((state) => state.seek);
-  const skipForward = useVideoState((state) => state.skipForward);
-  const skipBackward = useVideoState((state) => state.skipBackward);
-  const frameForward = useVideoState((state) => state.frameForward);
-  const frameBackward = useVideoState((state) => state.frameBackward);
-  const setPlaybackRate = useVideoState((state) => state.setPlaybackRate);
-  const setVolume = useVideoState((state) => state.setVolume);
-  const toggleMute = useVideoState((state) => state.toggleMute);
-  const setDuration = useVideoState((state) => state.setDuration);
-  
+  // Local playback state (not shared with OcularFlow)
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
   const duration = audioTrack?.metadata.duration || 420;
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [volume, setVolume] = useState(0.75);
+  const [muted, setMuted] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
 
   // Inspector state
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
 
-  // Set duration on load
+  // Playback simulation with interval
+  const playbackInterval = useRef<number | null>(null);
+
   useEffect(() => {
-    if (duration) {
-      setDuration(duration);
+    if (isPlaying) {
+      playbackInterval.current = window.setInterval(() => {
+        setCurrentTime(prev => {
+          if (prev >= duration) {
+            setIsPlaying(false);
+            return duration;
+          }
+          return prev + 0.1;
+        });
+      }, 100);
+    } else {
+      if (playbackInterval.current) {
+        clearInterval(playbackInterval.current);
+        playbackInterval.current = null;
+      }
     }
-  }, [duration, setDuration]);
+
+    return () => {
+      if (playbackInterval.current) {
+        clearInterval(playbackInterval.current);
+      }
+    };
+  }, [isPlaying, duration]);
+
+  // Playback control handlers
+  const togglePlayback = () => setIsPlaying(!isPlaying);
+  const seek = (time: number) => setCurrentTime(time);
+  const skipForward = () => setCurrentTime(prev => Math.min(duration, prev + 5));
+  const skipBackward = () => setCurrentTime(prev => Math.max(0, prev - 5));
+  const frameForward = () => setCurrentTime(prev => Math.min(duration, prev + 1/24));
+  const frameBackward = () => setCurrentTime(prev => Math.max(0, prev - 1/24));
+  const toggleMute = () => setMuted(!muted);
 
   const handleSelectIssue = (id: number) => {
     setSelectedIssueId(id);
