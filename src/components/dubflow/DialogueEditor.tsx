@@ -13,6 +13,7 @@ interface DialogueLine {
   enText: string;
   dubText: string;
   issues: Array<{ severity: string; type: string }>;
+  score?: number; // Add clip score
 }
 
 interface DialogueEditorProps {
@@ -54,12 +55,15 @@ export function DialogueEditor({
       </div>
 
       {/* Column Headers */}
-      <div className="grid grid-cols-2 gap-4 px-4 py-2 border-b border-slate-800 bg-slate-950/50">
+      <div className="grid grid-cols-[1fr_1fr_80px] gap-4 px-4 py-2 border-b border-slate-800 bg-slate-950/50">
         <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
           EN Source (Reference)
         </div>
         <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
           Dub Transcript
+        </div>
+        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 text-center">
+          Score
         </div>
       </div>
 
@@ -74,7 +78,7 @@ export function DialogueEditor({
               key={line.id}
               onClick={() => onSelectLine(line.id)}
               className={`
-                grid grid-cols-2 gap-4 px-4 py-3 border-b border-slate-800/50 cursor-pointer transition-all
+                grid grid-cols-[1fr_1fr_80px] gap-4 px-4 py-3 border-b border-slate-800/50 cursor-pointer transition-all
                 ${isSelected ? 'bg-cyan-500/10 border-l-4 border-l-cyan-500' : 'hover:bg-slate-800/30'}
                 ${isActive ? 'ring-1 ring-amber-500/30' : ''}
               `}
@@ -116,6 +120,30 @@ export function DialogueEditor({
                 <p className="text-sm text-slate-300 leading-relaxed">
                   {line.dubText}
                 </p>
+              </div>
+
+              {/* Score Column */}
+              <div className="flex flex-col items-center justify-center gap-1">
+                {line.score !== undefined ? (
+                  <>
+                    <div className={`text-lg font-bold font-mono ${
+                      line.score >= 90 ? 'text-green-400' : 
+                      line.score >= 70 ? 'text-amber-400' : 
+                      'text-red-400'
+                    }`}>
+                      {line.score.toFixed(0)}
+                    </div>
+                    <div className={`text-[7px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                      line.score >= 90 ? 'bg-green-500/20 text-green-400' : 
+                      line.score >= 70 ? 'bg-amber-500/20 text-amber-400' : 
+                      'bg-red-500/20 text-red-400'
+                    }`}>
+                      {line.score >= 90 ? 'PASS' : line.score >= 70 ? 'OK' : 'FAIL'}
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-[10px] text-slate-600">—</span>
+                )}
               </div>
             </div>
           );

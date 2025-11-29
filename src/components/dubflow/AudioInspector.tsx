@@ -116,19 +116,64 @@ export function AudioInspector({
 
   return (
     <div className="h-full flex flex-col bg-slate-900/60 border border-slate-800 rounded-lg shadow-lg shadow-black/40 overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-800">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
-          QC Inspector
-        </h3>
-        <p className="text-[10px] text-slate-600 mt-1">
-          {issues.length} issue{issues.length !== 1 ? 's' : ''} detected
+      {/* Header with Prominent Score */}
+      <div className="px-4 py-3 border-b border-slate-800 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+              QC Inspector
+            </h3>
+            <p className="text-[10px] text-slate-600 mt-1">
+              {issues.length} issue{issues.length !== 1 ? 's' : ''} detected
+            </p>
+          </div>
+          
+          {/* Live Score Badge */}
           {clipScore !== undefined && (
-            <span className="ml-2 text-cyan-400 font-bold">
-              • Score: {clipScore.toFixed(1)}
-            </span>
+            <div className="flex flex-col items-end gap-1">
+              <div className="text-[9px] text-slate-600 uppercase tracking-wide">Clip Score</div>
+              <div className={`text-2xl font-bold font-mono ${
+                clipScore >= 90 ? 'text-green-400' : 
+                clipScore >= 70 ? 'text-amber-400' : 
+                'text-red-400'
+              }`}>
+                {clipScore.toFixed(1)}
+              </div>
+              <div className={`text-[8px] uppercase tracking-wider font-bold px-2 py-0.5 rounded ${
+                clipScore >= 90 ? 'bg-green-500/20 text-green-400' : 
+                clipScore >= 70 ? 'bg-amber-500/20 text-amber-400' : 
+                'bg-red-500/20 text-red-400'
+              }`}>
+                {clipScore >= 90 ? 'PASS' : clipScore >= 70 ? 'REVIEW' : 'FAIL'}
+              </div>
+            </div>
           )}
-        </p>
+        </div>
+
+        {/* Score Progress Bar */}
+        {clipScore !== undefined && (
+          <div className="space-y-1">
+            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-500 ${
+                  clipScore >= 90 ? 'bg-gradient-to-r from-green-500 to-emerald-400' : 
+                  clipScore >= 70 ? 'bg-gradient-to-r from-amber-500 to-yellow-400' : 
+                  'bg-gradient-to-r from-red-500 to-orange-400'
+                }`}
+                style={{ width: `${clipScore}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[8px] text-slate-600 font-mono">
+              <span>0</span>
+              <span className="text-slate-500">|</span>
+              <span>70</span>
+              <span className="text-slate-500">|</span>
+              <span>90</span>
+              <span className="text-slate-500">|</span>
+              <span>100</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}

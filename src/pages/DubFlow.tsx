@@ -124,6 +124,12 @@ export default function DubFlow() {
   // Calculate overall asset score
   const assetScore = calculateAssetScore(clipScores);
 
+  // Add scores to dialogue lines
+  const dialogueLinesWithScores = dialogueLines.map((line, idx) => ({
+    ...line,
+    score: clipScores[idx]
+  }));
+
   const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
 
   // Playback state
@@ -199,7 +205,7 @@ export default function DubFlow() {
 
   const handleSelectLine = (id: number) => {
     setSelectedLineId(id);
-    const line = dialogueLines.find(l => l.id === id);
+    const line = dialogueLinesWithScores.find(l => l.id === id);
     if (line) {
       handleSeek(line.timeInSeconds);
     }
@@ -245,7 +251,7 @@ export default function DubFlow() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {profile && (
             <div className="px-3 py-1.5 text-xs font-semibold bg-slate-800/60 border border-slate-700 text-slate-300 rounded-lg">
               {profile.client}
@@ -253,8 +259,41 @@ export default function DubFlow() {
           )}
           
           {langConfig && (
-            <div className={`px-3 py-1.5 text-xs font-bold rounded-lg ${getScoreColor(assetScore)} bg-slate-800/60 border border-slate-700`}>
-              Score: {assetScore.toFixed(1)}
+            <div className="flex items-center gap-2">
+              {/* Live Score Display */}
+              <div className={`flex items-center gap-3 px-4 py-2 rounded-lg border transition-all ${
+                assetScore >= 90 
+                  ? 'bg-green-500/10 border-green-500/30' 
+                  : assetScore >= 70 
+                  ? 'bg-amber-500/10 border-amber-500/30' 
+                  : 'bg-red-500/10 border-red-500/30'
+              }`}>
+                <div className="flex flex-col items-start">
+                  <div className="text-[8px] text-slate-500 uppercase tracking-wider">Asset Score</div>
+                  <div className={`text-xl font-bold font-mono ${
+                    assetScore >= 90 ? 'text-green-400' : assetScore >= 70 ? 'text-amber-400' : 'text-red-400'
+                  }`}>
+                    {assetScore.toFixed(1)}
+                  </div>
+                </div>
+                <div className="h-8 w-px bg-slate-700" />
+                <div className="flex flex-col gap-0.5">
+                  <div className={`text-[8px] font-bold uppercase tracking-wider ${
+                    assetScore >= 90 ? 'text-green-400' : assetScore >= 70 ? 'text-amber-400' : 'text-red-400'
+                  }`}>
+                    {assetScore >= 90 ? 'PASS' : assetScore >= 70 ? 'REVIEW' : 'FAIL'}
+                  </div>
+                  <div className="text-[8px] text-slate-600 font-mono">
+                    {clipScores.length} clips
+                  </div>
+                </div>
+              </div>
+
+              {/* Live indicator */}
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/60 border border-slate-700 rounded">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-[9px] text-slate-500 uppercase tracking-wider">Live</span>
+              </div>
             </div>
           )}
           
@@ -291,7 +330,7 @@ export default function DubFlow() {
           {/* Dialogue Editor (Top) */}
           <div className="flex-1 overflow-hidden">
             <DialogueEditor
-              lines={dialogueLines}
+              lines={dialogueLinesWithScores}
               selectedLineId={selectedLineId}
               currentTime={currentTime}
               onSelectLine={handleSelectLine}
