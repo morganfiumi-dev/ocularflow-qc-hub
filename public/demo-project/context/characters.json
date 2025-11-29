@@ -1,0 +1,6 @@
+{
+  "characters": [
+    { "name": "Geralt", "description": "A witcher with mutated abilities." },
+    { "name": "Ciri", "description": "Geralt's adoptive daughter, gifted with Elder Blood." }
+  ]
+}

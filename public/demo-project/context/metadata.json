@@ -1,0 +1,11 @@
+{
+  "title": "MediaQC Demo Clip",
+  "year": 2024,
+  "genres": ["Fantasy", "Drama"],
+  "runtime": "00:10:00",
+  "rating": "TV-MA",
+  "director": "Mock Director",
+  "writers": ["Mock Writer 1", "Mock Writer 2"],
+  "studio": "MediaQC Demo Studio",
+  "summary": "A short excerpt demonstrating media quality control capabilities."
+}
