@@ -163,63 +163,31 @@ export default function DubFlow() {
   const [visualizationOpen, setVisualizationOpen] = useState(false);
   const [visualizationIssue, setVisualizationIssue] = useState<typeof issues[0] | null>(null);
 
-  // Audio playback with actual audio element
+  // Audio playback - simulated with video's audio track
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const playbackInterval = useRef<number | null>(null);
 
   useEffect(() => {
-    // Create audio element
-    const audio = new Audio('/demo-project/audio.mp3'); // Demo audio
-    audio.volume = volume;
-    audio.muted = muted;
-    audio.playbackRate = playbackRate;
-    audioRef.current = audio;
-
-    // Update time from audio element
-    const updateTime = () => {
-      setCurrentTime(audio.currentTime);
-    };
-    audio.addEventListener('timeupdate', updateTime);
-    audio.addEventListener('loadedmetadata', () => {
-      // Use audio duration if available, otherwise use backend duration
-      if (audio.duration) {
-        // Keep using backend duration as it's more accurate
-      }
-    });
+    // Try to get audio from the video element in VideoPlayer if it exists
+    // For now, simulate playback with timer
+    let interval: number | null = null;
+    
+    if (isPlaying) {
+      interval = window.setInterval(() => {
+        setCurrentTime(prev => {
+          const next = prev + (0.1 * playbackRate);
+          if (next >= duration) {
+            setIsPlaying(false);
+            return duration;
+          }
+          return next;
+        });
+      }, 100);
+    }
 
     return () => {
-      audio.removeEventListener('timeupdate', updateTime);
-      audio.pause();
-      audio.src = '';
+      if (interval) clearInterval(interval);
     };
-  }, []);
-
-  // Handle play/pause
-  useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play().catch(err => console.error('Audio play error:', err));
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying]);
-
-  // Handle volume/mute/rate changes
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-      audioRef.current.muted = muted;
-      audioRef.current.playbackRate = playbackRate;
-    }
-  }, [volume, muted, playbackRate]);
-
-  // Handle seeking
-  useEffect(() => {
-    if (audioRef.current && Math.abs(audioRef.current.currentTime - currentTime) > 0.5) {
-      audioRef.current.currentTime = currentTime;
-    }
-  }, [currentTime]);
+  }, [isPlaying, duration, playbackRate]);
 
   // Playback control handlers
   const togglePlayback = () => setIsPlaying(!isPlaying);
@@ -354,7 +322,7 @@ export default function DubFlow() {
           </div>
 
           {/* CENTER: Waveform-First Layout with Collapsible Sections */}
-          <div className="flex-1 min-w-0 relative">
+          <ResizablePanel defaultSize={82} minSize={50}>
             <ResizablePanelGroup direction="vertical" className="h-full">
               {/* Waveform Section - Uses OcularFlow WaveformPanel */}
               <ResizablePanel 
@@ -440,7 +408,7 @@ export default function DubFlow() {
               selectedIssue={visualizationIssue}
               onClose={() => setVisualizationOpen(false)}
             />
-          </div>
+          </ResizablePanel>
 
           <ResizableHandle withHandle />
 
