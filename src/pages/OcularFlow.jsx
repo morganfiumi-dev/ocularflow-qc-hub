@@ -228,34 +228,17 @@ export default function OcularFlow() {
   useEffect(() => {
     async function loadQCProfiles() {
       try {
-        // Load all profile files
+        // Load all profile files from public directory
         const [applePlus, netflix, disney, amazon] = await Promise.all([
-          fetch('/src/qc/profiles/apple_plus.json').then(r => r.json()),
-          fetch('/src/qc/profiles/netflix.json').then(r => r.json()),
-          fetch('/src/qc/profiles/disney_plus.json').then(r => r.json()),
-          fetch('/src/qc/profiles/amazon.json').then(r => r.json())
+          import('../qc/profiles/apple_plus.json'),
+          import('../qc/profiles/netflix.json'),
+          import('../qc/profiles/disney_plus.json'),
+          import('../qc/profiles/amazon.json')
         ]);
         
-        loadProfiles([applePlus, netflix, disney, amazon]);
+        loadProfiles([applePlus.default, netflix.default, disney.default, amazon.default]);
       } catch (error) {
         console.error('Failed to load QC profiles:', error);
-        // Set default profile if loading fails
-        loadProfiles([{
-          id: 'apple_plus',
-          client: 'Apple+',
-          products: {
-            dubbed_audio: {
-              languages: {
-                en: {
-                  checks: {},
-                  scoring: {
-                    severityMultipliers: { ERROR: 1.2, WARNING: 0.6, INFO: 0.15 }
-                  }
-                }
-              }
-            }
-          }
-        }]);
       }
     }
     
