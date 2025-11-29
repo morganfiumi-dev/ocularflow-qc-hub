@@ -102,12 +102,39 @@ export const WaveformDataPointSchema = z.object({
  */
 export const AudioIssueSchema = z.object({
   id: z.number().int().positive(),
-  time: z.string(), // SMPTE timecode
+  timecode: z.string(), // SMPTE timecode (renamed from 'time')
   timeSeconds: z.number().nonnegative(),
-  type: z.enum(['Clipping', 'Silence Gap', 'Timing Offset', 'Background Noise', 'Mouth Mismatch']),
-  severity: z.enum(['high', 'medium', 'low']),
+  type: z.enum([
+    // Technical Audio
+    'Clipping',
+    'Silence Gap',
+    'RMS Low',
+    'Noise Floor High',
+    'DC Offset',
+    'File Format',
+    // Timing & Sync
+    'Timing Offset',
+    'Sync Drift',
+    'Duration Mismatch',
+    'Early Entry',
+    'Late Cutoff',
+    // Dialogue Integrity
+    'Missing Words',
+    'Added Words',
+    'Repetition',
+    'Tone Mismatch',
+    'Prosody Issue',
+    'Pitch Mismatch',
+    // Speaker & Other
+    'Mouth Mismatch',
+    'Speaker Mismatch',
+    'Background Noise',
+    'Synthetic Artifacts',
+    'Translation Error',
+  ]),
+  severity: z.enum(['error', 'warning', 'info']),
   description: z.string(),
-  suggestedFix: z.string(),
+  suggestedFix: z.string().optional(),
 });
 
 /**
@@ -135,6 +162,9 @@ export const AudioTrackSchema = z.object({
     bitsPerSample: z.number().int().positive(),
     fileSize: z.number().int().positive(),
     encoding: z.string(),
+    duration: z.number().positive(),
+    language: z.string(),
+    codec: z.string(),
   }),
   
   // QC data
