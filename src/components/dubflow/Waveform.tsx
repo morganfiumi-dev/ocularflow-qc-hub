@@ -28,6 +28,8 @@ interface WaveformProps {
     type: string; 
     severity: 'error' | 'warning' | 'info';
     description: string;
+    categoryId?: string;
+    checkId?: string;
   }>;
   dialogueLines: DialogueLine[];
 }
@@ -110,10 +112,13 @@ export function Waveform({
       <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
-            Waveform
+            Waveform • Multi-Language View
           </h3>
           <div className="font-mono text-sm text-cyan-400">
             {formatTimecode(currentTime)}
+          </div>
+          <div className="text-[10px] text-slate-600">
+            {issues.length} issues • {dialogueLines.length} lines
           </div>
         </div>
 
@@ -205,7 +210,7 @@ export function Waveform({
             />
           )}
 
-          {/* Dialogue pills - overlayed on waveform */}
+          {/* Dialogue pills - overlayed on waveform with multi-language support */}
           {dialogueLines.map((line) => {
             const startPercent = (line.timeInSeconds / duration) * 100;
             const widthPercent = ((line.timeOutSeconds - line.timeInSeconds) / duration) * 100;
@@ -213,51 +218,104 @@ export function Waveform({
             return (
               <div
                 key={line.id}
-                className="absolute bottom-2 h-8 bg-purple-500/20 border border-purple-500/40 rounded-sm flex items-center px-2 cursor-pointer hover:bg-purple-500/30 transition-colors"
+                className="absolute bottom-2 cursor-pointer transition-all hover:bottom-3"
                 style={{
                   left: `${startPercent}%`,
                   width: `${widthPercent}%`
                 }}
-                title={`EN: ${line.enText}\nDub: ${line.dubText}`}
               >
-                <span className="text-[9px] text-purple-300 truncate font-mono">
-                  {line.dubText}
-                </span>
+                {/* EN source line (top) */}
+                <div className="mb-0.5 h-6 bg-slate-700/30 border border-slate-600/50 rounded-sm flex items-center px-2 hover:bg-slate-700/50 transition-colors">
+                  <span className="text-[8px] text-slate-400 truncate font-mono">
+                    EN: {line.enText}
+                  </span>
+                </div>
+                
+                {/* Dubbed line (bottom) - more prominent */}
+                <div className="h-7 bg-purple-500/30 border-2 border-purple-500/60 rounded-sm flex items-center px-2 hover:bg-purple-500/40 hover:border-purple-400 transition-colors shadow-lg">
+                  <span className="text-[9px] text-purple-200 truncate font-semibold font-mono">
+                    {line.dubText}
+                  </span>
+                </div>
               </div>
             );
           })}
 
-          {/* Issue markers - prominent with hover tooltip */}
+          {/* Issue markers - VERY PROMINENT with detailed hover tooltip */}
           {issues.map((issue) => {
             const percent = (issue.timeSeconds / duration) * 100;
             const isHovered = hoveredIssue === issue.id;
             
+            // Determine visual prominence based on category
+            const isLipSync = issue.categoryId === 'timing_sync';
+            const isDialogue = issue.categoryId === 'dialogue_integrity';
+            const isTranslation = issue.categoryId === 'translation';
+            
             return (
               <div
                 key={issue.id}
-                className="absolute top-0 bottom-0 w-1.5 cursor-pointer transition-all z-20"
+                className={`absolute top-0 bottom-0 cursor-pointer transition-all z-20 ${
+                  isHovered ? 'w-3' : 'w-2'
+                }`}
                 style={{ left: `${percent}%` }}
                 onMouseEnter={() => setHoveredIssue(issue.id)}
                 onMouseLeave={() => setHoveredIssue(null)}
               >
-                {/* Marker line */}
-                <div className={`absolute inset-0 ${getSeverityColor(issue.severity)} ${isHovered ? 'w-2' : ''}`} />
+                {/* Marker line - thicker and more visible */}
+                <div className={`absolute inset-0 ${getSeverityColor(issue.severity)} opacity-90`} />
                 
-                {/* Marker dot */}
-                <div className={`absolute top-1 left-1/2 -translate-x-1/2 rounded-full ${getSeverityColor(issue.severity)} ${isHovered ? 'w-3 h-3' : 'w-2.5 h-2.5'}`} />
+                {/* Marker dot with glow */}
+                <div className={`absolute top-1 left-1/2 -translate-x-1/2 rounded-full ${getSeverityColor(issue.severity)} ${
+                  isHovered ? 'w-4 h-4 shadow-lg' : 'w-3 h-3'
+                } shadow-[0_0_8px_rgba(255,255,255,0.5)]`} />
                 
-                {/* Hover tooltip */}
+                {/* Category indicator icon */}
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-slate-900/90 border border-slate-700 flex items-center justify-center text-[10px]">
+                  {isLipSync && '👄'}
+                  {isDialogue && '💬'}
+                  {isTranslation && '🌐'}
+                  {!isLipSync && !isDialogue && !isTranslation && '⚠️'}
+                </div>
+                
+                {/* Enhanced hover tooltip with category info */}
                 {isHovered && (
-                  <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 rounded-lg p-3 shadow-2xl z-50 min-w-[250px]">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className={`w-2 h-2 rounded-full ${getSeverityColor(issue.severity)}`} />
-                      <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  <div className="absolute top-14 left-1/2 -translate-x-1/2 bg-slate-900 border-2 border-slate-700 rounded-lg p-4 shadow-2xl z-50 min-w-[280px] max-w-[320px]">
+                    {/* Header */}
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800">
+                      <div className={`w-3 h-3 rounded-full ${getSeverityColor(issue.severity)} shadow-lg`} />
+                      <span className="text-sm font-bold text-slate-200 uppercase tracking-wider">
                         {issue.severity}
                       </span>
-                      <span className="text-[10px] text-slate-500 ml-auto font-mono">{issue.timecode}</span>
+                      <span className="text-[11px] text-slate-500 ml-auto font-mono">{issue.timecode}</span>
                     </div>
-                    <div className="text-xs text-cyan-400 font-semibold mb-1">{issue.type}</div>
-                    <div className="text-xs text-slate-400">{issue.description}</div>
+                    
+                    {/* Category badge */}
+                    <div className="mb-2">
+                      <span className={`inline-block px-2 py-1 text-[10px] font-semibold rounded ${
+                        isLipSync ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30' :
+                        isDialogue ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
+                        isTranslation ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                        'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                      }`}>
+                        {isLipSync && '👄 LIP SYNC'}
+                        {isDialogue && '💬 DIALOGUE'}
+                        {isTranslation && '🌐 TRANSLATION'}
+                        {!isLipSync && !isDialogue && !isTranslation && '⚠️ AUDIO'}
+                      </span>
+                    </div>
+                    
+                    {/* Issue type */}
+                    <div className="text-sm text-cyan-400 font-bold mb-2">{issue.type}</div>
+                    
+                    {/* Description */}
+                    <div className="text-xs text-slate-300 leading-relaxed">{issue.description}</div>
+                    
+                    {/* Script Doctor hint for relevant issues */}
+                    {(isLipSync || isDialogue || isTranslation) && (
+                      <div className="mt-3 pt-2 border-t border-slate-800 text-[10px] text-purple-400">
+                        💡 Click in Inspector to open Script Doctor
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
