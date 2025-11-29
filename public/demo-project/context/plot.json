@@ -1,8 +1,38 @@
 {
-  "synopsis": "Geralt arrives at Kaer Morhen and confronts a new threat.",
+  "synopsis": "In the aftermath of the Battle of Sodden Hill, Geralt, Yennefer, and Ciri seek sanctuary in the remote elven ruins of Shaerrawedd. As they attempt to lay low and train Ciri in combat and magic, they discover they're being hunted by multiple factions. The episode explores the deepening bond between the three characters while setting up the season's central conflicts: Ciri's growing powers, Yennefer's struggle with lost magic, and Geralt's determination to keep his family safe at any cost. Meanwhile, political tensions escalate across the Continent as kingdoms prepare for war.",
+  "acts": {
+    "act1": "Opening with a flashback to Ciri's childhood, establishing her connection to Cintra and her grandmother Queen Calanthe. Cut to present: the trio arrives at the ruins of Shaerrawedd, an ancient elven sanctuary hidden in the mountains.",
+    "act2": "Geralt begins training Ciri in swordplay while Yennefer attempts to teach her magic control despite having lost her own powers. Tensions rise as Ciri's untrained abilities manifest unpredictably. A group of Scoia'tael elves discovers their location, leading to a tense standoff that reveals information about those hunting Ciri.",
+    "act3": "The episode climaxes with a confrontation where Geralt must protect Ciri from hired assassins while Yennefer uses her cunning to outmaneuver their enemies despite her powerlessness. They escape but realize nowhere is safe, setting up their journey for the rest of the season."
+  },
   "beats": [
-    "Geralt enters the keep.",
-    "A mysterious sound echoes in the halls.",
-    "Geralt prepares for a confrontation."
+    "Cold open: Flashback to young Ciri training with her grandmother Queen Calanthe in Cintra's palace",
+    "Present day: Geralt, Yennefer, and Ciri arrive at the ruins of Shaerrawedd seeking refuge",
+    "Establishing the temporary sanctuary: setting up camp, gathering supplies, creating defensive wards",
+    "Geralt begins Ciri's sword training - callback to Vesemir's training methods at Kaer Morhen",
+    "Yennefer attempts to help Ciri control her magic despite having lost her own powers",
+    "Intimate scene: The trio shares a meal, discussing their pasts and uncertain future",
+    "Ciri's nightmare about the fall of Cintra triggers an uncontrolled magical outburst",
+    "Discovery: Scoia'tael elves find their location, led by Filavandrel",
+    "Tense negotiation between Geralt and the elves about Ciri's presence and safety",
+    "Reveal: Multiple factions are actively hunting Ciri for her Elder Blood",
+    "Action sequence: Bounty hunters attack the camp at nightfall",
+    "Geralt fights to protect Ciri while Yennefer uses strategy and deception",
+    "Yennefer's revelation: She must find a way to regain her magic to protect Ciri",
+    "Bittersweet departure from Shaerrawedd - their sanctuary has been compromised",
+    "Final scene: A mysterious figure watches them leave from the shadows - setting up future threats"
+  ],
+  "subplots": [
+    "Yennefer's internal struggle with her lost magic and feelings of inadequacy",
+    "Jaskier's separate storyline: performing in taverns while unknowingly being tracked",
+    "Political machinations in Redania: King Vizimir and Dijkstra discuss the 'Ciri situation'",
+    "The Brotherhood of Sorcerers' secret meeting about containing Ciri's power",
+    "Cahir's redemption arc begins as he questions his orders from Nilfgaard"
+  ],
+  "emotionalArcs": [
+    "Geralt accepting his role as Ciri's protector and father figure",
+    "Ciri processing trauma from Cintra's fall while discovering her identity",
+    "Yennefer finding self-worth beyond her magical abilities",
+    "The formation of their found family dynamic despite their differences"
   ]
 }

@@ -122,36 +122,29 @@ export function ContextPanel({ titleId }: ContextPanelProps) {
 
 function MetadataSection({ metadata }: { metadata: ContextMetadata['metadata'] }) {
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-xl font-bold text-slate-100 mb-2">{metadata.title}</h3>
-        <div className="flex gap-2 text-xs text-slate-400 mb-4">
-          <span>{metadata.year}</span>
-          <span>•</span>
-          <span>{metadata.rating}</span>
-          <span>•</span>
-          <span>{metadata.runtime}</span>
+    <div className="space-y-6">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-cyan-950/30 to-purple-950/30 border border-cyan-800/30 rounded-xl p-6">
+        <h3 className="text-2xl font-bold text-cyan-400 mb-3 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
+          {metadata.title}
+        </h3>
+        <div className="flex flex-wrap gap-3 text-xs text-slate-300 mb-4">
+          <span className="px-3 py-1 bg-slate-800/50 rounded-full">{metadata.year}</span>
+          <span className="px-3 py-1 bg-red-900/30 border border-red-700/50 rounded-full">{metadata.rating}</span>
+          <span className="px-3 py-1 bg-slate-800/50 rounded-full">{metadata.runtime}</span>
         </div>
+        <p className="text-slate-300 text-sm leading-relaxed">{metadata.summary}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-slate-500 font-semibold">Director:</span>
-          <p className="text-slate-200">{metadata.director}</p>
-        </div>
-        <div>
-          <span className="text-slate-500 font-semibold">Studio:</span>
-          <p className="text-slate-200">{metadata.studio}</p>
-        </div>
-      </div>
-
+      {/* Genres */}
       <div>
-        <span className="text-slate-500 font-semibold text-sm">Genres:</span>
-        <div className="flex gap-2 mt-2">
-          {metadata.genres.map((genre) => (
+        <h4 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-3">Genres</h4>
+        <div className="flex flex-wrap gap-2">
+          {metadata.genres.map((genre, idx) => (
             <span
               key={genre}
-              className="px-2 py-1 bg-slate-800 text-slate-300 rounded text-xs"
+              className="px-3 py-1.5 bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-700/50 text-purple-300 rounded-lg text-xs font-semibold"
+              style={{ animationDelay: `${idx * 0.1}s` }}
             >
               {genre}
             </span>
@@ -159,52 +152,178 @@ function MetadataSection({ metadata }: { metadata: ContextMetadata['metadata'] }
         </div>
       </div>
 
-      <div>
-        <span className="text-slate-500 font-semibold text-sm">Writers:</span>
-        <p className="text-slate-200 text-sm mt-1">{metadata.writers.join(', ')}</p>
+      {/* Credits Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
+          <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold">Director</span>
+          <p className="text-slate-200 mt-1">{metadata.director}</p>
+        </div>
+        <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
+          <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold">Studio</span>
+          <p className="text-slate-200 mt-1">{metadata.studio}</p>
+        </div>
       </div>
 
-      <div>
-        <span className="text-slate-500 font-semibold text-sm">Summary:</span>
-        <p className="text-slate-300 text-sm mt-2 leading-relaxed">{metadata.summary}</p>
+      {/* Writers */}
+      <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
+        <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold block mb-2">Writers</span>
+        <p className="text-slate-200 text-sm">{metadata.writers.join(', ')}</p>
       </div>
+
+      {/* Additional Info */}
+      {(metadata as any).mainCast && (
+        <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
+          <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold block mb-3">Main Cast</span>
+          <div className="space-y-2">
+            {(metadata as any).mainCast.map((cast: string) => (
+              <p key={cast} className="text-slate-300 text-sm flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full"></span>
+                {cast}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Themes */}
+      {(metadata as any).themes && (
+        <div>
+          <h4 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-3">Themes</h4>
+          <div className="flex flex-wrap gap-2">
+            {(metadata as any).themes.map((theme: string) => (
+              <span
+                key={theme}
+                className="px-3 py-1 bg-amber-900/20 border border-amber-700/40 text-amber-400 rounded text-xs"
+              >
+                {theme}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function PlotSection({ plot }: { plot: ContextMetadata['plot'] }) {
+function PlotSection({ plot }: { plot: any }) {
   return (
-    <div className="space-y-4">
-      <div>
-        <h4 className="text-sm font-semibold text-slate-400 mb-2">Synopsis</h4>
+    <div className="space-y-6">
+      {/* Synopsis */}
+      <div className="bg-gradient-to-br from-purple-950/30 to-slate-950 border border-purple-800/30 rounded-xl p-5">
+        <h4 className="text-sm font-bold uppercase tracking-wider text-purple-400 mb-3 flex items-center gap-2">
+          <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+          Episode Synopsis
+        </h4>
         <p className="text-slate-300 text-sm leading-relaxed">{plot.synopsis}</p>
       </div>
 
-      <div>
-        <h4 className="text-sm font-semibold text-slate-400 mb-2">Plot Beats</h4>
-        <ul className="space-y-2">
-          {plot.beats.map((beat, idx) => (
-            <li key={idx} className="flex gap-3 text-sm text-slate-300">
-              <span className="text-cyan-500 font-mono">{idx + 1}.</span>
-              <span>{beat}</span>
-            </li>
+      {/* Acts Structure */}
+      {plot.acts && (
+        <div className="space-y-3">
+          <h4 className="text-xs uppercase tracking-widest text-slate-500 font-bold">Three-Act Structure</h4>
+          {Object.entries(plot.acts).map(([act, description], idx) => (
+            <div key={act} className="bg-slate-950/50 border-l-4 border-cyan-500 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-6 h-6 bg-cyan-900/50 border border-cyan-700 rounded-full flex items-center justify-center text-xs font-bold text-cyan-400">
+                  {idx + 1}
+                </span>
+                <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold">
+                  {act.replace('act', 'Act ')}
+                </span>
+              </div>
+              <p className="text-sm text-slate-300 leading-relaxed">{description as string}</p>
+            </div>
           ))}
-        </ul>
+        </div>
+      )}
+
+      {/* Plot Beats Timeline */}
+      <div>
+        <h4 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-3">Key Plot Beats</h4>
+        <div className="space-y-2 relative">
+          <div className="absolute left-2 top-3 bottom-3 w-0.5 bg-gradient-to-b from-cyan-500 via-purple-500 to-pink-500 opacity-30"></div>
+          {plot.beats.map((beat: string, idx: number) => (
+            <div key={idx} className="flex gap-3 text-sm text-slate-300 relative">
+              <div className="flex-shrink-0 w-4 h-4 mt-0.5 bg-cyan-500 rounded-full border-2 border-slate-950 z-10 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></div>
+              <span className="flex-1 py-1">{beat}</span>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Subplots */}
+      {plot.subplots && (
+        <div>
+          <h4 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-3">Subplots</h4>
+          <div className="space-y-2">
+            {plot.subplots.map((subplot: string, idx: number) => (
+              <div key={idx} className="bg-slate-950/50 border border-slate-800 rounded-lg p-3 text-sm text-slate-300">
+                <span className="text-purple-400 font-semibold mr-2">•</span>
+                {subplot}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function CharactersSection({ characters }: { characters: Array<{ name: string; description: string }> }) {
+function CharactersSection({ characters }: { characters: Array<any> }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {characters.map((character) => (
         <div
           key={character.name}
-          className="bg-slate-950/50 border border-slate-800 rounded-lg p-4"
+          className="bg-gradient-to-br from-slate-950 to-slate-900 border-l-4 border-cyan-500 rounded-lg p-5 hover:border-purple-500 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
         >
-          <h4 className="font-bold text-slate-100 mb-1">{character.name}</h4>
-          <p className="text-sm text-slate-400">{character.description}</p>
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h4 className="font-bold text-xl text-cyan-400 mb-1">{character.name}</h4>
+              {character.actor && (
+                <p className="text-xs text-slate-500">Portrayed by <span className="text-purple-400">{character.actor}</span></p>
+              )}
+            </div>
+            {character.role && (
+              <span className="px-2 py-1 bg-purple-900/30 border border-purple-700/50 text-purple-300 rounded text-xs font-semibold">
+                {character.role}
+              </span>
+            )}
+          </div>
+          
+          <p className="text-sm text-slate-300 leading-relaxed mb-3">{character.description}</p>
+          
+          {character.background && (
+            <div className="mt-3 pt-3 border-t border-slate-800">
+              <p className="text-xs text-slate-400 leading-relaxed italic">{character.background}</p>
+            </div>
+          )}
+          
+          {character.abilities && (
+            <div className="mt-3">
+              <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold">Abilities:</span>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {character.abilities.map((ability: string) => (
+                  <span key={ability} className="px-2 py-0.5 bg-cyan-900/20 border border-cyan-800/40 text-cyan-400 rounded text-xs">
+                    {ability}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {character.personality && (
+            <div className="mt-3">
+              <span className="text-xs uppercase tracking-wider text-purple-500 font-bold">Personality:</span>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {character.personality.map((trait: string) => (
+                  <span key={trait} className="px-2 py-0.5 bg-purple-900/20 border border-purple-800/40 text-purple-400 rounded text-xs">
+                    {trait}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -213,14 +332,18 @@ function CharactersSection({ characters }: { characters: Array<{ name: string; d
 
 function GlossarySection({ terms }: { terms: Array<{ term: string; definition: string }> }) {
   return (
-    <div className="space-y-3">
-      {terms.map((item) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {terms.map((item, idx) => (
         <div
           key={item.term}
-          className="bg-slate-950/50 border border-slate-800 rounded-lg p-4"
+          className="bg-slate-950/50 border border-cyan-800/40 rounded-lg p-4 hover:border-cyan-600/60 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300"
+          style={{ animationDelay: `${idx * 0.05}s` }}
         >
-          <h4 className="font-bold text-cyan-400 mb-1">{item.term}</h4>
-          <p className="text-sm text-slate-300">{item.definition}</p>
+          <h4 className="font-bold text-cyan-400 mb-2 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full"></span>
+            {item.term}
+          </h4>
+          <p className="text-xs text-slate-300 leading-relaxed">{item.definition}</p>
         </div>
       ))}
     </div>
@@ -233,12 +356,18 @@ function IdiomsSection({ entries }: { entries: Array<{ source: string; explanati
       {entries.map((entry, idx) => (
         <div
           key={idx}
-          className="bg-slate-950/50 border border-slate-800 rounded-lg p-4"
+          className="bg-gradient-to-br from-purple-950/30 to-slate-950 border border-purple-800/40 rounded-xl p-5 hover:border-purple-600/60 transition-all duration-300"
         >
-          <div className="mb-2 font-mono text-sm text-purple-400 italic">
-            "{entry.source}"
+          <div className="mb-3 relative">
+            <span className="absolute -left-2 -top-2 text-4xl text-purple-800/40 font-serif">"</span>
+            <p className="font-mono text-base text-purple-300 italic pl-4">
+              {entry.source}
+            </p>
+            <span className="absolute -right-2 -bottom-2 text-4xl text-purple-800/40 font-serif">"</span>
           </div>
-          <p className="text-sm text-slate-300">{entry.explanation}</p>
+          <div className="border-t border-purple-900/30 pt-3">
+            <p className="text-sm text-slate-300 leading-relaxed">{entry.explanation}</p>
+          </div>
         </div>
       ))}
     </div>
@@ -247,14 +376,21 @@ function IdiomsSection({ entries }: { entries: Array<{ source: string; explanati
 
 function CulturalSection({ notes }: { notes: Array<{ topic: string; details: string }> }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {notes.map((note, idx) => (
         <div
           key={idx}
-          className="bg-slate-950/50 border border-slate-800 rounded-lg p-4"
+          className="bg-gradient-to-br from-amber-950/20 to-slate-950 border-l-4 border-amber-500 rounded-lg p-5 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300"
         >
-          <h4 className="font-bold text-amber-400 mb-1">{note.topic}</h4>
-          <p className="text-sm text-slate-300">{note.details}</p>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 bg-amber-900/30 border border-amber-700/50 rounded-lg flex items-center justify-center">
+              <Globe className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-amber-400 mb-2">{note.topic}</h4>
+              <p className="text-sm text-slate-300 leading-relaxed">{note.details}</p>
+            </div>
+          </div>
         </div>
       ))}
     </div>

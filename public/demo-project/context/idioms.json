@@ -1,5 +1,56 @@
 {
   "entries": [
-    { "source": "She's banking right!", "explanation": "A phrase meaning turning sharply." }
+    { 
+      "source": "Toss a coin to your Witcher", 
+      "explanation": "Jaskier's famous song refrain. This phrase has become synonymous with the series, representing how witchers are paid for their monster-hunting services and commenting on society's treatment of witchers - needed but scorned."
+    },
+    { 
+      "source": "The Lesser Evil", 
+      "explanation": "A recurring philosophical concept where characters must choose between two bad options. Geralt often faces these moral dilemmas, trying to remain neutral but being forced to act."
+    },
+    { 
+      "source": "Destiny is just the embodiment of the soul's desire to grow", 
+      "explanation": "A philosophical statement about fate and free will in The Witcher universe. Characters debate whether they're bound by destiny or creating their own paths."
+    },
+    { 
+      "source": "People linked by destiny will always find each other", 
+      "explanation": "A fundamental belief in the series. No matter how far apart or what obstacles exist, those bound by fate (like Geralt and Ciri) will inevitably meet."
+    },
+    { 
+      "source": "Evil is evil. Lesser, greater, middling, it's all the same", 
+      "explanation": "Geralt's pragmatic view on morality, suggesting that trying to categorize evil into degrees is meaningless - all evil must be confronted. This contrasts with typical fantasy good vs. evil narratives."
+    },
+    {
+      "source": "Witchers never cry",
+      "explanation": "A saying reflecting the belief that witchers lack emotions due to their mutations. This is actually false - witchers feel deeply but are trained to suppress emotions and face prejudice claiming they're unfeeling monsters."
+    },
+    {
+      "source": "The Law of Surprise",
+      "explanation": "An ancient custom often invoked in the series: 'That which you find when you return home, yet didn't expect to find.' Used to claim unexpected blessings, often resulting in claiming unborn children."
+    },
+    {
+      "source": "Lilac and gooseberries",
+      "explanation": "Yennefer's distinctive scent, created by her perfume and magic. Geralt can always identify her presence by this smell, symbolizing their deep connection despite their complicated relationship."
+    },
+    {
+      "source": "Hmm",
+      "explanation": "Geralt's signature grunt, expressing everything from acknowledgment to skepticism to contemplation. It's become an iconic character trait representing his taciturn nature."
+    },
+    {
+      "source": "Schools of the Wolf, Cat, Bear, Griffin, and Viper",
+      "explanation": "Different witcher training schools, each with unique fighting styles and philosophies. Geralt belongs to the School of the Wolf, known for their two-sword technique and relative neutrality."
+    },
+    {
+      "source": "White Wolf",
+      "explanation": "Geralt's nickname, referring to his distinctive white hair (result of extra mutations) and his membership in the School of the Wolf. Some also call him the 'Butcher of Blavikin' after a controversial incident."
+    },
+    {
+      "source": "The Conjunction of the Spheres",
+      "explanation": "The cataclysmic event that brought humans, monsters, and magic to the Continent. Often referenced when discussing the origins of various creatures and the nature of magic itself."
+    },
+    {
+      "source": "Swallow",
+      "explanation": "Ciri's nickname and a powerful witcher potion. The name symbolizes both her swift movements and her ability to traverse worlds - swallows migrate between places just as Ciri moves between dimensions."
+    }
   ]
 }
