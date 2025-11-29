@@ -4,7 +4,7 @@
  * UI-only refactor, no logic changes
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
 import { ToolsSidebar } from '../components/dubflow/ToolsSidebar';
@@ -16,6 +16,7 @@ import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
 import { calculateClipScore, calculateAssetScore } from '../utils/qcScoring';
+import { generateWaveformBars } from '../utils/waveformProcessing';
 import '../styles/ocularflow.css';
 
 export default function DubFlow() {
@@ -153,6 +154,14 @@ export default function DubFlow() {
   // Inspector state
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
+
+  // Generate mock waveform data
+  const windowStart = Math.max(0, currentTime - 5);
+  const visibleWindow = 10 / zoomLevel;
+  
+  const waveformBars = useMemo(() => {
+    return generateWaveformBars(windowStart, visibleWindow, 150, false);
+  }, [windowStart, visibleWindow]);
 
   // Audio playback - simulated with timer
   useEffect(() => {
@@ -331,7 +340,7 @@ export default function DubFlow() {
           <WaveformPanel
             height={waveformCollapsed ? 32 : 240}
             collapsed={waveformCollapsed}
-            waveformBars={[]}
+            waveformBars={waveformBars}
             zoomLevel={zoomLevel}
             scrollMode="CENTER"
             isolateDialogue={false}
@@ -347,8 +356,8 @@ export default function DubFlow() {
             currentIndex={selectedLineId || 1}
             currentTime={currentTime}
             duration={duration}
-            windowStart={Math.max(0, currentTime - 5)}
-            visibleWindow={10}
+            windowStart={windowStart}
+            visibleWindow={visibleWindow}
             playheadPct={30}
             onHeightChange={(delta) => {}}
             onToggleCollapse={() => setWaveformCollapsed(!waveformCollapsed)}
