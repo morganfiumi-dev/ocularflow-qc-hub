@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import useQCProfileStore, { QCCheck } from '@/state/useQCProfileStore';
-import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Settings, Copy, X, Plus, ChevronRight } from 'lucide-react';
+import { Settings, Copy, X, ChevronRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QCProfileManagerProps {
@@ -15,7 +14,6 @@ interface QCProfileManagerProps {
 }
 
 export function QCProfileManager({ onClose }: QCProfileManagerProps) {
-  const [activeTab, setActiveTab] = useState<'clients' | 'products' | 'languages' | 'checks' | 'scoring'>('clients');
   const [newClientName, setNewClientName] = useState('');
   const [cloneSource, setCloneSource] = useState('');
 
@@ -37,14 +35,6 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
     cloneProfile,
   } = useQCProfileStore();
 
-  const tabs = [
-    { id: 'clients' as const, label: 'Clients', icon: '👤' },
-    { id: 'products' as const, label: 'Products', icon: '📦' },
-    { id: 'languages' as const, label: 'Languages', icon: '🌐' },
-    { id: 'checks' as const, label: 'QC Checks', icon: '✓' },
-    { id: 'scoring' as const, label: 'Scoring Engine', icon: '∑' },
-  ];
-
   const handleCloneProfile = () => {
     if (cloneSource && newClientName) {
       const newId = newClientName.toLowerCase().replace(/\s+/g, '_');
@@ -52,10 +42,6 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
       setNewClientName('');
       setCloneSource('');
     }
-  };
-
-  const handleSaveAndClose = () => {
-    onClose();
   };
 
   const profile = currentProfile();
@@ -69,419 +55,358 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
       }))
     : [];
 
-  const languageOptions =
-    profile?.products?.[activeProduct]?.languages
-      ? Object.keys(profile.products[activeProduct].languages)
-      : [];
+  const languageOptions = profile?.products?.[activeProduct]?.languages
+    ? Object.keys(profile.products[activeProduct].languages)
+    : [];
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent 
-        className="max-w-6xl h-[85vh] p-0 gap-0 border-cockpit-steel bg-cockpit-cool/95 backdrop-blur-lg shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] rounded-xl overflow-hidden"
-      >
-        {/* Header */}
-        <DialogHeader className="h-16 px-8 flex flex-row items-center gap-4 bg-cockpit-deep border-b border-cockpit-steel shrink-0">
-          <div className="w-10 h-10 rounded-lg bg-cockpit-electric/10 flex items-center justify-center">
-            <Settings className="w-5 h-5 text-cockpit-electric" />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-[#020617]/90 backdrop-blur-sm animate-fade-in">
+      {/* Main Container */}
+      <div className="w-full max-w-5xl h-[82vh] flex flex-col bg-[#0f172a] border border-[#334155] rounded-lg shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden animate-scale-in">
+        
+        {/* Header Bar */}
+        <div className="h-12 bg-[#020617] border-b border-[#334155] flex items-center justify-between px-6 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded bg-[#06b6d4]/10 flex items-center justify-center">
+              <Settings className="w-4 h-4 text-[#06b6d4]" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">QC Profile Manager</h2>
+              <p className="text-[9px] text-[#64748b] uppercase tracking-wide font-mono">
+                Client → Product → Language → Checks
+              </p>
+            </div>
           </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-white">QC Profile Manager</h2>
-            <p className="text-xs text-cockpit-slate-400">Enterprise-level quality control configuration</p>
-          </div>
-        </DialogHeader>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded hover:bg-[#1e293b] flex items-center justify-center text-[#94a3b8] hover:text-[#f1f5f9] transition-all"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar Navigation */}
-          <div className="w-64 bg-cockpit-deep border-r border-cockpit-steel shrink-0">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-1">
-                {tabs.map((tab) => (
+        {/* Content Area */}
+        <div className="flex-1 flex overflow-hidden">
+          
+          {/* Hierarchy Sidebar */}
+          <div className="w-72 bg-[#020617] border-r border-[#334155] flex flex-col shrink-0">
+            
+            {/* 1. CLIENT SELECTION */}
+            <div className="border-b border-[#334155]/50">
+              <div className="h-8 bg-[#0f172a] border-b border-[#334155]/30 flex items-center px-4">
+                <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-widest">1. Client Profile</span>
+              </div>
+              <div className="p-4 space-y-3">
+                <Select value={activeClientId} onValueChange={setClient}>
+                  <SelectTrigger className="h-9 bg-[#1e293b] border-[#334155] text-[#f1f5f9] text-xs font-mono">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0f172a] border-[#334155]">
+                    {profiles.map((profile) => (
+                      <SelectItem key={profile.id} value={profile.id} className="text-[#f1f5f9] text-xs font-mono">
+                        {profile.client}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Clone Section */}
+                <div className="pt-2 border-t border-[#334155]/30">
+                  <p className="text-[8px] text-[#64748b] uppercase tracking-wide mb-2">Clone Profile</p>
+                  <div className="flex gap-1.5">
+                    <Select value={cloneSource} onValueChange={setCloneSource}>
+                      <SelectTrigger className="h-7 bg-[#020617] border-[#334155]/50 text-[#94a3b8] text-[10px]">
+                        <SelectValue placeholder="Source" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#0f172a] border-[#334155]">
+                        {profiles.map((profile) => (
+                          <SelectItem key={profile.id} value={profile.id} className="text-[#f1f5f9] text-[10px]">
+                            {profile.client}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      placeholder="New name"
+                      value={newClientName}
+                      onChange={(e) => setNewClientName(e.target.value)}
+                      className="h-7 bg-[#020617] border-[#334155]/50 text-[#f1f5f9] text-[10px] placeholder:text-[#64748b]"
+                    />
+                    <button
+                      onClick={handleCloneProfile}
+                      disabled={!cloneSource || !newClientName}
+                      className="h-7 w-7 flex items-center justify-center bg-[#020617] border border-[#334155]/50 rounded hover:bg-[#1e293b] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <Copy className="w-3 h-3 text-[#06b6d4]" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. PRODUCT TYPE */}
+            <div className="border-b border-[#334155]/50">
+              <div className="h-8 bg-[#0f172a] border-b border-[#334155]/30 flex items-center px-4">
+                <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-widest">2. Product Type</span>
+              </div>
+              <div className="p-2 space-y-1">
+                {productOptions.map((product) => (
                   <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    key={product.id}
+                    onClick={() => setProduct(product.id as 'dubbed_audio' | 'subtitles' | 'sdh' | 'cc')}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                      activeTab === tab.id
-                        ? "bg-cockpit-electric text-white shadow-lg shadow-cockpit-electric/20"
-                        : "text-cockpit-slate-400 hover:text-white hover:bg-cockpit-slate-800"
+                      "w-full h-9 flex items-center gap-2.5 px-3 rounded text-xs transition-all",
+                      activeProduct === product.id
+                        ? "bg-[#06b6d4]/15 text-[#06b6d4] border border-[#06b6d4]/30"
+                        : "bg-transparent text-[#94a3b8] hover:bg-[#1e293b] hover:text-[#f1f5f9]"
                     )}
                   >
-                    <span className="text-lg">{tab.icon}</span>
-                    <span>{tab.label}</span>
-                    {activeTab === tab.id && <ChevronRight className="ml-auto w-4 h-4" />}
+                    <span className="text-base">{product.icon}</span>
+                    <span className="flex-1 text-left font-medium">{product.label}</span>
+                    {activeProduct === product.id && <Check className="w-3.5 h-3.5" />}
                   </button>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
+
+            {/* 3. LANGUAGE */}
+            <div className="border-b border-[#334155]/50">
+              <div className="h-8 bg-[#0f172a] border-b border-[#334155]/30 flex items-center px-4">
+                <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-widest">3. Language</span>
+              </div>
+              <div className="p-4">
+                <Select value={activeLanguage} onValueChange={setLanguage}>
+                  <SelectTrigger className="h-9 bg-[#1e293b] border-[#334155] text-[#f1f5f9] text-xs font-mono">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0f172a] border-[#334155]">
+                    {languageOptions.map((lang) => (
+                      <SelectItem key={lang} value={lang} className="text-[#f1f5f9] text-xs font-mono">
+                        {lang.toUpperCase()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Available Languages Display */}
+            <div className="flex-1 overflow-hidden">
+              <div className="h-8 bg-[#0f172a] border-b border-[#334155]/30 flex items-center px-4">
+                <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-widest">Languages</span>
+              </div>
+              <ScrollArea className="h-[calc(100%-2rem)]">
+                <div className="p-2 space-y-1">
+                  {languageOptions.map((lang) => (
+                    <div
+                      key={lang}
+                      className={cn(
+                        "h-7 px-3 rounded flex items-center justify-between text-[10px] font-mono transition-all",
+                        activeLanguage === lang
+                          ? "bg-[#06b6d4]/10 text-[#06b6d4] border border-[#06b6d4]/20"
+                          : "bg-[#1e293b]/30 text-[#94a3b8]"
+                      )}
+                    >
+                      <span>{lang.toUpperCase()}</span>
+                      {activeLanguage === lang && <Check className="w-3 h-3" />}
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
           </div>
 
-          {/* Content Area */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Main Content Panel */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-[#020617]">
+            
+            {/* Tab Header */}
+            <div className="h-10 bg-[#0f172a] border-b border-[#334155] flex items-center px-6">
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-widest">4. Quality Checks</span>
+                <ChevronRight className="w-3 h-3 text-[#334155]" />
+                <span className="text-xs text-[#06b6d4] font-mono">{activeLanguage.toUpperCase()}</span>
+              </div>
+            </div>
+
+            {/* Checks Content */}
             <ScrollArea className="flex-1">
-              <div className="p-8">
-                {/* Clients Tab */}
-                {activeTab === 'clients' && (
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-wider text-cockpit-slate-400 font-semibold">
-                        Active Client Profile
-                      </label>
-                      <Select value={activeClientId} onValueChange={setClient}>
-                        <SelectTrigger className="h-12 bg-cockpit-slate-900 border-cockpit-slate-700 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-cockpit-slate-900 border-cockpit-slate-700">
-                          {profiles.map((profile) => (
-                            <SelectItem key={profile.id} value={profile.id} className="text-white">
-                              {profile.client}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-wider text-cockpit-slate-400 font-semibold">
-                        Clone Profile
-                      </label>
-                      <div className="flex gap-2">
-                        <Select value={cloneSource} onValueChange={setCloneSource}>
-                          <SelectTrigger className="h-12 bg-cockpit-slate-900 border-cockpit-slate-700 text-white">
-                            <SelectValue placeholder="Select source profile" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-cockpit-slate-900 border-cockpit-slate-700">
-                            {profiles.map((profile) => (
-                              <SelectItem key={profile.id} value={profile.id} className="text-white">
-                                {profile.client}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          placeholder="New client name"
-                          value={newClientName}
-                          onChange={(e) => setNewClientName(e.target.value)}
-                          className="h-12 bg-cockpit-slate-900 border-cockpit-slate-700 text-white focus-visible:ring-blue-500"
-                        />
-                        <Button
-                          onClick={handleCloneProfile}
-                          disabled={!cloneSource || !newClientName}
-                          className="h-12 px-6 bg-cockpit-slate-800 border border-cockpit-slate-700 text-white hover:bg-cockpit-slate-700"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 pt-4">
-                      {profiles.map((profile) => (
-                        <div
-                          key={profile.id}
-                          className={cn(
-                            "p-4 rounded-lg bg-cockpit-slate-900 border transition-all cursor-pointer",
-                            activeClientId === profile.id
-                              ? "border-cockpit-electric shadow-lg shadow-cockpit-electric/10"
-                              : "border-cockpit-slate-800 hover:border-cockpit-electric/50"
-                          )}
-                          onClick={() => setClient(profile.id)}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-cockpit-slate-800 flex items-center justify-center text-cockpit-slate-400 font-bold text-sm">
-                              {profile.client.substring(0, 2).toUpperCase()}
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold text-white">{profile.client}</div>
-                              <div className="text-xs text-cockpit-slate-500">{profile.id}</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Products Tab */}
-                {activeTab === 'products' && (
-                  <div className="space-y-6">
-                    <div>
-                      <label className="text-[10px] uppercase tracking-wider text-cockpit-slate-400 font-semibold">
-                        Product Types
-                      </label>
-                      <p className="text-sm text-cockpit-slate-500 mt-1 mb-4">
-                        Select the product type to configure
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      {productOptions.map((product) => (
-                        <div
-                          key={product.id}
-                          onClick={() => setProduct(product.id as 'dubbed_audio' | 'subtitles' | 'sdh' | 'cc')}
-                          className={cn(
-                            "p-6 rounded-lg border cursor-pointer transition-all",
-                            activeProduct === product.id
-                              ? "bg-blue-900/10 border-cockpit-electric"
-                              : "bg-cockpit-slate-900 border-cockpit-slate-800 hover:border-cockpit-electric/50"
-                          )}
-                        >
-                          <div className="flex items-start gap-4">
-                            <div
-                              className={cn(
-                                "w-12 h-12 rounded-full flex items-center justify-center text-2xl",
-                                activeProduct === product.id
-                                  ? "bg-cockpit-electric text-white"
-                                  : "bg-cockpit-slate-800 text-cockpit-slate-400"
-                              )}
-                            >
-                              {product.icon}
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-lg font-bold text-white">{product.label}</h3>
-                              <p className="text-sm text-cockpit-slate-500 mt-1">
-                                Configure {product.label.toLowerCase()} quality checks
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Languages Tab */}
-                {activeTab === 'languages' && (
-                  <div className="space-y-6">
-                    <div>
-                      <label className="text-[10px] uppercase tracking-wider text-cockpit-slate-400 font-semibold">
-                        Active Language
-                      </label>
-                      <Select value={activeLanguage} onValueChange={setLanguage}>
-                        <SelectTrigger className="h-12 bg-cockpit-slate-900 border-cockpit-slate-700 text-white mt-3">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-cockpit-slate-900 border-cockpit-slate-700">
-                          {languageOptions.map((lang) => (
-                            <SelectItem key={lang} value={lang} className="text-white">
-                              {lang.toUpperCase()}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-wider text-cockpit-slate-400 font-semibold">
-                        Configured Languages
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {languageOptions.map((lang) => (
-                          <div
-                            key={lang}
-                            className="px-4 py-2 rounded-full bg-cockpit-slate-800 border border-cockpit-slate-700 text-cockpit-slate-300 text-xs font-medium flex items-center gap-2"
-                          >
-                            {lang.toUpperCase()}
-                            <X className="w-3 h-3 text-cockpit-slate-500 hover:text-red-400 cursor-pointer" />
-                          </div>
-                        ))}
-                        <button className="px-4 py-2 rounded-full border-2 border-dashed border-cockpit-slate-600 text-cockpit-slate-500 text-xs font-medium flex items-center gap-2 hover:border-cockpit-electric hover:text-cockpit-electric transition-colors">
-                          <Plus className="w-3 h-3" />
-                          Add Language
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* QC Checks Tab */}
-                {activeTab === 'checks' && langConfig && (
-                  <div className="space-y-4">
-                    <Accordion type="multiple" className="space-y-3">
-                      {Object.entries(langConfig.checks).map(([categoryId, category]) => (
-                        <AccordionItem
-                          key={categoryId}
-                          value={categoryId}
-                          className="border border-cockpit-slate-800 rounded-lg overflow-hidden bg-cockpit-slate-900"
-                        >
-                          <AccordionTrigger className="px-6 py-4 bg-cockpit-slate-800/50 border-b border-cockpit-slate-800 hover:bg-cockpit-slate-800 transition-colors [&[data-state=open]]:bg-cockpit-slate-800">
-                            <span className="font-bold text-white">
-                              {categoryId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                            </span>
-                          </AccordionTrigger>
-                          <AccordionContent className="p-0">
-                            <div className="divide-y divide-cockpit-slate-800">
-                              {Object.entries(category.checks).map(([checkId, check]) => {
-                                const qcCheck = check as QCCheck;
-                                return (
-                                  <div
-                                    key={checkId}
-                                    className="px-6 py-4 bg-cockpit-slate-950/50 flex items-center gap-4"
-                                  >
-                                    <Switch
-                                      checked={qcCheck.enabled}
-                                      onCheckedChange={(enabled) => {
-                                        if (enabled) {
-                                          enableCheck(categoryId, checkId);
-                                        } else {
-                                          disableCheck(categoryId, checkId);
-                                        }
-                                      }}
-                                      className="data-[state=checked]:bg-cockpit-electric"
-                                    />
-                                    <div className="flex-1">
-                                      <div className="font-bold text-sm text-cockpit-slate-300">
-                                        {checkId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                                      </div>
-                                      <div className="text-[10px] text-cockpit-slate-500">
-                                        {qcCheck.severity} • Weight: {qcCheck.weight} • Penalty: {qcCheck.penalty}
-                                      </div>
+              <div className="p-4 space-y-3">
+                {langConfig && (
+                  <Accordion type="multiple" className="space-y-2">
+                    {Object.entries(langConfig.checks).map(([categoryId, category]) => (
+                      <AccordionItem
+                        key={categoryId}
+                        value={categoryId}
+                        className="border border-[#334155]/50 rounded overflow-hidden bg-[#0f172a]"
+                      >
+                        <AccordionTrigger className="h-10 px-4 bg-[#1e293b]/30 hover:bg-[#1e293b]/50 border-b border-[#334155]/30 transition-all [&[data-state=open]]:bg-[#1e293b]/70">
+                          <span className="text-xs font-bold text-[#f1f5f9] uppercase tracking-wide">
+                            {categoryId.replace(/_/g, ' ')}
+                          </span>
+                        </AccordionTrigger>
+                        <AccordionContent className="p-0">
+                          <div className="divide-y divide-[#334155]/20">
+                            {Object.entries(category.checks).map(([checkId, check]) => {
+                              const qcCheck = check as QCCheck;
+                              return (
+                                <div
+                                  key={checkId}
+                                  className="px-4 py-3 flex items-center gap-3 bg-[#020617]/50 hover:bg-[#020617] transition-colors"
+                                >
+                                  <Switch
+                                    checked={qcCheck.enabled}
+                                    onCheckedChange={(enabled) => {
+                                      if (enabled) {
+                                        enableCheck(categoryId, checkId);
+                                      } else {
+                                        disableCheck(categoryId, checkId);
+                                      }
+                                    }}
+                                    className="data-[state=checked]:bg-[#06b6d4]"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-[11px] font-semibold text-[#f1f5f9]">
+                                      {checkId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                      <Select
-                                        value={qcCheck.severity}
-                                        onValueChange={(value) =>
-                                          setSeverity(categoryId, checkId, value as 'ERROR' | 'WARNING' | 'INFO')
-                                        }
-                                      >
-                                        <SelectTrigger className="h-6 w-24 text-xs bg-cockpit-slate-900 border-cockpit-slate-700">
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-cockpit-slate-900 border-cockpit-slate-700">
-                                          <SelectItem value="ERROR" className="text-red-400">
-                                            ERROR
-                                          </SelectItem>
-                                          <SelectItem value="WARNING" className="text-amber-400">
-                                            WARNING
-                                          </SelectItem>
-                                          <SelectItem value="INFO" className="text-blue-400">
-                                            INFO
-                                          </SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                      <Input
-                                        type="number"
-                                        value={qcCheck.weight}
-                                        onChange={(e) =>
-                                          setWeight(categoryId, checkId, parseFloat(e.target.value) || 0)
-                                        }
-                                        step="0.1"
-                                        min="0"
-                                        max="1"
-                                        className="w-16 h-6 text-xs text-right font-mono bg-cockpit-slate-900 border-cockpit-slate-700 text-white"
-                                      />
-                                      <Input
-                                        type="number"
-                                        value={qcCheck.penalty}
-                                        onChange={(e) =>
-                                          setPenalty(categoryId, checkId, parseFloat(e.target.value) || 0)
-                                        }
-                                        step="1"
-                                        min="0"
-                                        className="w-16 h-6 text-xs text-right font-mono bg-cockpit-slate-900 border-cockpit-slate-700 text-white"
-                                      />
+                                    <div className="text-[9px] text-[#64748b] font-mono mt-0.5">
+                                      {qcCheck.severity} • W:{qcCheck.weight} • P:{qcCheck.penalty}
                                     </div>
                                   </div>
-                                );
-                              })}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Select
+                                      value={qcCheck.severity}
+                                      onValueChange={(value) =>
+                                        setSeverity(categoryId, checkId, value as 'ERROR' | 'WARNING' | 'INFO')
+                                      }
+                                    >
+                                      <SelectTrigger className="h-7 w-20 text-[10px] bg-[#1e293b] border-[#334155]">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-[#0f172a] border-[#334155]">
+                                        <SelectItem value="ERROR" className="text-[#ef4444] text-[10px]">
+                                          ERROR
+                                        </SelectItem>
+                                        <SelectItem value="WARNING" className="text-[#f59e0b] text-[10px]">
+                                          WARNING
+                                        </SelectItem>
+                                        <SelectItem value="INFO" className="text-[#06b6d4] text-[10px]">
+                                          INFO
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    <Input
+                                      type="number"
+                                      value={qcCheck.weight}
+                                      onChange={(e) =>
+                                        setWeight(categoryId, checkId, parseFloat(e.target.value) || 0)
+                                      }
+                                      step="0.1"
+                                      min="0"
+                                      max="1"
+                                      className="w-14 h-7 text-[10px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9]"
+                                    />
+                                    <Input
+                                      type="number"
+                                      value={qcCheck.penalty}
+                                      onChange={(e) =>
+                                        setPenalty(categoryId, checkId, parseFloat(e.target.value) || 0)
+                                      }
+                                      step="1"
+                                      min="0"
+                                      className="w-14 h-7 text-[10px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9]"
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 )}
 
-                {/* Scoring Engine Tab */}
-                {activeTab === 'scoring' && langConfig?.scoring && (
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      <label className="text-[10px] uppercase tracking-wider text-cockpit-slate-400 font-semibold">
-                        Severity Multipliers
-                      </label>
-                      <div className="bg-cockpit-slate-900 border border-cockpit-slate-800 rounded-lg p-6 space-y-3">
-                        {Object.entries(langConfig.scoring.severityMultipliers || {}).map(
-                          ([severity, multiplier]) => (
-                            <div key={severity} className="flex items-center justify-between">
-                              <span className="text-cockpit-slate-400 text-sm">{severity}</span>
-                              <Input
-                                type="number"
-                                value={multiplier as number}
-                                step="0.1"
-                                className="w-20 h-8 text-right font-mono bg-cockpit-slate-950 border-cockpit-slate-700 text-white"
-                                readOnly
-                              />
-                            </div>
-                          )
-                        )}
-                      </div>
+                {/* Scoring Formula */}
+                {langConfig?.scoring && (
+                  <div className="mt-6 space-y-3">
+                    <div className="h-8 bg-[#0f172a] border-b border-[#334155] flex items-center px-4 rounded-t">
+                      <span className="text-[9px] font-bold text-[#64748b] uppercase tracking-widest">Scoring Engine</span>
                     </div>
-
-                    {langConfig.scoring.categoryMultipliers && (
-                      <div className="space-y-4">
-                        <label className="text-[10px] uppercase tracking-wider text-cockpit-slate-400 font-semibold">
-                          Category Multipliers
-                        </label>
-                        <div className="bg-cockpit-slate-900 border border-cockpit-slate-800 rounded-lg p-6 space-y-3">
-                          {Object.entries(langConfig.scoring.categoryMultipliers).map(
-                            ([category, multiplier]) => (
-                              <div key={category} className="flex items-center justify-between">
-                                <span className="text-cockpit-slate-400 text-sm">
-                                  {category.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                                </span>
-                                <Input
-                                  type="number"
-                                  value={multiplier as number}
-                                  step="0.1"
-                                  className="w-20 h-8 text-right font-mono bg-cockpit-slate-950 border-cockpit-slate-700 text-white"
-                                  readOnly
-                                />
-                              </div>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-4">
-                      <label className="text-[10px] uppercase tracking-wider text-cockpit-slate-400 font-semibold">
-                        Scoring Formula
-                      </label>
-                      <div className="bg-cockpit-slate-950 border border-cockpit-slate-800 rounded-lg p-8 shadow-inner">
-                        <pre className="font-mono text-2xl text-center">
-                          <span className="text-white">clipScore</span>{' '}
-                          <span className="text-cockpit-slate-500">=</span>{' '}
-                          <span className="text-white">100</span>{' '}
-                          <span className="text-cockpit-slate-500">-</span>{' '}
-                          <span className="text-white">Σ</span>
-                          <span className="text-cockpit-slate-500">(</span>
-                          <span className="text-white">weight × severity × penalty</span>
-                          <span className="text-cockpit-slate-500">)</span>
+                    
+                    <div className="bg-[#0f172a] border border-[#334155] rounded p-4 space-y-4">
+                      {/* Formula Display */}
+                      <div className="bg-[#020617] border border-[#334155]/50 rounded p-4">
+                        <pre className="font-mono text-xs text-center">
+                          <span className="text-[#f1f5f9]">clipScore</span>{' '}
+                          <span className="text-[#64748b]">=</span>{' '}
+                          <span className="text-[#06b6d4]">100</span>{' '}
+                          <span className="text-[#64748b]">-</span>{' '}
+                          <span className="text-[#f1f5f9]">Σ</span>
+                          <span className="text-[#64748b]">(</span>
+                          <span className="text-[#94a3b8]">weight × severity × penalty</span>
+                          <span className="text-[#64748b]">)</span>
                         </pre>
+                      </div>
+
+                      {/* Multipliers */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-[9px] text-[#64748b] uppercase tracking-wide mb-2">Severity Multipliers</p>
+                          <div className="space-y-1.5">
+                            {Object.entries(langConfig.scoring.severityMultipliers || {}).map(
+                              ([severity, multiplier]) => (
+                                <div key={severity} className="flex items-center justify-between text-[10px] font-mono">
+                                  <span className="text-[#94a3b8]">{severity}</span>
+                                  <span className="text-[#06b6d4]">{multiplier as number}</span>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                        
+                        {langConfig.scoring.categoryMultipliers && (
+                          <div>
+                            <p className="text-[9px] text-[#64748b] uppercase tracking-wide mb-2">Category Multipliers</p>
+                            <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                              {Object.entries(langConfig.scoring.categoryMultipliers).map(
+                                ([category, multiplier]) => (
+                                  <div key={category} className="flex items-center justify-between text-[10px] font-mono">
+                                    <span className="text-[#94a3b8] truncate pr-2">
+                                      {category.replace(/_/g, ' ')}
+                                    </span>
+                                    <span className="text-[#06b6d4]">{multiplier as number}</span>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                 )}
               </div>
             </ScrollArea>
-
-            {/* Footer */}
-            <div className="h-16 px-8 flex items-center justify-end gap-3 bg-cockpit-deep border-t border-cockpit-slate-800 shrink-0">
-              <Button
-                onClick={onClose}
-                variant="ghost"
-                className="text-cockpit-slate-400 hover:text-white hover:bg-transparent"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveAndClose}
-                className="bg-blue-600 text-white font-bold shadow-lg shadow-blue-900/20 hover:bg-blue-700"
-              >
-                Save Configuration
-              </Button>
-            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Footer */}
+        <div className="h-12 bg-[#020617] border-t border-[#334155] flex items-center justify-end gap-3 px-6 shrink-0">
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            className="h-8 text-xs text-[#94a3b8] hover:text-[#f1f5f9] hover:bg-[#1e293b]"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={onClose}
+            className="h-8 px-6 text-xs bg-[#06b6d4] text-[#020617] font-bold hover:bg-[#22d3ee] shadow-lg shadow-[#06b6d4]/20"
+          >
+            Save Configuration
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
