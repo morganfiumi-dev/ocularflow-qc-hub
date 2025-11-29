@@ -17,7 +17,6 @@ import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
 import { calculateClipScore, calculateAssetScore } from '../utils/qcScoring';
 import { useWaveform } from '../hooks/useWaveform';
-import { useVideoSync } from '../hooks/useVideoSync';
 import '../styles/ocularflow.css';
 
 export default function DubFlow() {
@@ -155,21 +154,6 @@ export default function DubFlow() {
   // Waveform state - using OcularFlow's hook for smooth syncing
   const waveform = useWaveform(currentTime, duration);
 
-  // Video sync for dialogue line selection
-  const videoSync = useVideoSync({
-    currentTime,
-    subtitles: dialogueLinesWithScores.map(line => ({
-      index: line.id,
-      startTime: line.timeInSeconds,
-      endTime: line.timeOutSeconds,
-      ...line
-    })),
-    currentIndex: selectedLineId || 1,
-    autoScroll: true,
-    onSubtitleChange: setSelectedLineId,
-    onSeek: setCurrentTime,
-  });
-
   // Audio playback - simulated with timer
   useEffect(() => {
     let interval: number | null = null;
@@ -191,6 +175,17 @@ export default function DubFlow() {
       if (interval) clearInterval(interval);
     };
   }, [isPlaying, duration, playbackRate]);
+
+  // Auto-select dialogue line based on current time (like video sync)
+  useEffect(() => {
+    const activeLine = dialogueLinesWithScores.find(
+      line => currentTime >= line.timeInSeconds && currentTime < line.timeOutSeconds
+    );
+    
+    if (activeLine && activeLine.id !== selectedLineId) {
+      setSelectedLineId(activeLine.id);
+    }
+  }, [currentTime, dialogueLinesWithScores, selectedLineId]);
 
   // Playback control handlers
   const togglePlayback = () => setIsPlaying(!isPlaying);
