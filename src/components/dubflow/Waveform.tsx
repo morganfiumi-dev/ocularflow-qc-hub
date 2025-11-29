@@ -4,7 +4,20 @@
  */
 
 import React, { useRef, useState } from 'react';
-import { ZoomIn, ZoomOut, Maximize2, Move } from 'lucide-react';
+import { 
+  ZoomIn, 
+  ZoomOut, 
+  Maximize2, 
+  Move, 
+  Play, 
+  Pause, 
+  SkipBack, 
+  SkipForward, 
+  Rewind, 
+  FastForward,
+  Volume2,
+  VolumeX
+} from 'lucide-react';
 
 interface DialogueLine {
   id: number;
@@ -32,6 +45,19 @@ interface WaveformProps {
     checkId?: string;
   }>;
   dialogueLines: DialogueLine[];
+  // Playback controls
+  isPlaying: boolean;
+  playbackRate: number;
+  volume: number;
+  muted: boolean;
+  onTogglePlayback: () => void;
+  onSkipForward: () => void;
+  onSkipBackward: () => void;
+  onFrameForward: () => void;
+  onFrameBackward: () => void;
+  onPlaybackRateChange: (rate: number) => void;
+  onVolumeChange: (volume: number) => void;
+  onToggleMute: () => void;
 }
 
 export function Waveform({
@@ -42,7 +68,19 @@ export function Waveform({
   onZoomIn,
   onZoomOut,
   issues,
-  dialogueLines
+  dialogueLines,
+  isPlaying,
+  playbackRate,
+  volume,
+  muted,
+  onTogglePlayback,
+  onSkipForward,
+  onSkipBackward,
+  onFrameForward,
+  onFrameBackward,
+  onPlaybackRateChange,
+  onVolumeChange,
+  onToggleMute,
 }: WaveformProps) {
   const waveformRef = useRef<HTMLDivElement>(null);
   const [regionStart, setRegionStart] = useState<number | null>(null);
@@ -108,21 +146,101 @@ export function Waveform({
 
   return (
     <div className="h-full flex flex-col bg-slate-900/60 border border-slate-800 rounded-lg shadow-lg shadow-black/40">
-      {/* Header with timecode and zoom */}
-      <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+      {/* Header with playback controls, timecode, and zoom - like OcularFlow transport bar */}
+      <div className="px-4 py-2 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+        {/* LEFT: Playback controls */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onFrameBackward}
+            className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
+            title="Frame backward (,)"
+          >
+            <Rewind className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={onSkipBackward}
+            className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
+            title="Skip backward 5s (←)"
+          >
+            <SkipBack className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={onTogglePlayback}
+            className="p-2 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 transition-colors"
+            title={isPlaying ? "Pause (Space)" : "Play (Space)"}
+          >
+            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+          </button>
+
+          <button
+            onClick={onSkipForward}
+            className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
+            title="Skip forward 5s (→)"
+          >
+            <SkipForward className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={onFrameForward}
+            className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
+            title="Frame forward (.)"
+          >
+            <FastForward className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* CENTER: Timecode and info */}
         <div className="flex items-center gap-4">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
-            Waveform • Multi-Language View
-          </h3>
           <div className="font-mono text-sm text-cyan-400">
-            {formatTimecode(currentTime)}
+            {formatTimecode(currentTime)} / {formatTimecode(duration)}
           </div>
           <div className="text-[10px] text-slate-600">
             {issues.length} issues • {dialogueLines.length} lines
           </div>
         </div>
 
+        {/* RIGHT: Playback rate, volume, and zoom */}
         <div className="flex items-center gap-2">
+          {/* Playback rate */}
+          <select
+            className="px-2 py-1 text-xs bg-slate-800 border border-slate-700 rounded text-slate-300 focus:outline-none focus:border-cyan-500"
+            value={playbackRate}
+            onChange={(e) => onPlaybackRateChange(parseFloat(e.target.value))}
+          >
+            {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2].map(rate => (
+              <option key={rate} value={rate}>{rate}x</option>
+            ))}
+          </select>
+
+          {/* Volume */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onToggleMute}
+              className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
+              title={muted ? "Unmute" : "Mute"}
+            >
+              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={muted ? 0 : volume}
+              onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+              className="w-16 h-1 bg-slate-700 rounded-full appearance-none cursor-pointer
+                         [&::-webkit-slider-thumb]:appearance-none
+                         [&::-webkit-slider-thumb]:w-2.5
+                         [&::-webkit-slider-thumb]:h-2.5
+                         [&::-webkit-slider-thumb]:bg-cyan-500
+                         [&::-webkit-slider-thumb]:rounded-full
+                         [&::-webkit-slider-thumb]:cursor-pointer"
+            />
+          </div>
+
+          <div className="h-4 w-px bg-slate-700 mx-1" />
           {/* Timeline Precision */}
           <div className="flex items-center gap-1 mr-2">
             {(['fine', 'medium', 'coarse'] as const).map((precision) => (

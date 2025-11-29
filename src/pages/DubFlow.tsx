@@ -10,6 +10,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../compone
 import { ToolsSidebar } from '../components/dubflow/ToolsSidebar';
 import { Waveform } from '../components/dubflow/Waveform';
 import { DialogueHighlightStrip } from '../components/dubflow/DialogueHighlightStrip';
+import { TimelineMinimap } from '../components/dubflow/TimelineMinimap';
 import { TabbedInspector } from '../components/dubflow/TabbedInspector';
 import { AudioPlaybackControls } from '../components/dubflow/AudioPlaybackControls';
 import { Button } from '../components/atoms/Button';
@@ -146,7 +147,7 @@ export default function DubFlow() {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [volume, setVolume] = useState(0.75);
   const [muted, setMuted] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(2); // Increased default zoom to 2x for better dialogue visibility
 
   // Inspector state
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
@@ -314,29 +315,8 @@ export default function DubFlow() {
           {/* CENTER: Waveform-First Layout */}
           <ResizablePanel defaultSize={60} minSize={40}>
             <div className="h-full flex flex-col gap-4">
-              {/* Playback controls */}
-              <div className="h-12 flex-shrink-0">
-                <AudioPlaybackControls
-                  isPlaying={isPlaying}
-                  currentTime={currentTime}
-                  duration={duration}
-                  playbackRate={playbackRate}
-                  volume={volume}
-                  muted={muted}
-                  onTogglePlayback={togglePlayback}
-                  onSkipForward={skipForward}
-                  onSkipBackward={skipBackward}
-                  onFrameForward={frameForward}
-                  onFrameBackward={frameBackward}
-                  onSeek={seek}
-                  onPlaybackRateChange={setPlaybackRate}
-                  onVolumeChange={setVolume}
-                  onToggleMute={toggleMute}
-                />
-              </div>
-
-              {/* Waveform (Primary - Top 70%) */}
-              <div className="flex-[7] overflow-hidden">
+              {/* Waveform with integrated playback controls (Primary - Top 60%) */}
+              <div className="flex-[6] overflow-hidden">
                 <Waveform
                   currentTime={currentTime}
                   duration={duration}
@@ -346,6 +326,28 @@ export default function DubFlow() {
                   onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
                   issues={issues}
                   dialogueLines={dialogueLines}
+                  isPlaying={isPlaying}
+                  playbackRate={playbackRate}
+                  volume={volume}
+                  muted={muted}
+                  onTogglePlayback={togglePlayback}
+                  onSkipForward={skipForward}
+                  onSkipBackward={skipBackward}
+                  onFrameForward={frameForward}
+                  onFrameBackward={frameBackward}
+                  onPlaybackRateChange={setPlaybackRate}
+                  onVolumeChange={setVolume}
+                  onToggleMute={toggleMute}
+                />
+              </div>
+
+              {/* Timeline minimap (10%) */}
+              <div className="flex-[1] overflow-hidden">
+                <TimelineMinimap
+                  duration={duration}
+                  currentTime={currentTime}
+                  issues={issues}
+                  onSeek={seek}
                 />
               </div>
 
