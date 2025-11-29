@@ -57,6 +57,22 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        cockpit: {
+          deep: "hsl(var(--cockpit-deep))",
+          cool: "hsl(var(--cockpit-cool))",
+          steel: "hsl(var(--cockpit-steel))",
+          electric: "hsl(var(--cockpit-electric))",
+          slate: {
+            950: "hsl(var(--cockpit-slate-950))",
+            900: "hsl(var(--cockpit-slate-900))",
+            800: "hsl(var(--cockpit-slate-800))",
+            700: "hsl(var(--cockpit-slate-700))",
+            600: "hsl(var(--cockpit-slate-600))",
+            500: "hsl(var(--cockpit-slate-500))",
+            400: "hsl(var(--cockpit-slate-400))",
+            300: "hsl(var(--cockpit-slate-300))",
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
