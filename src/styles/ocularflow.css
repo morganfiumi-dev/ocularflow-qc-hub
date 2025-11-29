@@ -337,6 +337,8 @@
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
   pointer-events: none;
   z-index: 50;
+  transition: left 0.1s linear;
+  will-change: left;
 }
 
 .of-playhead::before {
