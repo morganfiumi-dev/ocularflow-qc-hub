@@ -6,6 +6,7 @@
 import React from 'react';
 import { WaveformControls } from './WaveformControls';
 import { Timeline } from './Timeline';
+import { DensityMap } from './DensityMap';
 import { ResizeHandle } from '../atoms/Panel';
 
 /**
@@ -28,6 +29,8 @@ export function WaveformPanel({
   // Timeline state
   subtitles = [],
   currentIndex = 1,
+  currentTime = 0,
+  duration = 0,
   windowStart = 0,
   visibleWindow = 10,
   playheadPct = 30,
@@ -84,19 +87,31 @@ export function WaveformPanel({
         
         {/* Timeline (hidden when collapsed) */}
         {!collapsed && (
-          <Timeline
-            waveformBars={waveformBars}
-            subtitles={subtitles}
-            currentIndex={currentIndex}
-            windowStart={windowStart}
-            visibleWindow={visibleWindow}
-            playheadPct={playheadPct}
-            isolateDialogue={isolateDialogue}
-            spectrogramMode={spectrogramMode}
-            issueFilters={issueFilters}
-            onSeek={onSeek}
-            onSubtitleClick={onSubtitleClick}
-          />
+          <>
+            <Timeline
+              waveformBars={waveformBars}
+              subtitles={subtitles}
+              currentIndex={currentIndex}
+              windowStart={windowStart}
+              visibleWindow={visibleWindow}
+              playheadPct={playheadPct}
+              isolateDialogue={isolateDialogue}
+              spectrogramMode={spectrogramMode}
+              issueFilters={issueFilters}
+              onSeek={onSeek}
+              onSubtitleClick={onSubtitleClick}
+            />
+            
+            {/* Density mini-map */}
+            <DensityMap
+              subtitles={subtitles}
+              duration={duration}
+              currentTime={currentTime}
+              windowStart={windowStart}
+              visibleWindow={visibleWindow}
+              onSeek={onSeek}
+            />
+          </>
         )}
       </div>
     </>
