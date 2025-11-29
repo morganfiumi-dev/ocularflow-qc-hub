@@ -17,7 +17,6 @@ import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
 import { calculateClipScore, calculateAssetScore, getScoreColor } from '../utils/qcScoring';
-import { useWaveform } from '../hooks/useWaveform';
 
 export default function DubFlow() {
   const { assetId } = useParams<{ assetId: string }>();
@@ -149,8 +148,9 @@ export default function DubFlow() {
   const [volume, setVolume] = useState(0.75);
   const [muted, setMuted] = useState(false);
   
-  // Use OcularFlow waveform hook for proper zoom/scroll behavior
-  const waveform = useWaveform(currentTime, duration);
+  // Waveform zoom state (simple local state, not using OcularFlow hook)
+  const [zoomLevel, setZoomLevel] = useState(2);
+  const [waveformCollapsed, setWaveformCollapsed] = useState(false);
   
   // Collapsible sections
   const [dialogueCollapsed, setDialogueCollapsed] = useState(false);
@@ -322,8 +322,8 @@ export default function DubFlow() {
             <ResizablePanelGroup direction="vertical" className="h-full">
               {/* Waveform Section - Collapsible */}
               <ResizablePanel 
-                defaultSize={waveform.collapsed ? 5 : 50} 
-                minSize={waveform.collapsed ? 3 : 25}
+                defaultSize={waveformCollapsed ? 5 : 50} 
+                minSize={waveformCollapsed ? 3 : 25}
                 maxSize={70}
                 collapsible
               >
@@ -331,26 +331,26 @@ export default function DubFlow() {
                   {/* Collapse Header */}
                   <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900/60 border-b border-slate-800 flex-shrink-0">
                     <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                      {waveform.collapsed ? 'Waveform' : 'Audio Timeline • Multi-Language View'}
+                      {waveformCollapsed ? 'Waveform' : 'Audio Timeline • Multi-Language View'}
                     </span>
                     <button
-                      onClick={waveform.toggleCollapsed}
+                      onClick={() => setWaveformCollapsed(!waveformCollapsed)}
                       className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
                     >
-                      {waveform.collapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+                      {waveformCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
                     </button>
                   </div>
 
-                  {!waveform.collapsed && (
+                  {!waveformCollapsed && (
                     <div className="flex-1 min-h-0 p-3 flex flex-col gap-2">
                       <div className="flex-1 min-h-0">
                         <Waveform
                           currentTime={currentTime}
                           duration={duration}
-                          zoomLevel={waveform.zoomLevel}
+                          zoomLevel={zoomLevel}
                           onSeek={seek}
-                          onZoomIn={waveform.zoomIn}
-                          onZoomOut={waveform.zoomOut}
+                          onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
+                          onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
                           issues={issues}
                           dialogueLines={dialogueLines}
                           isPlaying={isPlaying}
