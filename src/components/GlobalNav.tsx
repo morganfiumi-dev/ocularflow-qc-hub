@@ -8,6 +8,11 @@ import { NavLink } from './NavLink';
 import { Zap, Settings } from 'lucide-react';
 import { QCProfileManager } from './qc/QCProfileManager';
 import useQCProfileStore from '@/state/useQCProfileStore';
+import applePlusProfile from '@/qc/profiles/apple_plus.json';
+import netflixProfile from '@/qc/profiles/netflix.json';
+import amazonProfile from '@/qc/profiles/amazon.json';
+import disneyPlusProfile from '@/qc/profiles/disney_plus.json';
+import userCustomProfile from '@/qc/profiles/user_custom.json';
 
 export default function GlobalNav() {
   const [showProfileManager, setShowProfileManager] = useState(false);
@@ -15,30 +20,15 @@ export default function GlobalNav() {
 
   useEffect(() => {
     // Load QC profiles on mount
-    const loadAllProfiles = async () => {
-      try {
-        const profileFiles = [
-          'apple_plus',
-          'netflix',
-          'amazon',
-          'disney_plus',
-          'user_custom'
-        ];
-        
-        const profiles = await Promise.all(
-          profileFiles.map(async (name) => {
-            const response = await fetch(`/src/qc/profiles/${name}.json`);
-            if (!response.ok) throw new Error(`Failed to load ${name}`);
-            return response.json();
-          })
-        );
-        
-        loadProfiles(profiles);
-      } catch (error) {
-        console.error('Failed to load QC profiles:', error);
-      }
-    };
-    loadAllProfiles();
+    const profiles = [
+      applePlusProfile,
+      netflixProfile,
+      amazonProfile,
+      disneyPlusProfile,
+      userCustomProfile
+    ];
+    
+    loadProfiles(profiles);
   }, [loadProfiles]);
 
   return (
