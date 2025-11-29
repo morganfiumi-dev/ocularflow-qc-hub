@@ -155,13 +155,34 @@ export default function DubFlow() {
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
 
-  // Generate mock waveform data
+  // Calculate waveform window and bars from actual audio data
   const windowStart = Math.max(0, currentTime - 5);
   const visibleWindow = 10 / zoomLevel;
   
   const waveformBars = useMemo(() => {
+    // Use actual waveform data from backend if available
+    if (audioTrack?.waveform?.visualData) {
+      const visualData = audioTrack.waveform.visualData;
+      const totalDuration = audioTrack.waveform.duration;
+      
+      // Calculate which portion of visualData to show based on current window
+      const startIdx = Math.floor((windowStart / totalDuration) * visualData.length);
+      const endIdx = Math.ceil(((windowStart + visibleWindow) / totalDuration) * visualData.length);
+      const windowData = visualData.slice(startIdx, endIdx);
+      
+      // Resample to 150 bars for display
+      const barCount = 150;
+      const bars = [];
+      for (let i = 0; i < barCount; i++) {
+        const sourceIdx = Math.floor((i / barCount) * windowData.length);
+        bars.push(windowData[sourceIdx] || 0.1);
+      }
+      return bars;
+    }
+    
+    // Fallback to generated waveform if no data
     return generateWaveformBars(windowStart, visibleWindow, 150, false);
-  }, [windowStart, visibleWindow]);
+  }, [audioTrack, windowStart, visibleWindow]);
 
   // Audio playback - simulated with timer
   useEffect(() => {
