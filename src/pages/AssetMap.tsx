@@ -9,6 +9,7 @@ import { LayoutGrid, Network } from 'lucide-react';
 import { CardView } from '../components/assetmap/CardView';
 import { TreeView } from '../components/assetmap/TreeView';
 import { Asset } from '../components/assetmap/AssetCard';
+import { ContextPanel } from '../components/assetmap/ContextPanel';
 import { trpc } from '../lib/trpc-mock';
 
 export default function AssetMap() {
@@ -86,6 +87,9 @@ export default function AssetMap() {
           </div>
         </div>
       </div>
+
+      {/* Context Panel */}
+      <ContextPanel titleId={titleId || ''} />
 
       {/* Content Views */}
       {view === "card" ? (

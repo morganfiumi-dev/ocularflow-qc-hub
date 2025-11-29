@@ -45,6 +45,7 @@ import { trpc } from '../lib/trpc-mock';
 
 // Demo project loader
 import { isDemoAsset, getDemoVideoUrl } from '../utils/demoProjectLoader';
+import { loadContext } from '../demo/loadContextualMetadata';
 
 // Styles
 import '../styles/ocularflow.css';
@@ -60,6 +61,7 @@ export default function OcularFlow() {
     { assetId: assetId || '' },
     { enabled: !!assetId }
   );
+  
   // =========================================================================
   // STATE
   // =========================================================================
@@ -67,6 +69,9 @@ export default function OcularFlow() {
   // Layout state
   const [inspectorWidth, setInspectorWidth] = useState(420);
   const [waveformHeight, setWaveformHeight] = useState(240);
+  
+  // Contextual metadata
+  const [contextMetadata, setContextMetadata] = useState(null);
   
   // Subtitle store
   const {
@@ -160,6 +165,20 @@ export default function OcularFlow() {
       loadSubtitles();
     }
   }, [subtitleTrack, loadSubtitles]);
+  
+  // Load contextual metadata
+  useEffect(() => {
+    async function loadContextData() {
+      try {
+        const context = await loadContext();
+        setContextMetadata(context);
+      } catch (error) {
+        console.error('Failed to load context metadata:', error);
+      }
+    }
+    
+    loadContextData();
+  }, []);
   
   // =========================================================================
   // HANDLERS
@@ -345,6 +364,7 @@ export default function OcularFlow() {
         <InspectorPanel
           width={inspectorWidth}
           currentSubtitle={currentSubtitle}
+          contextMetadata={contextMetadata}
           activeTab={activeTab}
           expandedIssueId={expandedIssueId}
           showScoreBreakdown={showScoreBreakdown}
