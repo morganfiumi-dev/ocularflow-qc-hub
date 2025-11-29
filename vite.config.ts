@@ -13,18 +13,20 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force single React instance
+      // Force absolute single React instance
       'react': path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+      'react/jsx-runtime': path.resolve(__dirname, './node_modules/react/jsx-runtime'),
+      'react/jsx-dev-runtime': path.resolve(__dirname, './node_modules/react/jsx-dev-runtime'),
     },
-    dedupe: ['react', 'react-dom', '@tanstack/react-query', '@trpc/react-query'],
+    dedupe: ['react', 'react-dom', '@tanstack/react-query', '@trpc/react-query', '@trpc/client'],
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', '@trpc/react-query', '@tanstack/react-query'],
+    include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+    exclude: [],
     esbuildOptions: {
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
     },
-    force: true, // Force re-optimization on every start to clear cache
   },
   define: {
     // Ensure React is treated as a singleton
@@ -38,7 +40,7 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           // Force React into a single chunk
-          'react-vendor': ['react', 'react-dom'],
+          'react-vendor': ['react', 'react-dom', 'react/jsx-runtime'],
         },
       },
     },
