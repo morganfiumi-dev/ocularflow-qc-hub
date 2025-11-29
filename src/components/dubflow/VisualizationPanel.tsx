@@ -30,31 +30,31 @@ export function VisualizationPanel({ isOpen, selectedIssue, onClose }: Visualiza
 
   return (
     <div 
-      className={`fixed right-0 top-0 bottom-0 w-[480px] bg-slate-900/95 backdrop-blur-md border-l border-slate-700 shadow-2xl z-50 transition-transform duration-300 ease-out ${
+      className={`absolute right-0 top-0 bottom-0 w-[420px] bg-slate-900/95 backdrop-blur-md border-l border-slate-700 shadow-2xl z-50 transition-transform duration-300 ease-out ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       {/* Header */}
-      <div className="h-12 border-b border-slate-800 flex items-center justify-between px-4 bg-slate-950/60">
+      <div className="h-10 border-b border-slate-800 flex items-center justify-between px-3 bg-slate-950/60 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <Eye className="w-4 h-4 text-cyan-400" />
-          <span className="text-sm font-bold text-slate-200">Visual Analysis</span>
+          <Eye className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="text-xs font-bold text-slate-200">Visual Analysis</span>
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+          className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Content - Scrollable */}
-      <div className="h-[calc(100%-3rem)] overflow-y-auto p-4 space-y-4">
+      <div className="h-[calc(100%-2.5rem)] overflow-y-auto p-3 space-y-3">
         {/* Issue Header */}
-        <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-3">
-          <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Issue Type</div>
+        <div className="bg-slate-950/60 border border-slate-800 rounded-md p-2.5">
+          <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Issue Type</div>
           <div className="text-sm font-bold text-cyan-400">{selectedIssue.type}</div>
-          <div className="text-xs text-slate-600 mt-1">@ {selectedIssue.timeSeconds.toFixed(2)}s</div>
+          <div className="text-[10px] text-slate-600 mt-0.5">@ {selectedIssue.timeSeconds.toFixed(2)}s</div>
         </div>
 
         {/* Bipolar Divergence Graph - Emotional Disconnect */}
@@ -429,12 +429,12 @@ function VisualizationCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-3 animate-fade-in">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="bg-slate-900/60 border border-slate-800 rounded-md p-2.5 animate-fade-in">
+      <div className="flex items-center gap-2 mb-2">
         <div className="text-cyan-400">{icon}</div>
         <div className="flex-1">
-          <div className="text-xs font-bold text-slate-200">{title}</div>
-          <div className="text-[10px] text-slate-600">{subtitle}</div>
+          <div className="text-[11px] font-bold text-slate-200">{title}</div>
+          <div className="text-[9px] text-slate-500">{subtitle}</div>
         </div>
       </div>
       {children}

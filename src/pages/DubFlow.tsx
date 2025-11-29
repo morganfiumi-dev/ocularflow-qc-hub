@@ -321,12 +321,12 @@ export default function DubFlow() {
       <div className="flex-1 p-4 overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="h-full gap-4">
           {/* LEFT: Vertically expandable Tools (Not horizontally draggable) */}
-          <div className="w-16 flex-shrink-0">
+          <div className="w-14 flex-shrink-0">
             <ToolsSidebar />
           </div>
 
           {/* CENTER: Waveform-First Layout with Collapsible Sections */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 relative">
             <ResizablePanelGroup direction="vertical" className="h-full">
               {/* Waveform Section - Collapsible */}
               <ResizablePanel 
@@ -434,12 +434,19 @@ export default function DubFlow() {
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>
+            
+            {/* Visualization Panel - Overlays from right edge of center panel */}
+            <VisualizationPanel
+              isOpen={visualizationOpen}
+              selectedIssue={visualizationIssue}
+              onClose={() => setVisualizationOpen(false)}
+            />
           </div>
 
-          <ResizableHandle withHandle className="w-1" />
+          <ResizableHandle withHandle />
 
           {/* RIGHT: Tabbed Inspector */}
-          <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
+          <ResizablePanel defaultSize={22} minSize={18} maxSize={35}>
             <TabbedInspector
               issues={issues}
               dialogueLines={dialogueLinesWithScores}
@@ -456,13 +463,6 @@ export default function DubFlow() {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
-      
-      {/* Visualization Panel - Overlays from right */}
-      <VisualizationPanel
-        isOpen={visualizationOpen}
-        selectedIssue={visualizationIssue}
-        onClose={() => setVisualizationOpen(false)}
-      />
     </div>
   );
 }
