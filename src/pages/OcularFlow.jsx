@@ -41,7 +41,7 @@ import { useHotkeys } from '../hooks/useHotkeys';
 import { useVideoSync } from '../hooks/useVideoSync';
 
 // tRPC
-import { trpc } from '../lib/trpc';
+import { trpc } from '../lib/trpc-mock';
 
 // Styles
 import '../styles/ocularflow.css';
