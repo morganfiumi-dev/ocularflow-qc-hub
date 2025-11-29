@@ -30,22 +30,26 @@ export default function DubFlow() {
     { enabled: !!assetId }
   );
   
-  // Map backend issues to component format with categories
+  // Map backend issues to component format with QC Profile categories
   const issues = audioTrack?.issues.map(issue => {
-    // Auto-assign category based on issue type
-    let category = 'technical';
+    // Map issue type to QC profile category and check
     const issueType = issue.type.toLowerCase().replace(/\s+/g, '_');
     
-    if (['sync_drift', 'duration_mismatch', 'early_entry', 'late_cutoff', 'timing_offset'].includes(issueType)) {
-      category = 'timing';
-    } else if (['missing_words', 'added_words', 'repetition', 'tone_mismatch', 'prosody_issue', 'pitch_mismatch'].includes(issueType)) {
-      category = 'dialogue';
-    } else if (issueType.includes('speaker') || issueType.includes('mouth')) {
-      category = 'speaker';
-    } else if (issueType.includes('synthetic') || issueType.includes('ai') || issueType.includes('artifacts')) {
-      category = 'synthetic';
-    } else if (issueType.includes('translation')) {
-      category = 'translation';
+    // Determine category based on actual QC profile structure
+    let categoryId = 'audio_deficiency'; // default
+    let checkId = issueType;
+    
+    // Map to actual QC profile categories
+    if (['sync_drift', 'early_entry', 'late_entry', 'late_cutoff', 'duration_mismatch', 'pacing_cps'].includes(issueType)) {
+      categoryId = 'timing_sync';
+    } else if (['missing_words', 'added_words', 'repetition_stutter', 'tone_mismatch', 'prosody_issues', 'pitch_gender_mismatch', 'pronunciation_incorrect'].includes(issueType)) {
+      categoryId = 'dialogue_integrity';
+    } else if (['channel_missing_l', 'channel_missing_r', 'channel_missing_c', 'channel_missing_lfe', 'channel_sound_absent', 'channel_label_incorrect', 'audio_video_mismatch_stereo', 'audio_video_mismatch_surround'].includes(issueType)) {
+      categoryId = 'channel_integrity';
+    } else if (['ai_voice_detection', 'over_smoothing', 'accent_anomalies', 'synthetic_artifacts'].includes(issueType)) {
+      categoryId = 'synthetic_voice';
+    } else if (['literal_translation', 'wrong_domain_term', 'formality_issues', 'incorrect_region_subtag', 'incorrect_language_tag', 'incorrect_translation'].includes(issueType)) {
+      categoryId = 'translation';
     }
 
     return {
@@ -55,7 +59,8 @@ export default function DubFlow() {
       type: issue.type,
       severity: issue.severity as 'error' | 'warning' | 'info',
       description: issue.description,
-      category,
+      categoryId,
+      checkId,
     };
   }) || [];
 
@@ -103,12 +108,12 @@ export default function DubFlow() {
     },
   ];
 
-  // Calculate clip scores using QC profile
+  // Calculate clip scores using QC profile with properly linked issues
   const clipScores = langConfig ? dialogueLines.map(line => {
     const clipIssues = line.issues.map(issue => ({
-      id: issue.id,
-      categoryId: issue.category,
-      checkId: issue.type.toLowerCase().replace(/\s+/g, '_'),
+      id: String(issue.id),
+      categoryId: issue.categoryId,
+      checkId: issue.checkId,
       time: issue.timeSeconds,
       severity: issue.severity.toUpperCase() as 'ERROR' | 'WARNING' | 'INFO',
       description: issue.description
