@@ -3,130 +3,87 @@
  * Manages video playback, timing, and transport controls
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { create } from 'zustand';
 
 /**
- * Initial video state
+ * Video state using Zustand
  */
-const createInitialState = () => ({
+const useVideoState = create((set, get) => ({
+  // State
   isPlaying: false,
   currentTime: 0,
   duration: 0,
   playbackRate: 1,
   volume: 0.75,
-  muted: false
-});
-
-/**
- * Video state hook
- * @param {Function} onTimeUpdate - Callback when time updates
- * @returns {Object} Video state API
- */
-export function useVideoState(onTimeUpdate = null) {
-  const [state, setState] = useState(createInitialState);
-  
-  // Notify time updates
-  useEffect(() => {
-    if (onTimeUpdate) {
-      onTimeUpdate(state.currentTime);
-    }
-  }, [state.currentTime, onTimeUpdate]);
+  muted: false,
   
   // Toggle play/pause
-  const togglePlayback = useCallback(() => {
-    setState(s => ({ ...s, isPlaying: !s.isPlaying }));
-  }, []);
+  togglePlayback: () => {
+    set((state) => ({ isPlaying: !state.isPlaying }));
+  },
   
   // Play
-  const play = useCallback(() => {
-    setState(s => ({ ...s, isPlaying: true }));
-  }, []);
+  play: () => {
+    set({ isPlaying: true });
+  },
   
   // Pause
-  const pause = useCallback(() => {
-    setState(s => ({ ...s, isPlaying: false }));
-  }, []);
+  pause: () => {
+    set({ isPlaying: false });
+  },
   
   // Seek to time
-  const seek = useCallback((time) => {
-    setState(s => ({
-      ...s,
-      currentTime: Math.max(0, Math.min(s.duration, time))
-    }));
-  }, []);
+  seek: (time) => {
+    const { duration } = get();
+    set({ currentTime: Math.max(0, Math.min(duration, time)) });
+  },
   
   // Seek relative (delta in seconds)
-  const seekRelative = useCallback((delta) => {
-    setState(s => ({
-      ...s,
-      currentTime: Math.max(0, Math.min(s.duration, s.currentTime + delta))
-    }));
-  }, []);
+  seekRelative: (delta) => {
+    const { currentTime, duration } = get();
+    set({ currentTime: Math.max(0, Math.min(duration, currentTime + delta)) });
+  },
   
   // Skip forward (5 seconds)
-  const skipForward = useCallback(() => {
-    seekRelative(5);
-  }, [seekRelative]);
+  skipForward: () => {
+    get().seekRelative(5);
+  },
   
   // Skip backward (5 seconds)
-  const skipBackward = useCallback(() => {
-    seekRelative(-5);
-  }, [seekRelative]);
+  skipBackward: () => {
+    get().seekRelative(-5);
+  },
   
   // Frame forward
-  const frameForward = useCallback(() => {
-    seekRelative(1/24); // 1 frame at 24fps
-  }, [seekRelative]);
+  frameForward: () => {
+    get().seekRelative(1/24); // 1 frame at 24fps
+  },
   
   // Frame backward
-  const frameBackward = useCallback(() => {
-    seekRelative(-1/24);
-  }, [seekRelative]);
+  frameBackward: () => {
+    get().seekRelative(-1/24);
+  },
   
   // Set playback rate
-  const setPlaybackRate = useCallback((rate) => {
-    setState(s => ({ ...s, playbackRate: rate }));
-  }, []);
+  setPlaybackRate: (rate) => {
+    set({ playbackRate: rate });
+  },
   
   // Set volume
-  const setVolume = useCallback((volume) => {
-    setState(s => ({ ...s, volume: Math.max(0, Math.min(1, volume)) }));
-  }, []);
+  setVolume: (volume) => {
+    set({ volume: Math.max(0, Math.min(1, volume)) });
+  },
   
   // Toggle mute
-  const toggleMute = useCallback(() => {
-    setState(s => ({ ...s, muted: !s.muted }));
-  }, []);
+  toggleMute: () => {
+    set((state) => ({ muted: !state.muted }));
+  },
   
   // Set duration
-  const setDuration = useCallback((duration) => {
-    setState(s => ({ ...s, duration }));
-  }, []);
-  
-  return {
-    // State
-    isPlaying: state.isPlaying,
-    currentTime: state.currentTime,
-    duration: state.duration,
-    playbackRate: state.playbackRate,
-    volume: state.volume,
-    muted: state.muted,
-    
-    // Actions
-    togglePlayback,
-    play,
-    pause,
-    seek,
-    seekRelative,
-    skipForward,
-    skipBackward,
-    frameForward,
-    frameBackward,
-    setPlaybackRate,
-    setVolume,
-    toggleMute,
-    setDuration
-  };
-}
+  setDuration: (duration) => {
+    set({ duration });
+  }
+}));
 
 export default useVideoState;
+export { useVideoState };

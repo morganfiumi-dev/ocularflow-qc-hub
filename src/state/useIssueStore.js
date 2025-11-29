@@ -3,20 +3,7 @@
  * Manages inspector panel state and issue interactions
  */
 
-import { useState, useCallback } from 'react';
-
-/**
- * Initial issue/inspector state
- */
-const createInitialState = () => ({
-  activeTab: 'ANALYSIS', // ANALYSIS, QUEUE, KNP
-  expandedIssueId: null,
-  showScoreBreakdown: false,
-  showAnnotations: {
-    source: false,
-    target: false
-  }
-});
+import { create } from 'zustand';
 
 /**
  * KNP (Key Names & Places) glossary data
@@ -33,85 +20,79 @@ export const KNP_GLOSSARY = [
 ];
 
 /**
- * Issue store hook
- * @returns {Object} Issue store API
+ * Issue store using Zustand
  */
-export function useIssueStore() {
-  const [state, setState] = useState(createInitialState);
+const useIssueStore = create((set, get) => ({
+  // State
+  activeTab: 'ANALYSIS', // ANALYSIS, QUEUE, KNP
+  expandedIssueId: null,
+  showScoreBreakdown: false,
+  showAnnotations: {
+    source: false,
+    target: false
+  },
+  knpGlossary: KNP_GLOSSARY,
   
   // Set active tab
-  const setActiveTab = useCallback((tab) => {
-    setState(s => ({ ...s, activeTab: tab }));
-  }, []);
+  setActiveTab: (tab) => {
+    set({ activeTab: tab });
+  },
   
   // Toggle issue expansion
-  const toggleIssue = useCallback((issueId) => {
-    setState(s => ({
-      ...s,
-      expandedIssueId: s.expandedIssueId === issueId ? null : issueId
+  toggleIssue: (issueId) => {
+    set((state) => ({
+      expandedIssueId: state.expandedIssueId === issueId ? null : issueId
     }));
-  }, []);
+  },
   
   // Expand issue
-  const expandIssue = useCallback((issueId) => {
-    setState(s => ({ ...s, expandedIssueId: issueId }));
-  }, []);
+  expandIssue: (issueId) => {
+    set({ expandedIssueId: issueId });
+  },
   
   // Collapse issue
-  const collapseIssue = useCallback(() => {
-    setState(s => ({ ...s, expandedIssueId: null }));
-  }, []);
+  collapseIssue: () => {
+    set({ expandedIssueId: null });
+  },
   
   // Toggle score breakdown
-  const toggleScoreBreakdown = useCallback(() => {
-    setState(s => ({ ...s, showScoreBreakdown: !s.showScoreBreakdown }));
-  }, []);
+  toggleScoreBreakdown: () => {
+    set((state) => ({ showScoreBreakdown: !state.showScoreBreakdown }));
+  },
   
   // Toggle source annotations
-  const toggleSourceAnnotations = useCallback(() => {
-    setState(s => ({
-      ...s,
+  toggleSourceAnnotations: () => {
+    set((state) => ({
       showAnnotations: {
-        ...s.showAnnotations,
-        source: !s.showAnnotations.source
+        ...state.showAnnotations,
+        source: !state.showAnnotations.source
       }
     }));
-  }, []);
+  },
   
   // Toggle target annotations
-  const toggleTargetAnnotations = useCallback(() => {
-    setState(s => ({
-      ...s,
+  toggleTargetAnnotations: () => {
+    set((state) => ({
       showAnnotations: {
-        ...s.showAnnotations,
-        target: !s.showAnnotations.target
+        ...state.showAnnotations,
+        target: !state.showAnnotations.target
       }
     }));
-  }, []);
+  },
   
   // Reset state
-  const reset = useCallback(() => {
-    setState(createInitialState());
-  }, []);
-  
-  return {
-    // State
-    activeTab: state.activeTab,
-    expandedIssueId: state.expandedIssueId,
-    showScoreBreakdown: state.showScoreBreakdown,
-    showAnnotations: state.showAnnotations,
-    knpGlossary: KNP_GLOSSARY,
-    
-    // Actions
-    setActiveTab,
-    toggleIssue,
-    expandIssue,
-    collapseIssue,
-    toggleScoreBreakdown,
-    toggleSourceAnnotations,
-    toggleTargetAnnotations,
-    reset
-  };
-}
+  reset: () => {
+    set({
+      activeTab: 'ANALYSIS',
+      expandedIssueId: null,
+      showScoreBreakdown: false,
+      showAnnotations: {
+        source: false,
+        target: false
+      }
+    });
+  }
+}));
 
 export default useIssueStore;
+export { useIssueStore };
