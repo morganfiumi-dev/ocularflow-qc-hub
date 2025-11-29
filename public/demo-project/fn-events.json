@@ -1,0 +1,19 @@
+{
+  "forcedNarrativeEvents": [
+    {
+      "timecode": "00:00:03.500",
+      "type": "SOUND_EFFECT",
+      "text": "[SWORD CLANGING]"
+    },
+    {
+      "timecode": "00:00:12.000",
+      "type": "SOUND_EFFECT",
+      "text": "[DISTANT THUNDER]"
+    },
+    {
+      "timecode": "00:00:28.500",
+      "type": "MUSIC",
+      "text": "[DRAMATIC ORCHESTRAL MUSIC]"
+    }
+  ]
+}
