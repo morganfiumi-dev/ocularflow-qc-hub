@@ -19,7 +19,7 @@
  * └─────────────────────────────────────────────┴───────────────────┘
  */
 
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { Zap, ArrowRight, PlayCircle, HelpCircle, Settings } from 'lucide-react';
 
@@ -73,7 +73,7 @@ export default function OcularFlow() {
   // Contextual metadata
   const [contextMetadata, setContextMetadata] = useState(null);
   
-  // Subtitle store
+  // Subtitle store - get state and actions
   const subtitles = useSubtitleStore((state) => state.subtitles);
   const currentIndex = useSubtitleStore((state) => state.currentIndex);
   const filter = useSubtitleStore((state) => state.filter);
@@ -85,11 +85,50 @@ export default function OcularFlow() {
   const updateText = useSubtitleStore((state) => state.updateText);
   const setFilter = useSubtitleStore((state) => state.setFilter);
   
-  // Computed values
-  const currentSubtitle = useSubtitleStore((state) => state.getCurrentSubtitle());
-  const filteredSubtitles = useSubtitleStore((state) => state.getFilteredSubtitles());
-  const reviewQueue = useSubtitleStore((state) => state.getReviewQueue());
-  const stats = useSubtitleStore((state) => state.getStats());
+  // Compute derived values using useMemo
+  const currentSubtitle = useMemo(() => {
+    return subtitles.find(s => s.index === currentIndex) || null;
+  }, [subtitles, currentIndex]);
+  
+  const filteredSubtitles = useMemo(() => {
+    switch (filter) {
+      case 'ERRORS':
+        return subtitles.filter(s => s.issues?.some(i => i.severity === 'error'));
+      case 'WARNINGS':
+        return subtitles.filter(s => 
+          s.issues?.some(i => i.severity === 'warning') && 
+          !s.issues?.some(i => i.severity === 'error')
+        );
+      case 'CLEAN':
+        return subtitles.filter(s => !s.issues || s.issues.length === 0);
+      default:
+        return subtitles;
+    }
+  }, [subtitles, filter]);
+  
+  const reviewQueue = useMemo(() => {
+    return subtitles
+      .filter(s => s.issues && s.issues.length > 0)
+      .sort((a, b) => {
+        const aHasError = a.issues.some(i => i.severity === 'error');
+        const bHasError = b.issues.some(i => i.severity === 'error');
+        if (aHasError && !bHasError) return -1;
+        if (!aHasError && bHasError) return 1;
+        return 0;
+      });
+  }, [subtitles]);
+  
+  const stats = useMemo(() => {
+    const total = subtitles.length;
+    const withErrors = subtitles.filter(s => s.issues?.some(i => i.severity === 'error')).length;
+    const withWarnings = subtitles.filter(s => 
+      s.issues?.some(i => i.severity === 'warning') && 
+      !s.issues?.some(i => i.severity === 'error')
+    ).length;
+    const clean = subtitles.filter(s => !s.issues || s.issues.length === 0).length;
+    
+    return { total, withErrors, withWarnings, clean };
+  }, [subtitles]);
   
   // Video state
   const isPlaying = useVideoState((state) => state.isPlaying);
