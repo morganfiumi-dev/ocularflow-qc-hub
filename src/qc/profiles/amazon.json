@@ -1,0 +1,21 @@
+{
+  "id": "amazon",
+  "client": "Amazon",
+  "products": {
+    "dubbed_audio": {
+      "languages": {
+        "en": {
+          "checks": {
+            "audio_deficiency": {
+              "enabled": true,
+              "checks": {
+                "audio_dropout": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15 },
+                "clipping": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

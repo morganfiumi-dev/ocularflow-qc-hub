@@ -1,0 +1,36 @@
+{
+  "id": "netflix",
+  "client": "Netflix",
+  "products": {
+    "dubbed_audio": {
+      "languages": {
+        "en": {
+          "checks": {
+            "audio_deficiency": {
+              "enabled": true,
+              "checks": {
+                "audio_dropout": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 18 },
+                "clipping": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15, "threshold": -0.05 },
+                "distortion": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15 }
+              }
+            },
+            "dialogue_integrity": {
+              "enabled": true,
+              "checks": {
+                "missing_words": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 18 },
+                "tone_mismatch": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12 }
+              }
+            }
+          },
+          "scoring": {
+            "severityMultipliers": {
+              "ERROR": 1.2,
+              "WARNING": 0.6,
+              "INFO": 0.15
+            }
+          }
+        }
+      }
+    }
+  }
+}

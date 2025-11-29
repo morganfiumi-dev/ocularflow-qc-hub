@@ -12,10 +12,17 @@ import { DialogueEditor } from '../components/dubflow/DialogueEditor';
 import { AudioInspector } from '../components/dubflow/AudioInspector';
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
+import useQCProfileStore from '../state/useQCProfileStore';
+import { calculateClipScore, calculateAssetScore, getScoreColor } from '../utils/qcScoring';
 
 export default function DubFlow() {
   const { assetId } = useParams<{ assetId: string }>();
   const navigate = useNavigate();
+  
+  // QC Profile integration
+  const { currentProfile, currentLanguageConfig } = useQCProfileStore();
+  const profile = currentProfile();
+  const langConfig = currentLanguageConfig();
   
   // Fetch audio track from tRPC backend
   const { data: audioTrack, isLoading } = trpc.media.getAudioTrack.useQuery(
@@ -95,6 +102,22 @@ export default function DubFlow() {
       issues: []
     },
   ];
+
+  // Calculate clip scores using QC profile
+  const clipScores = langConfig ? dialogueLines.map(line => {
+    const clipIssues = line.issues.map(issue => ({
+      id: issue.id,
+      categoryId: issue.category,
+      checkId: issue.type.toLowerCase().replace(/\s+/g, '_'),
+      time: issue.timeSeconds,
+      severity: issue.severity.toUpperCase() as 'ERROR' | 'WARNING' | 'INFO',
+      description: issue.description
+    }));
+    return calculateClipScore(clipIssues, langConfig);
+  }) : [];
+
+  // Calculate overall asset score
+  const assetScore = calculateAssetScore(clipScores);
 
   const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
 
@@ -218,11 +241,17 @@ export default function DubFlow() {
         </div>
 
         <div className="flex items-center gap-2">
-          <select className="px-2 py-1 text-[10px] font-bold bg-slate-800 border border-slate-700 text-slate-300 rounded uppercase">
-            <option>Audio Standard</option>
-            <option>Netflix Audio</option>
-            <option>Amazon Audio</option>
-          </select>
+          {profile && (
+            <div className="px-3 py-1.5 text-xs font-semibold bg-slate-800/60 border border-slate-700 text-slate-300 rounded-lg">
+              {profile.client}
+            </div>
+          )}
+          
+          {langConfig && (
+            <div className={`px-3 py-1.5 text-xs font-bold rounded-lg ${getScoreColor(assetScore)} bg-slate-800/60 border border-slate-700`}>
+              Score: {assetScore.toFixed(1)}
+            </div>
+          )}
           
           <Button variant="primary" icon={PlayCircle} size="sm">
             RUN QC
