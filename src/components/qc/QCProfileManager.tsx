@@ -6,8 +6,69 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Settings, Copy, X, ChevronRight, Check } from 'lucide-react';
+import { Settings, Copy, X, ChevronRight, Check, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Check descriptions from ScoreBreakdown
+const CHECK_DESCRIPTIONS: Record<string, string> = {
+  // Audio Deficiency
+  audio_dropout: 'Complete loss of audio signal',
+  clipping: 'Audio peaks exceed 0dB causing distortion',
+  distortion: 'Audio signal degradation or artifacts',
+  duration_mismatch: 'Audio length differs from expected duration',
+  levels_shift: 'Inconsistent volume levels between segments',
+  levels_too_low: 'Audio volume below recommended standards',
+  phase_cancellation: 'Stereo channels canceling each other out',
+  pop: 'Sharp clicking sound in audio',
+  hit: 'Sudden impact or thud in audio',
+  tick: 'Small clicking artifacts',
+  static: 'Background noise or interference',
+  production_error: 'Technical error during production',
+  invalid_audio_mix: 'Incorrect channel configuration',
+  truncated_audio: 'Audio cut off prematurely',
+  missing_component: 'Required audio element missing',
+  misc_audio_issue: 'Other audio quality issues',
+  
+  // Channel Integrity
+  channel_missing_l: 'Left channel has no audio',
+  channel_missing_r: 'Right channel has no audio',
+  channel_missing_c: 'Center channel has no audio',
+  channel_missing_lfe: 'Low frequency effects channel missing',
+  channel_sound_absent: 'Expected audio missing from channel',
+  channel_label_incorrect: 'Channel metadata incorrectly labeled',
+  audio_video_mismatch_stereo: 'Stereo audio doesn\'t match video',
+  audio_video_mismatch_surround: 'Surround audio doesn\'t match video',
+  
+  // Timing & Sync
+  sync_drift: 'Audio gradually goes out of sync with video',
+  early_entry: 'Dialogue starts before character speaks',
+  late_entry: 'Dialogue starts after character speaks',
+  late_cutoff: 'Dialogue ends after character stops speaking',
+  pacing_cps: 'Speaking pace too fast (characters per second)',
+  
+  // Dialogue Integrity
+  missing_words: 'Expected words not present in dialogue',
+  added_words: 'Extra words not in original script',
+  repetition_stutter: 'Unintentional word repetition',
+  tone_mismatch: 'Voice tone doesn\'t match scene emotion',
+  prosody_issues: 'Unnatural speech rhythm or intonation',
+  pitch_gender_mismatch: 'Voice pitch doesn\'t match character',
+  pronunciation_incorrect: 'Words pronounced incorrectly',
+  
+  // Synthetic Voice
+  ai_voice_detection: 'Voice identified as AI-generated',
+  over_smoothing: 'Overly processed, unnatural smoothness',
+  accent_anomalies: 'Inconsistent or unnatural accent',
+  synthetic_artifacts: 'Digital artifacts from voice synthesis',
+  
+  // Translation
+  literal_translation: 'Word-for-word translation lacking context',
+  wrong_domain_term: 'Incorrect technical or specialized term',
+  formality_issues: 'Incorrect level of formality for context',
+  incorrect_region_subtag: 'Wrong regional language variant',
+  incorrect_language_tag: 'Wrong language code metadata',
+  incorrect_translation: 'Translation doesn\'t convey original meaning'
+};
 
 interface QCProfileManagerProps {
   onClose: () => void;
@@ -239,7 +300,7 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
                         value={categoryId}
                         className="border border-[#334155]/50 rounded overflow-hidden bg-[#0f172a]"
                       >
-                        <AccordionTrigger className="h-10 px-4 bg-[#1e293b]/30 hover:bg-[#1e293b]/50 border-b border-[#334155]/30 transition-all [&[data-state=open]]:bg-[#1e293b]/70">
+                        <AccordionTrigger className="h-10 px-4 bg-[#1e293b]/30 hover:bg-[#1e293b]/50 border-b border-[#334155]/30 transition-colors [&[data-state=open]]:bg-[#1e293b]/70 data-[state=open]:border-b-0">
                           <span className="text-xs font-bold text-[#f1f5f9] uppercase tracking-wide">
                             {categoryId.replace(/_/g, ' ')}
                           </span>
@@ -248,73 +309,91 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
                           <div className="divide-y divide-[#334155]/20">
                             {Object.entries(category.checks).map(([checkId, check]) => {
                               const qcCheck = check as QCCheck;
+                              const description = CHECK_DESCRIPTIONS[checkId] || 'Quality check';
                               return (
                                 <div
                                   key={checkId}
-                                  className="px-4 py-3 flex items-center gap-3 bg-[#020617]/50 hover:bg-[#020617] transition-colors"
+                                  className="px-4 py-3 bg-[#020617]/50 hover:bg-[#020617] transition-colors"
                                 >
-                                  <Switch
-                                    checked={qcCheck.enabled}
-                                    onCheckedChange={(enabled) => {
-                                      if (enabled) {
-                                        enableCheck(categoryId, checkId);
-                                      } else {
-                                        disableCheck(categoryId, checkId);
-                                      }
-                                    }}
-                                    className="data-[state=checked]:bg-[#06b6d4]"
-                                  />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="text-[11px] font-semibold text-[#f1f5f9]">
-                                      {checkId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                                    </div>
-                                    <div className="text-[9px] text-[#64748b] font-mono mt-0.5">
-                                      {qcCheck.severity} • W:{qcCheck.weight} • P:{qcCheck.penalty}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Select
-                                      value={qcCheck.severity}
-                                      onValueChange={(value) =>
-                                        setSeverity(categoryId, checkId, value as 'ERROR' | 'WARNING' | 'INFO')
-                                      }
-                                    >
-                                      <SelectTrigger className="h-7 w-20 text-[10px] bg-[#1e293b] border-[#334155]">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-[#0f172a] border-[#334155]">
-                                        <SelectItem value="ERROR" className="text-[#ef4444] text-[10px]">
-                                          ERROR
-                                        </SelectItem>
-                                        <SelectItem value="WARNING" className="text-[#f59e0b] text-[10px]">
-                                          WARNING
-                                        </SelectItem>
-                                        <SelectItem value="INFO" className="text-[#06b6d4] text-[10px]">
-                                          INFO
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <Input
-                                      type="number"
-                                      value={qcCheck.weight}
-                                      onChange={(e) =>
-                                        setWeight(categoryId, checkId, parseFloat(e.target.value) || 0)
-                                      }
-                                      step="0.1"
-                                      min="0"
-                                      max="1"
-                                      className="w-14 h-7 text-[10px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9]"
+                                  <div className="flex items-start gap-3">
+                                    <Switch
+                                      checked={qcCheck.enabled}
+                                      onCheckedChange={(enabled) => {
+                                        if (enabled) {
+                                          enableCheck(categoryId, checkId);
+                                        } else {
+                                          disableCheck(categoryId, checkId);
+                                        }
+                                      }}
+                                      className="data-[state=checked]:bg-[#06b6d4] mt-0.5 shrink-0"
                                     />
-                                    <Input
-                                      type="number"
-                                      value={qcCheck.penalty}
-                                      onChange={(e) =>
-                                        setPenalty(categoryId, checkId, parseFloat(e.target.value) || 0)
-                                      }
-                                      step="1"
-                                      min="0"
-                                      className="w-14 h-7 text-[10px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9]"
-                                    />
+                                    <div className="flex-1 min-w-0 space-y-2">
+                                      <div>
+                                        <div className="text-[11px] font-semibold text-[#f1f5f9]">
+                                          {checkId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                                        </div>
+                                        <div className="text-[9px] text-[#64748b] leading-relaxed mt-0.5">
+                                          {description}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-[8px] text-[#64748b] uppercase tracking-wide">Severity</span>
+                                          <Select
+                                            value={qcCheck.severity}
+                                            onValueChange={(value) =>
+                                              setSeverity(categoryId, checkId, value as 'ERROR' | 'WARNING' | 'INFO')
+                                            }
+                                          >
+                                            <SelectTrigger className="h-6 w-20 text-[9px] bg-[#1e293b] border-[#334155]">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-[#0f172a] border-[#334155]">
+                                              <SelectItem value="ERROR" className="text-[#ef4444] text-[9px]">
+                                                ERROR
+                                              </SelectItem>
+                                              <SelectItem value="WARNING" className="text-[#f59e0b] text-[9px]">
+                                                WARNING
+                                              </SelectItem>
+                                              <SelectItem value="INFO" className="text-[#06b6d4] text-[9px]">
+                                                INFO
+                                              </SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-[8px] text-[#64748b] uppercase tracking-wide" title="Importance factor (0-1). Higher = more impactful on score">
+                                            Weight
+                                          </span>
+                                          <Input
+                                            type="number"
+                                            value={qcCheck.weight}
+                                            onChange={(e) =>
+                                              setWeight(categoryId, checkId, parseFloat(e.target.value) || 0)
+                                            }
+                                            step="0.1"
+                                            min="0"
+                                            max="1"
+                                            className="w-14 h-6 text-[9px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9] px-2"
+                                          />
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-[8px] text-[#64748b] uppercase tracking-wide" title="Base points deducted. Multiplied by weight and severity">
+                                            Penalty
+                                          </span>
+                                          <Input
+                                            type="number"
+                                            value={qcCheck.penalty}
+                                            onChange={(e) =>
+                                              setPenalty(categoryId, checkId, parseFloat(e.target.value) || 0)
+                                            }
+                                            step="1"
+                                            min="0"
+                                            className="w-14 h-6 text-[9px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9] px-2"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               );
@@ -335,7 +414,7 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
                     
                     <div className="bg-[#0f172a] border border-[#334155] rounded p-4 space-y-4">
                       {/* Formula Display */}
-                      <div className="bg-[#020617] border border-[#334155]/50 rounded p-4">
+                      <div className="bg-[#020617] border border-[#334155]/50 rounded p-4 space-y-3">
                         <pre className="font-mono text-xs text-center">
                           <span className="text-[#f1f5f9]">clipScore</span>{' '}
                           <span className="text-[#64748b]">=</span>{' '}
@@ -346,6 +425,12 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
                           <span className="text-[#94a3b8]">weight × severity × penalty</span>
                           <span className="text-[#64748b]">)</span>
                         </pre>
+                        <div className="flex items-start gap-2 text-[9px] text-[#64748b] leading-relaxed">
+                          <Info className="w-3 h-3 mt-0.5 shrink-0" />
+                          <div>
+                            All clips start at 100 points. Each issue deducts points based on: <span className="text-[#06b6d4]">Weight</span> (importance 0-1) × <span className="text-[#f59e0b]">Severity multiplier</span> × <span className="text-[#ef4444]">Base penalty</span>. Categories can have priority multipliers.
+                          </div>
+                        </div>
                       </div>
 
                       {/* Multipliers */}
