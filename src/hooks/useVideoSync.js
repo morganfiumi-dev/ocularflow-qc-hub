@@ -3,7 +3,7 @@
  * Synchronizes video playback with subtitle selection
  */
 
-import { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef } from 'react';
 
 /**
  * Video sync hook

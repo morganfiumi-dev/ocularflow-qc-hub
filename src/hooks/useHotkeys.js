@@ -3,7 +3,7 @@
  * Keyboard shortcut management
  */
 
-import { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 
 /**
  * Default hotkey mappings
