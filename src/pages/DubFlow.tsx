@@ -8,9 +8,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Zap, PlayCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 import { ToolsSidebar } from '../components/dubflow/ToolsSidebar';
-import { Waveform } from '../components/dubflow/Waveform';
+import { WaveformPanel } from '../components/waveform/WaveformPanel';
 import { DialogueHighlightStrip } from '../components/dubflow/DialogueHighlightStrip';
-import { TimelineMinimap } from '../components/dubflow/TimelineMinimap';
 import { TabbedInspector } from '../components/dubflow/TabbedInspector';
 import { VisualizationPanel } from '../components/dubflow/VisualizationPanel';
 import { AudioPlaybackControls } from '../components/dubflow/AudioPlaybackControls';
@@ -155,7 +154,6 @@ export default function DubFlow() {
   
   // Collapsible sections
   const [dialogueCollapsed, setDialogueCollapsed] = useState(false);
-  const [minimapExpanded, setMinimapExpanded] = useState(true);
 
   // Inspector state
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
@@ -165,33 +163,63 @@ export default function DubFlow() {
   const [visualizationOpen, setVisualizationOpen] = useState(false);
   const [visualizationIssue, setVisualizationIssue] = useState<typeof issues[0] | null>(null);
 
-  // Playback simulation with interval
+  // Audio playback with actual audio element
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const playbackInterval = useRef<number | null>(null);
 
   useEffect(() => {
-    if (isPlaying) {
-      playbackInterval.current = window.setInterval(() => {
-        setCurrentTime(prev => {
-          if (prev >= duration) {
-            setIsPlaying(false);
-            return duration;
-          }
-          return prev + 0.1;
-        });
-      }, 100);
-    } else {
-      if (playbackInterval.current) {
-        clearInterval(playbackInterval.current);
-        playbackInterval.current = null;
+    // Create audio element
+    const audio = new Audio('/demo-project/audio.mp3'); // Demo audio
+    audio.volume = volume;
+    audio.muted = muted;
+    audio.playbackRate = playbackRate;
+    audioRef.current = audio;
+
+    // Update time from audio element
+    const updateTime = () => {
+      setCurrentTime(audio.currentTime);
+    };
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', () => {
+      // Use audio duration if available, otherwise use backend duration
+      if (audio.duration) {
+        // Keep using backend duration as it's more accurate
       }
-    }
+    });
 
     return () => {
-      if (playbackInterval.current) {
-        clearInterval(playbackInterval.current);
-      }
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.pause();
+      audio.src = '';
     };
-  }, [isPlaying, duration]);
+  }, []);
+
+  // Handle play/pause
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play().catch(err => console.error('Audio play error:', err));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying]);
+
+  // Handle volume/mute/rate changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+      audioRef.current.muted = muted;
+      audioRef.current.playbackRate = playbackRate;
+    }
+  }, [volume, muted, playbackRate]);
+
+  // Handle seeking
+  useEffect(() => {
+    if (audioRef.current && Math.abs(audioRef.current.currentTime - currentTime) > 0.5) {
+      audioRef.current.currentTime = currentTime;
+    }
+  }, [currentTime]);
 
   // Playback control handlers
   const togglePlayback = () => setIsPlaying(!isPlaying);
@@ -328,75 +356,46 @@ export default function DubFlow() {
           {/* CENTER: Waveform-First Layout with Collapsible Sections */}
           <div className="flex-1 min-w-0 relative">
             <ResizablePanelGroup direction="vertical" className="h-full">
-              {/* Waveform Section - Collapsible */}
+              {/* Waveform Section - Uses OcularFlow WaveformPanel */}
               <ResizablePanel 
                 defaultSize={waveformCollapsed ? 5 : 50} 
                 minSize={waveformCollapsed ? 3 : 25}
                 maxSize={70}
                 collapsible
               >
-                <div className="h-full flex flex-col bg-slate-900/40 border border-slate-800 rounded-lg overflow-hidden">
-                  {/* Collapse Header */}
-                  <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900/60 border-b border-slate-800 flex-shrink-0">
-                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                      {waveformCollapsed ? 'Waveform' : 'Audio Timeline • Multi-Language View'}
-                    </span>
-                    <button
-                      onClick={() => setWaveformCollapsed(!waveformCollapsed)}
-                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
-                    >
-                      {waveformCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
-                    </button>
-                  </div>
-
-                  {!waveformCollapsed && (
-                    <div className="flex-1 min-h-0 p-3 flex flex-col gap-2">
-                      <div className="flex-1 min-h-0">
-                        <Waveform
-                          currentTime={currentTime}
-                          duration={duration}
-                          zoomLevel={zoomLevel}
-                          onSeek={seek}
-                          onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
-                          onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
-                          issues={issues}
-                          dialogueLines={dialogueLines}
-                          isPlaying={isPlaying}
-                          playbackRate={playbackRate}
-                          volume={volume}
-                          muted={muted}
-                          onTogglePlayback={togglePlayback}
-                          onSkipForward={skipForward}
-                          onSkipBackward={skipBackward}
-                          onFrameForward={frameForward}
-                          onFrameBackward={frameBackward}
-                          onPlaybackRateChange={setPlaybackRate}
-                          onVolumeChange={setVolume}
-                          onToggleMute={toggleMute}
-                        />
-                      </div>
-                      
-                      {/* Timeline Minimap - Expandable */}
-                      {minimapExpanded && (
-                        <div className="h-16 flex-shrink-0">
-                          <TimelineMinimap
-                            duration={duration}
-                            currentTime={currentTime}
-                            issues={issues}
-                            onSeek={seek}
-                          />
-                        </div>
-                      )}
-                      
-                      <button
-                        onClick={() => setMinimapExpanded(!minimapExpanded)}
-                        className="text-[9px] text-slate-600 hover:text-cyan-400 transition-colors self-center flex-shrink-0"
-                      >
-                        {minimapExpanded ? '▲ Hide Overview' : '▼ Show Overview'}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <WaveformPanel
+                  height={waveformCollapsed ? 32 : 240}
+                  collapsed={waveformCollapsed}
+                  waveformBars={[]}
+                  zoomLevel={zoomLevel}
+                  scrollMode="CENTER"
+                  isolateDialogue={false}
+                  spectrogramMode={false}
+                  issueFilters={{ error: true, warning: true, info: true }}
+                  subtitles={dialogueLinesWithScores.map(line => ({
+                    index: line.id,
+                    inTime: line.timeInSeconds,
+                    outTime: line.timeOutSeconds,
+                    targetText: line.dubText,
+                    issues: line.issues
+                  }))}
+                  currentIndex={selectedLineId || 1}
+                  currentTime={currentTime}
+                  duration={duration}
+                  windowStart={Math.max(0, currentTime - 5)}
+                  visibleWindow={10}
+                  playheadPct={30}
+                  onHeightChange={(delta) => {}}
+                  onToggleCollapse={() => setWaveformCollapsed(!waveformCollapsed)}
+                  onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
+                  onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
+                  onScrollModeChange={() => {}}
+                  onToggleDialogueIsolation={() => {}}
+                  onToggleSpectrogramMode={() => {}}
+                  onToggleIssueFilter={() => {}}
+                  onSeek={seek}
+                  onSubtitleClick={handleSelectLine}
+                />
               </ResizablePanel>
 
               <ResizableHandle withHandle />
@@ -446,7 +445,7 @@ export default function DubFlow() {
           <ResizableHandle withHandle />
 
           {/* RIGHT: Tabbed Inspector */}
-          <ResizablePanel defaultSize={22} minSize={18} maxSize={35}>
+          <ResizablePanel defaultSize={18} minSize={15} maxSize={30}>
             <TabbedInspector
               issues={issues}
               dialogueLines={dialogueLinesWithScores}
