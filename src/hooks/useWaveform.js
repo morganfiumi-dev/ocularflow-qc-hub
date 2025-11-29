@@ -136,3 +136,4 @@ const useWaveform = create((set, get) => ({
 }));
 
 export default useWaveform;
+export { useWaveform };
