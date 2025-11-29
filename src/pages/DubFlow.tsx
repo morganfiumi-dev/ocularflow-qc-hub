@@ -16,6 +16,7 @@ import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
 import { calculateClipScore, calculateAssetScore } from '../utils/qcScoring';
+import '../styles/ocularflow.css';
 
 export default function DubFlow() {
   const { assetId } = useParams<{ assetId: string }>();
@@ -212,9 +213,9 @@ export default function DubFlow() {
   }
 
   return (
-    <div className="h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
+    <div className="of-cockpit">
       {/* Top Bar - Matching OcularFlow style */}
-      <div className="h-12 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between px-4 flex-shrink-0">
+      <div className="of-topbar">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
@@ -295,42 +296,39 @@ export default function DubFlow() {
         </div>
       </div>
 
-      {/* Three-column layout matching OcularFlow */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* LEFT: Audio Toolbar (OcularFlow-style) */}
-        <div className="flex-shrink-0">
+      {/* Three-column layout with Audio Toolbar */}
+      <div className="of-main">
+        {/* AUDIO TOOLBAR (leftmost column) */}
+        <div className="flex-shrink-0 p-4">
           <ToolsSidebar />
         </div>
 
-        {/* CENTER: Video → Waveform → Dialogue (OcularFlow stack) */}
-        <div className="flex-1 flex flex-col min-w-0 p-4 gap-3">
+        {/* LEFT PANEL: Video + Waveform + Dialogue (OcularFlow structure) */}
+        <div className="of-left-panel">
           {/* Video Panel */}
-          <div className="flex-shrink-0" style={{ height: '300px' }}>
-            <VideoPanel
-              isPlaying={isPlaying}
-              currentTime={currentTime}
-              duration={duration}
-              playbackRate={playbackRate}
-              volume={volume}
-              muted={muted}
-              currentSubtitle={null}
-              contextType="DIALOGUE"
-              onTogglePlayback={togglePlayback}
-              onSkipForward={skipForward}
-              onSkipBackward={skipBackward}
-              onFrameForward={frameForward}
-              onFrameBackward={frameBackward}
-              onSeek={seek}
-              onPlaybackRateChange={setPlaybackRate}
-              onVolumeChange={setVolume}
-              onToggleMute={toggleMute}
-              onDurationChange={() => {}}
-            />
-          </div>
+          <VideoPanel
+            isPlaying={isPlaying}
+            currentTime={currentTime}
+            duration={duration}
+            playbackRate={playbackRate}
+            volume={volume}
+            muted={muted}
+            currentSubtitle={null}
+            contextType="DIALOGUE"
+            onTogglePlayback={togglePlayback}
+            onSkipForward={skipForward}
+            onSkipBackward={skipBackward}
+            onFrameForward={frameForward}
+            onFrameBackward={frameBackward}
+            onSeek={seek}
+            onPlaybackRateChange={setPlaybackRate}
+            onVolumeChange={setVolume}
+            onToggleMute={toggleMute}
+            onDurationChange={() => {}}
+          />
 
           {/* Waveform Panel - Using OcularFlow's component directly */}
-          <div className="flex-1 min-h-0">
-            <WaveformPanel
+          <WaveformPanel
               height={waveformCollapsed ? 32 : 240}
               collapsed={waveformCollapsed}
               waveformBars={[]}
@@ -360,11 +358,10 @@ export default function DubFlow() {
               onToggleDialogueIsolation={() => {}}
               onToggleSpectrogramMode={() => {}}
               onToggleIssueFilter={() => {}}
-              onSeek={seek}
-              onSubtitleClick={handleSelectLine}
-            />
-          </div>
-
+            onSeek={seek}
+            onSubtitleClick={handleSelectLine}
+          />
+          
           {/* Dialogue Highlight Strip */}
           <div className="flex-shrink-0 h-64">
             <DialogueHighlightStrip
@@ -376,8 +373,8 @@ export default function DubFlow() {
           </div>
         </div>
 
-        {/* RIGHT: Inspector (OcularFlow-style tabs) */}
-        <div className="flex-shrink-0 w-96 p-4">
+        {/* RIGHT PANEL: Inspector (OcularFlow structure) */}
+        <div className="of-right-panel p-4">
           <TabbedInspector
             issues={issues}
             dialogueLines={dialogueLinesWithScores}
