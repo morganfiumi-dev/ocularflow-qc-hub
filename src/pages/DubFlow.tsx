@@ -6,10 +6,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
-import { AudioPanel } from '../components/dubflow/AudioPanel';
+import { ToolsSidebar } from '../components/dubflow/ToolsSidebar';
 import { Waveform } from '../components/dubflow/Waveform';
-import { DialogueEditor } from '../components/dubflow/DialogueEditor';
-import { AudioInspector } from '../components/dubflow/AudioInspector';
+import { DialogueHighlightStrip } from '../components/dubflow/DialogueHighlightStrip';
+import { TabbedInspector } from '../components/dubflow/TabbedInspector';
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
@@ -307,38 +307,27 @@ export default function DubFlow() {
         </div>
       </div>
 
-      {/* Three-panel cockpit layout */}
+      {/* Three-panel cockpit layout - NEW WAVEFORM-FIRST DESIGN */}
       <div className="flex-1 flex gap-4 p-4 overflow-hidden">
-        {/* LEFT: Audio Tools Sidebar */}
-        <div className="w-80 flex-shrink-0 overflow-hidden">
-          <AudioPanel
-            isPlaying={isPlaying}
-            currentTime={currentTime}
-            duration={duration}
-            language={audioTrack?.metadata.language || 'EN-US'}
-            codec={audioTrack?.metadata.codec || 'AAC'}
-            onTogglePlay={handleTogglePlay}
-            onJumpBackward={handleJumpBackward}
-            onJumpForward={handleJumpForward}
-            onVolumeChange={setVolume}
-            volume={volume}
-          />
-        </div>
+        {/* LEFT: Collapsible Tools Sidebar */}
+        <ToolsSidebar
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={duration}
+          volume={volume}
+          language={audioTrack?.metadata.language || 'EN-US'}
+          codec={audioTrack?.metadata.codec || 'AAC'}
+          profileCode={profile?.client || 'N/A'}
+          onTogglePlay={handleTogglePlay}
+          onJumpBackward={handleJumpBackward}
+          onJumpForward={handleJumpForward}
+          onVolumeChange={setVolume}
+        />
 
-        {/* CENTER: Dialogue Editor + Waveform Stack */}
+        {/* CENTER: Waveform-First Layout */}
         <div className="flex-1 flex flex-col gap-4 overflow-hidden">
-          {/* Dialogue Editor (Top) */}
-          <div className="flex-1 overflow-hidden">
-            <DialogueEditor
-              lines={dialogueLinesWithScores}
-              selectedLineId={selectedLineId}
-              currentTime={currentTime}
-              onSelectLine={handleSelectLine}
-            />
-          </div>
-
-          {/* Waveform (Bottom) */}
-          <div className="h-64 flex-shrink-0 overflow-hidden">
+          {/* Waveform (Primary - Top 70%) */}
+          <div className="flex-[7] overflow-hidden">
             <Waveform
               currentTime={currentTime}
               duration={duration}
@@ -349,15 +338,31 @@ export default function DubFlow() {
               issues={issues}
             />
           </div>
+
+          {/* Dialogue Highlight Strip (Bottom 30%) */}
+          <div className="flex-[3] overflow-hidden">
+            <DialogueHighlightStrip
+              lines={dialogueLinesWithScores}
+              currentTime={currentTime}
+              selectedLineId={selectedLineId}
+              onSelectLine={handleSelectLine}
+            />
+          </div>
         </div>
 
-        {/* RIGHT: Inspector */}
+        {/* RIGHT: Tabbed Inspector */}
         <div className="w-96 flex-shrink-0 overflow-hidden">
-          <AudioInspector
+          <TabbedInspector
             issues={issues}
+            dialogueLines={dialogueLinesWithScores}
             selectedIssueId={selectedIssueId}
-            onSelectIssue={handleSelectIssue}
+            selectedLineId={selectedLineId}
+            currentTime={currentTime}
             notes={notes}
+            assetScore={assetScore}
+            clipScores={clipScores}
+            onSelectIssue={handleSelectIssue}
+            onSelectLine={handleSelectLine}
             onNotesChange={setNotes}
           />
         </div>
