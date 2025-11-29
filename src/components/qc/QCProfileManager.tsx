@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Settings, Copy, X, ChevronRight, Check, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ScoreSimulator } from './ScoreSimulator';
 
 // Check descriptions from ScoreBreakdown
 const CHECK_DESCRIPTIONS: Record<string, string> = {
@@ -124,8 +125,8 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-[#020617]/90 backdrop-blur-sm animate-fade-in">
-      {/* Main Container */}
-      <div className="w-full max-w-5xl h-[82vh] flex flex-col bg-[#0f172a] border border-[#334155] rounded-lg shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden animate-scale-in">
+      {/* Main Container - Wider for 3 columns */}
+      <div className="w-full max-w-7xl h-[82vh] flex flex-col bg-[#0f172a] border border-[#334155] rounded-lg shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden animate-scale-in">
         
         {/* Header Bar */}
         <div className="h-12 bg-[#020617] border-b border-[#334155] flex items-center justify-between px-6 shrink-0">
@@ -148,7 +149,7 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
           </button>
         </div>
 
-        {/* Content Area */}
+        {/* Content Area - 3 Column Layout */}
         <div className="flex-1 flex overflow-hidden">
           
           {/* Hierarchy Sidebar */}
@@ -561,6 +562,19 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
                 )}
               </div>
             </ScrollArea>
+          </div>
+
+          {/* Third Column - Live Score Preview */}
+          <div className="w-80 border-l border-[#334155] shrink-0">
+            {langConfig ? (
+              <ScoreSimulator languageConfig={langConfig} activeClient={profile?.client || activeClientId} />
+            ) : (
+              <div className="h-full flex items-center justify-center p-6 text-center">
+                <div className="text-[10px] text-[#64748b]">
+                  Select a profile to preview scoring
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
