@@ -197,18 +197,26 @@ export function AudioInspector({
       {/* Issue Details (when selected) */}
       {selectedIssue && (
         <div className="border-t-2 border-cyan-500/30 bg-slate-950/60 px-4 py-3 space-y-3">
-          <div className="flex items-center gap-2">
-            <div className={`p-1.5 rounded ${getSeverityColor(selectedIssue.severity)}`}>
-              {getSeverityIcon(selectedIssue.severity)}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className={`p-1.5 rounded ${getSeverityColor(selectedIssue.severity)}`}>
+                {getSeverityIcon(selectedIssue.severity)}
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-200">
+                  {selectedIssue.type}
+                </h4>
+                <p className="text-[10px] font-mono text-slate-600">
+                  {selectedIssue.timecode}
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="text-xs font-bold text-slate-200">
-                {selectedIssue.type}
-              </h4>
-              <p className="text-[10px] font-mono text-slate-600">
-                {selectedIssue.timecode}
-              </p>
-            </div>
+            <button
+              onClick={() => onSelectIssue(selectedIssue.id)}
+              className="px-2 py-1 text-[10px] font-semibold uppercase bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded hover:bg-cyan-500/30 transition-colors"
+            >
+              Jump
+            </button>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
             {selectedIssue.description}
