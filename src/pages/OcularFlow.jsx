@@ -102,7 +102,8 @@ export default function OcularFlow() {
     frameBackward,
     setPlaybackRate,
     setVolume,
-    toggleMute
+    toggleMute,
+    setDuration
   } = useVideoState();
   
   // Issue/Inspector state
@@ -295,6 +296,7 @@ export default function OcularFlow() {
             onPlaybackRateChange={setPlaybackRate}
             onVolumeChange={setVolume}
             onToggleMute={toggleMute}
+            onDurationChange={setDuration}
           />
           
           {/* Waveform Panel */}

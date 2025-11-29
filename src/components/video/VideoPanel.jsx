@@ -34,6 +34,7 @@ export function VideoPanel({
   onPlaybackRateChange,
   onVolumeChange,
   onToggleMute,
+  onDurationChange,
   
   className = ''
 }) {
@@ -43,6 +44,13 @@ export function VideoPanel({
       <VideoPlayer
         currentSubtitle={currentSubtitle}
         contextType={contextType}
+        isPlaying={isPlaying}
+        currentTime={currentTime}
+        playbackRate={playbackRate}
+        volume={volume}
+        muted={muted}
+        onTimeUpdate={onSeek}
+        onDurationChange={onDurationChange}
       />
       
       {/* Toolbar */}

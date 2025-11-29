@@ -3,7 +3,7 @@
  * Video stage with subtitle overlay
  */
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { getDemoVideoUrl } from '../../utils/demoProjectLoader';
 
 /**
@@ -13,18 +13,93 @@ import { getDemoVideoUrl } from '../../utils/demoProjectLoader';
 export function VideoPlayer({
   currentSubtitle = null,
   contextType = 'DIALOGUE',
+  isPlaying = false,
+  currentTime = 0,
+  playbackRate = 1,
+  volume = 0.75,
+  muted = false,
+  onTimeUpdate,
+  onDurationChange,
   className = ''
 }) {
+  const videoRef = useRef(null);
+  const isSeeking = useRef(false);
+  
   // Get demo video URL
   const videoUrl = getDemoVideoUrl();
+  
+  // Sync play/pause
+  useEffect(() => {
+    if (!videoRef.current) return;
+    
+    if (isPlaying) {
+      videoRef.current.play().catch(err => {
+        console.warn('Video play failed:', err);
+      });
+    } else {
+      videoRef.current.pause();
+    }
+  }, [isPlaying]);
+  
+  // Sync playback rate
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = playbackRate;
+    }
+  }, [playbackRate]);
+  
+  // Sync volume
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume;
+    }
+  }, [volume]);
+  
+  // Sync mute
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = muted;
+    }
+  }, [muted]);
+  
+  // Sync seek
+  useEffect(() => {
+    if (!videoRef.current || isSeeking.current) return;
+    
+    const timeDiff = Math.abs(videoRef.current.currentTime - currentTime);
+    // Only seek if difference is significant (> 0.5s)
+    if (timeDiff > 0.5) {
+      isSeeking.current = true;
+      videoRef.current.currentTime = currentTime;
+      setTimeout(() => {
+        isSeeking.current = false;
+      }, 100);
+    }
+  }, [currentTime]);
+  
+  // Handle video time updates
+  const handleTimeUpdate = () => {
+    if (videoRef.current && onTimeUpdate && !isSeeking.current) {
+      onTimeUpdate(videoRef.current.currentTime);
+    }
+  };
+  
+  // Handle duration loaded
+  const handleLoadedMetadata = () => {
+    if (videoRef.current && onDurationChange) {
+      onDurationChange(videoRef.current.duration);
+    }
+  };
   
   return (
     <div className={`of-video-stage ${className}`}>
       {/* Video element */}
       <video
+        ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover"
         src={videoUrl}
-        controls
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
         crossOrigin="anonymous"
       >
         Your browser does not support video playback.
