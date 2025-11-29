@@ -20,6 +20,7 @@ export function InspectorPanel({
   
   // Current subtitle
   currentSubtitle = null,
+  contextMetadata = null,
   
   // Inspector state
   activeTab = 'ANALYSIS',
@@ -80,6 +81,7 @@ export function InspectorPanel({
           {activeTab === 'ANALYSIS' && currentSubtitle && (
             <AnalysisTab
               subtitle={currentSubtitle}
+              contextMetadata={contextMetadata}
               expandedIssueId={expandedIssueId}
               showScoreBreakdown={showScoreBreakdown}
               showAnnotations={showAnnotations}
@@ -114,6 +116,7 @@ export function InspectorPanel({
  */
 function AnalysisTab({
   subtitle,
+  contextMetadata,
   expandedIssueId,
   showScoreBreakdown,
   showAnnotations,
@@ -124,6 +127,11 @@ function AnalysisTab({
 }) {
   const cps = subtitle.cps || 0;
   const cpl = subtitle.cpl || 0;
+  
+  // Find matching annotation for current subtitle
+  const matchingAnnotation = contextMetadata?.annotations?.annotations?.find(
+    (ann) => subtitle.sourceText && subtitle.sourceText.includes(ann.line)
+  );
   
   return (
     <div className="space-y-4">
@@ -152,9 +160,15 @@ function AnalysisTab({
           </button>
         </div>
         <p className="of-context-text">{subtitle.sourceText}</p>
-        {showAnnotations.source && (
+        {showAnnotations.source && matchingAnnotation && (
           <div className="mt-2 text-xs text-purple-300/70 italic border-t border-purple-500/20 pt-2">
-            Original script context available.
+            <div className="font-semibold text-purple-400 mb-1">📝 Linguistic Note:</div>
+            {matchingAnnotation.note}
+          </div>
+        )}
+        {showAnnotations.source && !matchingAnnotation && (
+          <div className="mt-2 text-xs text-purple-300/70 italic border-t border-purple-500/20 pt-2">
+            No annotations available for this line.
           </div>
         )}
       </Card>
