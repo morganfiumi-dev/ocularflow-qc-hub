@@ -3,7 +3,7 @@
  * Audio playback controls and track info
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Play, Pause, SkipBack, SkipForward, Volume2, 
   Radio, Activity, Waves, Repeat, Music, Mic
@@ -42,10 +42,114 @@ export function AudioPanel({
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const [loopEnabled, setLoopEnabled] = useState(false);
 
+  // Audio visualization state
+  const [vuLevels, setVuLevels] = useState({ left: 0, right: 0 });
+  const [peakHold, setPeakHold] = useState({ left: 0, right: 0 });
+  const spectrumCanvasRef = useRef<HTMLCanvasElement>(null);
+  const animationFrameRef = useRef<number>();
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Simulate real-time VU meter animation
+  useEffect(() => {
+    if (!isPlaying) {
+      setVuLevels({ left: 0, right: 0 });
+      return;
+    }
+
+    const animate = () => {
+      // Simulate audio levels with realistic movement
+      const newLeft = Math.random() * 0.6 + 0.2; // 20-80% range
+      const newRight = Math.random() * 0.6 + 0.2;
+      
+      setVuLevels({ left: newLeft, right: newRight });
+
+      // Peak hold with decay
+      setPeakHold(prev => ({
+        left: Math.max(prev.left * 0.95, newLeft),
+        right: Math.max(prev.right * 0.95, newRight)
+      }));
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isPlaying]);
+
+  // Draw frequency spectrum
+  useEffect(() => {
+    const canvas = spectrumCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const barCount = 32;
+    const barWidth = width / barCount;
+
+    const drawSpectrum = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < barCount; i++) {
+        // Simulate frequency spectrum with realistic distribution
+        // Lower frequencies (left) typically have more energy
+        const freqFactor = Math.exp(-i / 8);
+        const randomness = Math.random() * 0.4 + 0.6;
+        const amplitude = isPlaying ? freqFactor * randomness : 0;
+        const barHeight = amplitude * height;
+
+        const x = i * barWidth;
+        const y = height - barHeight;
+
+        // Gradient fill - cyan to blue
+        const gradient = ctx.createLinearGradient(x, y, x, height);
+        
+        if (amplitude > 0.8) {
+          gradient.addColorStop(0, 'rgb(239, 68, 68)'); // red
+          gradient.addColorStop(0.3, 'rgb(251, 146, 60)'); // amber
+          gradient.addColorStop(1, 'rgb(34, 211, 238)'); // cyan
+        } else if (amplitude > 0.6) {
+          gradient.addColorStop(0, 'rgb(251, 146, 60)'); // amber
+          gradient.addColorStop(1, 'rgb(34, 211, 238)'); // cyan
+        } else {
+          gradient.addColorStop(0, 'rgb(34, 211, 238)'); // cyan
+          gradient.addColorStop(1, 'rgb(6, 182, 212)'); // cyan-dark
+        }
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, y, barWidth - 1, barHeight);
+      }
+
+      if (isPlaying) {
+        animationFrameRef.current = requestAnimationFrame(drawSpectrum);
+      }
+    };
+
+    drawSpectrum();
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isPlaying]);
+
+  const getVuColor = (level: number) => {
+    if (level > 0.85) return 'bg-red-500';
+    if (level > 0.7) return 'bg-amber-500';
+    return 'bg-emerald-500';
   };
 
   return (
@@ -57,24 +161,101 @@ export function AudioPanel({
         </h3>
       </div>
 
-      {/* VU Meter Placeholder */}
-      <div className="flex-1 p-4">
-        <div className="h-full bg-slate-950 border border-slate-800 rounded-md flex items-center justify-center">
-          <div className="space-y-2 w-full px-8">
-            {/* Mock VU meters */}
-            {[0, 1].map((channel) => (
-              <div key={channel} className="space-y-1">
-                <span className="text-[10px] text-slate-600 uppercase">
-                  Ch {channel + 1}
-                </span>
-                <div className="h-2 bg-slate-900 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-emerald-500 via-amber-500 to-red-500 transition-all"
-                    style={{ width: `${40 + Math.random() * 40}%` }}
-                  />
-                </div>
+      {/* Audio Visualization */}
+      <div className="flex-1 p-4 space-y-4">
+        {/* Professional VU Meters */}
+        <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              VU Meters
+            </h4>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="text-[8px] text-slate-600">-20</span>
               </div>
-            ))}
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-amber-500" />
+                <span className="text-[8px] text-slate-600">-6</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-red-500" />
+                <span className="text-[8px] text-slate-600">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {/* Left Channel */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono text-slate-500 uppercase">L</span>
+                <span className="text-[9px] font-mono text-cyan-400">
+                  {(vuLevels.left * 100).toFixed(0)}%
+                </span>
+              </div>
+              <div className="relative h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                {/* Main level bar */}
+                <div
+                  className={`h-full transition-all duration-75 ${getVuColor(vuLevels.left)}`}
+                  style={{ width: `${vuLevels.left * 100}%` }}
+                />
+                {/* Peak hold indicator */}
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg transition-all duration-100"
+                  style={{ left: `${peakHold.left * 100}%` }}
+                />
+                {/* Zone markers */}
+                <div className="absolute top-0 bottom-0 left-[70%] w-px bg-slate-700" />
+                <div className="absolute top-0 bottom-0 left-[85%] w-px bg-slate-700" />
+              </div>
+            </div>
+
+            {/* Right Channel */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono text-slate-500 uppercase">R</span>
+                <span className="text-[9px] font-mono text-cyan-400">
+                  {(vuLevels.right * 100).toFixed(0)}%
+                </span>
+              </div>
+              <div className="relative h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                {/* Main level bar */}
+                <div
+                  className={`h-full transition-all duration-75 ${getVuColor(vuLevels.right)}`}
+                  style={{ width: `${vuLevels.right * 100}%` }}
+                />
+                {/* Peak hold indicator */}
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg transition-all duration-100"
+                  style={{ left: `${peakHold.right * 100}%` }}
+                />
+                {/* Zone markers */}
+                <div className="absolute top-0 bottom-0 left-[70%] w-px bg-slate-700" />
+                <div className="absolute top-0 bottom-0 left-[85%] w-px bg-slate-700" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Frequency Spectrum */}
+        <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Frequency Spectrum
+            </h4>
+            <Activity className="w-3 h-3 text-cyan-500" />
+          </div>
+          <canvas
+            ref={spectrumCanvasRef}
+            width={280}
+            height={120}
+            className="w-full h-[120px] bg-slate-900 rounded border border-slate-800"
+          />
+          <div className="flex justify-between mt-2">
+            <span className="text-[8px] text-slate-600 font-mono">20Hz</span>
+            <span className="text-[8px] text-slate-600 font-mono">1kHz</span>
+            <span className="text-[8px] text-slate-600 font-mono">20kHz</span>
           </div>
         </div>
       </div>
