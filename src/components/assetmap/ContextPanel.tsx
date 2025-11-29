@@ -123,11 +123,11 @@ export function ContextPanel({ titleId }: ContextPanelProps) {
 
 function MetadataSection({ metadata }: { metadata: ContextMetadata['metadata'] }) {
   const [expandedSections, setExpandedSections] = useState({
-    overview: true,
-    genres: true,
-    credits: true,
-    cast: true,
-    themes: true
+    overview: false,
+    genres: false,
+    credits: false,
+    cast: false,
+    themes: false
   });
 
   const toggleSection = (section: keyof typeof expandedSections) => {
