@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Zap, PlayCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 import { ToolsSidebar } from '../components/dubflow/ToolsSidebar';
 import { Waveform } from '../components/dubflow/Waveform';
@@ -17,6 +17,7 @@ import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
 import { calculateClipScore, calculateAssetScore, getScoreColor } from '../utils/qcScoring';
+import { useWaveform } from '../hooks/useWaveform';
 
 export default function DubFlow() {
   const { assetId } = useParams<{ assetId: string }>();
@@ -147,7 +148,13 @@ export default function DubFlow() {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [volume, setVolume] = useState(0.75);
   const [muted, setMuted] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(2); // Increased default zoom to 2x for better dialogue visibility
+  
+  // Use OcularFlow waveform hook for proper zoom/scroll behavior
+  const waveform = useWaveform(currentTime, duration);
+  
+  // Collapsible sections
+  const [dialogueCollapsed, setDialogueCollapsed] = useState(false);
+  const [minimapExpanded, setMinimapExpanded] = useState(true);
 
   // Inspector state
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
@@ -305,63 +312,121 @@ export default function DubFlow() {
       {/* Three-panel cockpit layout with resizable panels */}
       <div className="flex-1 p-4 overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="h-full gap-4">
-          {/* LEFT: Collapsible Tools Sidebar */}
-          <ResizablePanel defaultSize={15} minSize={5} maxSize={25}>
+          {/* LEFT: Vertically expandable Tools (Not horizontally draggable) */}
+          <div className="w-16 flex-shrink-0">
             <ToolsSidebar />
-          </ResizablePanel>
+          </div>
 
-          <ResizableHandle withHandle className="w-1" />
+          {/* CENTER: Waveform-First Layout with Collapsible Sections */}
+          <div className="flex-1 min-w-0">
+            <ResizablePanelGroup direction="vertical" className="h-full">
+              {/* Waveform Section - Collapsible */}
+              <ResizablePanel 
+                defaultSize={waveform.collapsed ? 5 : 50} 
+                minSize={waveform.collapsed ? 3 : 25}
+                maxSize={70}
+                collapsible
+              >
+                <div className="h-full flex flex-col bg-slate-900/40 border border-slate-800 rounded-lg overflow-hidden">
+                  {/* Collapse Header */}
+                  <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900/60 border-b border-slate-800 flex-shrink-0">
+                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                      {waveform.collapsed ? 'Waveform' : 'Audio Timeline • Multi-Language View'}
+                    </span>
+                    <button
+                      onClick={waveform.toggleCollapsed}
+                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
+                    >
+                      {waveform.collapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+                    </button>
+                  </div>
 
-          {/* CENTER: Waveform-First Layout */}
-          <ResizablePanel defaultSize={60} minSize={40}>
-            <div className="h-full flex flex-col gap-4">
-              {/* Waveform with integrated playback controls (Primary - Top 60%) */}
-              <div className="flex-[6] overflow-hidden">
-                <Waveform
-                  currentTime={currentTime}
-                  duration={duration}
-                  zoomLevel={zoomLevel}
-                  onSeek={seek}
-                  onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
-                  onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
-                  issues={issues}
-                  dialogueLines={dialogueLines}
-                  isPlaying={isPlaying}
-                  playbackRate={playbackRate}
-                  volume={volume}
-                  muted={muted}
-                  onTogglePlayback={togglePlayback}
-                  onSkipForward={skipForward}
-                  onSkipBackward={skipBackward}
-                  onFrameForward={frameForward}
-                  onFrameBackward={frameBackward}
-                  onPlaybackRateChange={setPlaybackRate}
-                  onVolumeChange={setVolume}
-                  onToggleMute={toggleMute}
-                />
-              </div>
+                  {!waveform.collapsed && (
+                    <div className="flex-1 min-h-0 p-3 flex flex-col gap-2">
+                      <div className="flex-1 min-h-0">
+                        <Waveform
+                          currentTime={currentTime}
+                          duration={duration}
+                          zoomLevel={waveform.zoomLevel}
+                          onSeek={seek}
+                          onZoomIn={waveform.zoomIn}
+                          onZoomOut={waveform.zoomOut}
+                          issues={issues}
+                          dialogueLines={dialogueLines}
+                          isPlaying={isPlaying}
+                          playbackRate={playbackRate}
+                          volume={volume}
+                          muted={muted}
+                          onTogglePlayback={togglePlayback}
+                          onSkipForward={skipForward}
+                          onSkipBackward={skipBackward}
+                          onFrameForward={frameForward}
+                          onFrameBackward={frameBackward}
+                          onPlaybackRateChange={setPlaybackRate}
+                          onVolumeChange={setVolume}
+                          onToggleMute={toggleMute}
+                        />
+                      </div>
+                      
+                      {/* Timeline Minimap - Expandable */}
+                      {minimapExpanded && (
+                        <div className="h-16 flex-shrink-0">
+                          <TimelineMinimap
+                            duration={duration}
+                            currentTime={currentTime}
+                            issues={issues}
+                            onSeek={seek}
+                          />
+                        </div>
+                      )}
+                      
+                      <button
+                        onClick={() => setMinimapExpanded(!minimapExpanded)}
+                        className="text-[9px] text-slate-600 hover:text-cyan-400 transition-colors self-center flex-shrink-0"
+                      >
+                        {minimapExpanded ? '▲ Hide Overview' : '▼ Show Overview'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </ResizablePanel>
 
-              {/* Timeline minimap (10%) */}
-              <div className="flex-[1] overflow-hidden">
-                <TimelineMinimap
-                  duration={duration}
-                  currentTime={currentTime}
-                  issues={issues}
-                  onSeek={seek}
-                />
-              </div>
+              <ResizableHandle withHandle />
 
-              {/* Dialogue Highlight Strip (Bottom 30%) */}
-              <div className="flex-[3] overflow-hidden">
-                <DialogueHighlightStrip
-                  lines={dialogueLinesWithScores}
-                  currentTime={currentTime}
-                  selectedLineId={selectedLineId}
-                  onSelectLine={handleSelectLine}
-                />
-              </div>
-            </div>
-          </ResizablePanel>
+              {/* Dialogue Section - Collapsible */}
+              <ResizablePanel 
+                defaultSize={dialogueCollapsed ? 5 : 50} 
+                minSize={dialogueCollapsed ? 3 : 25}
+                collapsible
+              >
+                <div className="h-full flex flex-col bg-slate-900/40 border border-slate-800 rounded-lg overflow-hidden">
+                  {/* Collapse Header */}
+                  <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900/60 border-b border-slate-800 flex-shrink-0">
+                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                      {dialogueCollapsed ? 'Dialogue' : 'Dialogue Clips'}
+                    </span>
+                    <button
+                      onClick={() => setDialogueCollapsed(!dialogueCollapsed)}
+                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
+                    >
+                      {dialogueCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+                    </button>
+                  </div>
+
+                  {!dialogueCollapsed && (
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                      <DialogueHighlightStrip
+                        lines={dialogueLinesWithScores}
+                        currentTime={currentTime}
+                        selectedLineId={selectedLineId}
+                        onSelectLine={handleSelectLine}
+                      />
+                    </div>
+                  )}
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </div>
 
           <ResizableHandle withHandle className="w-1" />
 
