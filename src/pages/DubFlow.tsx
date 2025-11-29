@@ -4,7 +4,7 @@
  * UI-only refactor, no logic changes
  */
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
 import { ToolsSidebar } from '../components/dubflow/ToolsSidebar';
@@ -16,7 +16,8 @@ import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
 import { calculateClipScore, calculateAssetScore } from '../utils/qcScoring';
-import { generateWaveformBars } from '../utils/waveformProcessing';
+import { useWaveform } from '../hooks/useWaveform';
+import { useVideoSync } from '../hooks/useVideoSync';
 import '../styles/ocularflow.css';
 
 export default function DubFlow() {
@@ -147,42 +148,27 @@ export default function DubFlow() {
   const [volume, setVolume] = useState(0.75);
   const [muted, setMuted] = useState(false);
   
-  // Waveform state (simple local state, matching OcularFlow structure)
-  const [zoomLevel, setZoomLevel] = useState(2);
-  const [waveformCollapsed, setWaveformCollapsed] = useState(false);
-  
   // Inspector state
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
 
-  // Calculate waveform window and bars from actual audio data
-  const windowStart = Math.max(0, currentTime - 5);
-  const visibleWindow = 10 / zoomLevel;
-  
-  const waveformBars = useMemo(() => {
-    // Use actual waveform data from backend if available
-    if (audioTrack?.waveform?.visualData) {
-      const visualData = audioTrack.waveform.visualData;
-      const totalDuration = audioTrack.waveform.duration;
-      
-      // Calculate which portion of visualData to show based on current window
-      const startIdx = Math.floor((windowStart / totalDuration) * visualData.length);
-      const endIdx = Math.ceil(((windowStart + visibleWindow) / totalDuration) * visualData.length);
-      const windowData = visualData.slice(startIdx, endIdx);
-      
-      // Resample to 150 bars for display
-      const barCount = 150;
-      const bars = [];
-      for (let i = 0; i < barCount; i++) {
-        const sourceIdx = Math.floor((i / barCount) * windowData.length);
-        bars.push(windowData[sourceIdx] || 0.1);
-      }
-      return bars;
-    }
-    
-    // Fallback to generated waveform if no data
-    return generateWaveformBars(windowStart, visibleWindow, 150, false);
-  }, [audioTrack, windowStart, visibleWindow]);
+  // Waveform state - using OcularFlow's hook for smooth syncing
+  const waveform = useWaveform(currentTime, duration);
+
+  // Video sync for dialogue line selection
+  const videoSync = useVideoSync({
+    currentTime,
+    subtitles: dialogueLinesWithScores.map(line => ({
+      index: line.id,
+      startTime: line.timeInSeconds,
+      endTime: line.timeOutSeconds,
+      ...line
+    })),
+    currentIndex: selectedLineId || 1,
+    autoScroll: true,
+    onSubtitleChange: setSelectedLineId,
+    onSeek: setCurrentTime,
+  });
 
   // Audio playback - simulated with timer
   useEffect(() => {
@@ -359,14 +345,14 @@ export default function DubFlow() {
 
           {/* Waveform Panel - Using OcularFlow's component directly */}
           <WaveformPanel
-            height={waveformCollapsed ? 32 : 240}
-            collapsed={waveformCollapsed}
-            waveformBars={waveformBars}
-            zoomLevel={zoomLevel}
-            scrollMode="CENTER"
-            isolateDialogue={false}
-            spectrogramMode={false}
-            issueFilters={{ error: true, warning: true, info: true }}
+            height={waveform.height}
+            collapsed={waveform.collapsed}
+            waveformBars={waveform.waveformBars}
+            zoomLevel={waveform.zoomLevel}
+            scrollMode={waveform.scrollMode}
+            isolateDialogue={waveform.isolateDialogue}
+            spectrogramMode={waveform.spectrogramMode}
+            issueFilters={waveform.issueFilters}
             subtitles={dialogueLinesWithScores.map(line => ({
               index: line.id,
               inTime: line.timeInSeconds,
@@ -377,17 +363,17 @@ export default function DubFlow() {
             currentIndex={selectedLineId || 1}
             currentTime={currentTime}
             duration={duration}
-            windowStart={windowStart}
-            visibleWindow={visibleWindow}
-            playheadPct={30}
-            onHeightChange={(delta) => {}}
-            onToggleCollapse={() => setWaveformCollapsed(!waveformCollapsed)}
-            onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
-            onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
-            onScrollModeChange={() => {}}
-            onToggleDialogueIsolation={() => {}}
-            onToggleSpectrogramMode={() => {}}
-            onToggleIssueFilter={() => {}}
+            windowStart={waveform.windowStart}
+            visibleWindow={waveform.visibleWindow}
+            playheadPct={waveform.playheadPct}
+            onHeightChange={waveform.adjustHeight}
+            onToggleCollapse={waveform.toggleCollapsed}
+            onZoomIn={waveform.zoomIn}
+            onZoomOut={waveform.zoomOut}
+            onScrollModeChange={waveform.setScrollMode}
+            onToggleDialogueIsolation={waveform.toggleDialogueIsolation}
+            onToggleSpectrogramMode={waveform.toggleSpectrogramMode}
+            onToggleIssueFilter={waveform.toggleIssueFilter}
             onSeek={seek}
             onSubtitleClick={handleSelectLine}
           />
