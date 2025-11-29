@@ -40,5 +40,11 @@
       "path": "/demo-project/audio-de.wav",
       "status": "ready"
     }
-  ]
+  ],
+  "metadata": {
+    "knp": "/demo-project/knp.json",
+    "forcedNarrative": "/demo-project/fn-events.json",
+    "sceneCuts": "/demo-project/scene-cuts.json",
+    "general": "/demo-project/metadata.json"
+  }
 }

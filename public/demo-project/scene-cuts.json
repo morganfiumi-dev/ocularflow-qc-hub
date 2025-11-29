@@ -1,0 +1,24 @@
+{
+  "sceneCuts": [
+    {
+      "timecode": "00:00:00.000",
+      "scene": 1,
+      "description": "Opening scene"
+    },
+    {
+      "timecode": "00:00:13.500",
+      "scene": 2,
+      "description": "Dialogue exchange"
+    },
+    {
+      "timecode": "00:00:26.500",
+      "scene": 3,
+      "description": "Action sequence"
+    },
+    {
+      "timecode": "00:00:39.500",
+      "scene": 4,
+      "description": "Closing shot"
+    }
+  ]
+}

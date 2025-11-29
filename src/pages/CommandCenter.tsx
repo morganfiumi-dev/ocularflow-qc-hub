@@ -15,7 +15,50 @@ import {
   PlayCircle,
   Layers
 } from 'lucide-react';
-import { trpc } from '../lib/trpc';
+
+/**
+ * Demo Projects - Loaded from browser
+ */
+const DEMO_PROJECTS = [
+  {
+    id: "demo-default",
+    name: "The Witcher S3E01",
+    source: "demo",
+    status: "in-progress",
+    metadata: {
+      originalLanguage: "EN",
+      client: "Netflix",
+      product: "Subs & Dubs",
+      languages: "EN / ES / DE"
+    },
+    stats: {
+      totalAssets: 5,
+      completedAssets: 3,
+      totalIssues: 8
+    },
+    createdAt: new Date('2024-01-15'),
+    updatedAt: new Date()
+  },
+  {
+    id: "demo-mock",
+    name: "Sample QC Project",
+    source: "mock",
+    status: "review",
+    metadata: {
+      originalLanguage: "EN",
+      client: "Internal",
+      product: "Subs & Dubs",
+      languages: "EN / ES / DE"
+    },
+    stats: {
+      totalAssets: 12,
+      completedAssets: 10,
+      totalIssues: 3
+    },
+    createdAt: new Date('2024-01-10'),
+    updatedAt: new Date()
+  }
+];
 
 /**
  * Mock data for recent activity (static for now)
@@ -29,13 +72,9 @@ const RECENT_ACTIVITY = [
 export default function CommandCenter() {
   const navigate = useNavigate();
   
-  // Fetch projects from tRPC backend
-  const { data: projectsData, isLoading } = trpc.projects.list.useQuery({
-    limit: 10,
-    offset: 0,
-  });
-  
-  const projects = (projectsData as any)?.projects || [];
+  // Use demo projects loaded from browser
+  const projects = DEMO_PROJECTS;
+  const isLoading = false;
 
   const getStatusConfig = (status: string) => {
     const configs = {
@@ -61,16 +100,6 @@ export default function CommandCenter() {
     return configs[status as keyof typeof configs] || configs.pending;
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-cyan-500 font-mono animate-pulse text-lg">
-          LOADING PROJECTS...
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -149,10 +178,10 @@ export default function CommandCenter() {
                 </span>
               </div>
               
-              <div className="divide-y divide-slate-800">
+                <div className="divide-y divide-slate-800">
                 {projects.map((project) => {
                   const statusConfig = getStatusConfig(project.status);
-                  const stats = 'stats' in project ? project.stats : { totalAssets: 0, completedAssets: 0, totalIssues: 0 };
+                  const stats = project.stats;
                   const progress = stats.totalAssets > 0 
                     ? Math.round((stats.completedAssets / stats.totalAssets) * 100) 
                     : 0;
