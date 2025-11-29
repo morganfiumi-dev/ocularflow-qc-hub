@@ -13,6 +13,7 @@ import netflixProfile from '@/qc/profiles/netflix.json';
 import amazonProfile from '@/qc/profiles/amazon.json';
 import disneyPlusProfile from '@/qc/profiles/disney_plus.json';
 import userCustomProfile from '@/qc/profiles/user_custom.json';
+import professionalTemplate from '@/qc/profiles/professional_template.json';
 
 export default function GlobalNav() {
   const [showProfileManager, setShowProfileManager] = useState(false);
@@ -21,6 +22,7 @@ export default function GlobalNav() {
   useEffect(() => {
     // Load QC profiles on mount
     const profiles = [
+      professionalTemplate,
       applePlusProfile,
       netflixProfile,
       amazonProfile,
@@ -28,7 +30,24 @@ export default function GlobalNav() {
       userCustomProfile
     ];
     
-    loadProfiles(profiles);
+    // Ensure all checks have measurementType field (for backward compatibility)
+    const migratedProfiles = profiles.map(profile => {
+      const newProfile = JSON.parse(JSON.stringify(profile));
+      Object.values(newProfile.products || {}).forEach((product: any) => {
+        Object.values(product.languages || {}).forEach((lang: any) => {
+          Object.values(lang.checks || {}).forEach((category: any) => {
+            Object.values(category.checks || {}).forEach((check: any) => {
+              if (!check.measurementType) {
+                check.measurementType = 'binary'; // default
+              }
+            });
+          });
+        });
+      });
+      return newProfile;
+    });
+    
+    loadProfiles(migratedProfiles);
   }, [loadProfiles]);
 
   return (

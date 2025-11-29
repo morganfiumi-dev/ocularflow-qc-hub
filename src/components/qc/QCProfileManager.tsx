@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import useQCProfileStore, { QCCheck } from '@/state/useQCProfileStore';
+import useQCProfileStore, { QCCheck, MeasurementType } from '@/state/useQCProfileStore';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -93,6 +94,7 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
     setSeverity,
     setWeight,
     setPenalty,
+    setMeasurementType,
     cloneProfile,
   } = useQCProfileStore();
 
@@ -327,73 +329,160 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
                                       }}
                                       className="data-[state=checked]:bg-[#06b6d4] mt-0.5 shrink-0"
                                     />
-                                    <div className="flex-1 min-w-0 space-y-2">
-                                      <div>
-                                        <div className="text-[11px] font-semibold text-[#f1f5f9]">
-                                          {checkId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                                        </div>
-                                        <div className="text-[9px] text-[#64748b] leading-relaxed mt-0.5">
-                                          {description}
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <div className="flex items-center gap-1.5">
-                                          <span className="text-[8px] text-[#64748b] uppercase tracking-wide">Severity</span>
-                                          <Select
-                                            value={qcCheck.severity}
-                                            onValueChange={(value) =>
-                                              setSeverity(categoryId, checkId, value as 'ERROR' | 'WARNING' | 'INFO')
-                                            }
-                                          >
-                                            <SelectTrigger className="h-6 w-20 text-[9px] bg-[#1e293b] border-[#334155]">
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-[#0f172a] border-[#334155]">
-                                              <SelectItem value="ERROR" className="text-[#ef4444] text-[9px]">
-                                                ERROR
-                                              </SelectItem>
-                                              <SelectItem value="WARNING" className="text-[#f59e0b] text-[9px]">
-                                                WARNING
-                                              </SelectItem>
-                                              <SelectItem value="INFO" className="text-[#06b6d4] text-[9px]">
-                                                INFO
-                                              </SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                          <span className="text-[8px] text-[#64748b] uppercase tracking-wide" title="Importance factor (0-1). Higher = more impactful on score">
-                                            Weight
-                                          </span>
-                                          <Input
-                                            type="number"
-                                            value={qcCheck.weight}
-                                            onChange={(e) =>
-                                              setWeight(categoryId, checkId, parseFloat(e.target.value) || 0)
-                                            }
-                                            step="0.1"
-                                            min="0"
-                                            max="1"
-                                            className="w-14 h-6 text-[9px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9] px-2"
-                                          />
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                          <span className="text-[8px] text-[#64748b] uppercase tracking-wide" title="Base points deducted. Multiplied by weight and severity">
-                                            Penalty
-                                          </span>
-                                          <Input
-                                            type="number"
-                                            value={qcCheck.penalty}
-                                            onChange={(e) =>
-                                              setPenalty(categoryId, checkId, parseFloat(e.target.value) || 0)
-                                            }
-                                            step="1"
-                                            min="0"
-                                            className="w-14 h-6 text-[9px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9] px-2"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
+                                     <div className="flex-1 min-w-0 space-y-3">
+                                       {/* Check Name & Description */}
+                                       <div>
+                                         <div className="flex items-center gap-2 mb-1">
+                                           <div className="text-[11px] font-semibold text-[#f1f5f9]">
+                                             {checkId.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                                           </div>
+                                           {qcCheck.measurementType && (
+                                             <Badge 
+                                               variant="outline" 
+                                               className={cn(
+                                                 "h-4 px-1.5 text-[7px] font-mono uppercase tracking-wider",
+                                                 qcCheck.measurementType === 'binary' && "bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/30",
+                                                 qcCheck.measurementType === 'threshold' && "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/30",
+                                                 qcCheck.measurementType === 'range' && "bg-[#8b5cf6]/10 text-[#8b5cf6] border-[#8b5cf6]/30",
+                                                 qcCheck.measurementType === 'percentage' && "bg-[#06b6d4]/10 text-[#06b6d4] border-[#06b6d4]/30"
+                                               )}
+                                             >
+                                               {qcCheck.measurementType}
+                                             </Badge>
+                                           )}
+                                         </div>
+                                         <div className="text-[9px] text-[#64748b] leading-relaxed">
+                                           {description}
+                                         </div>
+                                       </div>
+
+                                       {/* Measurement Type & Acceptable Levels */}
+                                       {qcCheck.acceptableLevels && (
+                                         <div className="bg-[#1e293b]/30 border border-[#334155]/30 rounded p-2 space-y-1.5">
+                                           <div className="text-[7px] text-[#64748b] uppercase tracking-wider font-bold mb-1.5">
+                                             Conformity Levels
+                                           </div>
+                                           <div className="space-y-1">
+                                             <div className="flex items-start gap-2">
+                                               <div className="w-1 h-1 rounded-full bg-[#10b981] mt-1 shrink-0" />
+                                               <div className="flex-1">
+                                                 <span className="text-[8px] font-bold text-[#10b981] uppercase tracking-wide">Pass:</span>
+                                                 <span className="text-[8px] text-[#94a3b8] ml-1.5">{qcCheck.acceptableLevels.pass}</span>
+                                               </div>
+                                             </div>
+                                             {qcCheck.acceptableLevels.warn !== 'N/A' && (
+                                               <div className="flex items-start gap-2">
+                                                 <div className="w-1 h-1 rounded-full bg-[#f59e0b] mt-1 shrink-0" />
+                                                 <div className="flex-1">
+                                                   <span className="text-[8px] font-bold text-[#f59e0b] uppercase tracking-wide">Review:</span>
+                                                   <span className="text-[8px] text-[#94a3b8] ml-1.5">{qcCheck.acceptableLevels.warn}</span>
+                                                 </div>
+                                               </div>
+                                             )}
+                                             <div className="flex items-start gap-2">
+                                               <div className="w-1 h-1 rounded-full bg-[#ef4444] mt-1 shrink-0" />
+                                               <div className="flex-1">
+                                                 <span className="text-[8px] font-bold text-[#ef4444] uppercase tracking-wide">Fail:</span>
+                                                 <span className="text-[8px] text-[#94a3b8] ml-1.5">{qcCheck.acceptableLevels.fail}</span>
+                                               </div>
+                                             </div>
+                                           </div>
+                                         </div>
+                                       )}
+
+                                       {/* Controls Row */}
+                                       <div className="flex items-center gap-2 flex-wrap">
+                                         {/* Measurement Type */}
+                                         <div className="flex items-center gap-1.5">
+                                           <span className="text-[8px] text-[#64748b] uppercase tracking-wide">Type</span>
+                                           <Select
+                                             value={qcCheck.measurementType || 'binary'}
+                                             onValueChange={(value) =>
+                                               setMeasurementType(categoryId, checkId, value as MeasurementType)
+                                             }
+                                           >
+                                             <SelectTrigger className="h-6 w-24 text-[9px] bg-[#1e293b] border-[#334155]">
+                                               <SelectValue />
+                                             </SelectTrigger>
+                                             <SelectContent className="bg-[#0f172a] border-[#334155]">
+                                               <SelectItem value="binary" className="text-[#f1f5f9] text-[9px]">
+                                                 Binary (Y/N)
+                                               </SelectItem>
+                                               <SelectItem value="threshold" className="text-[#f1f5f9] text-[9px]">
+                                                 Threshold
+                                               </SelectItem>
+                                               <SelectItem value="range" className="text-[#f1f5f9] text-[9px]">
+                                                 Range
+                                               </SelectItem>
+                                               <SelectItem value="percentage" className="text-[#f1f5f9] text-[9px]">
+                                                 Percentage
+                                               </SelectItem>
+                                             </SelectContent>
+                                           </Select>
+                                         </div>
+
+                                         {/* Severity */}
+                                         <div className="flex items-center gap-1.5">
+                                           <span className="text-[8px] text-[#64748b] uppercase tracking-wide">Severity</span>
+                                           <Select
+                                             value={qcCheck.severity}
+                                             onValueChange={(value) =>
+                                               setSeverity(categoryId, checkId, value as 'ERROR' | 'WARNING' | 'INFO')
+                                             }
+                                           >
+                                             <SelectTrigger className="h-6 w-20 text-[9px] bg-[#1e293b] border-[#334155]">
+                                               <SelectValue />
+                                             </SelectTrigger>
+                                             <SelectContent className="bg-[#0f172a] border-[#334155]">
+                                               <SelectItem value="ERROR" className="text-[#ef4444] text-[9px]">
+                                                 ERROR
+                                               </SelectItem>
+                                               <SelectItem value="WARNING" className="text-[#f59e0b] text-[9px]">
+                                                 WARNING
+                                               </SelectItem>
+                                               <SelectItem value="INFO" className="text-[#06b6d4] text-[9px]">
+                                                 INFO
+                                               </SelectItem>
+                                             </SelectContent>
+                                           </Select>
+                                         </div>
+
+                                         {/* Weight */}
+                                         <div className="flex items-center gap-1.5">
+                                           <span className="text-[8px] text-[#64748b] uppercase tracking-wide" title="Importance factor (0-1). Higher = more impactful on score">
+                                             Weight
+                                           </span>
+                                           <Input
+                                             type="number"
+                                             value={qcCheck.weight}
+                                             onChange={(e) =>
+                                               setWeight(categoryId, checkId, parseFloat(e.target.value) || 0)
+                                             }
+                                             step="0.1"
+                                             min="0"
+                                             max="1"
+                                             className="w-14 h-6 text-[9px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9] px-2"
+                                           />
+                                         </div>
+
+                                         {/* Penalty */}
+                                         <div className="flex items-center gap-1.5">
+                                           <span className="text-[8px] text-[#64748b] uppercase tracking-wide" title="Base points deducted from 100. Multiplied by weight × severity multiplier">
+                                             Penalty
+                                           </span>
+                                           <Input
+                                             type="number"
+                                             value={qcCheck.penalty}
+                                             onChange={(e) =>
+                                               setPenalty(categoryId, checkId, parseFloat(e.target.value) || 0)
+                                             }
+                                             step="1"
+                                             min="0"
+                                             className="w-14 h-6 text-[9px] text-right font-mono bg-[#1e293b] border-[#334155] text-[#f1f5f9] px-2"
+                                           />
+                                         </div>
+                                       </div>
+                                     </div>
                                   </div>
                                 </div>
                               );
