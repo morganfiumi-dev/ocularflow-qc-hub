@@ -160,15 +160,16 @@ function AnalysisTab({
           </button>
         </div>
         <p className="of-context-text">{subtitle.sourceText}</p>
-        {showAnnotations.source && matchingAnnotation && (
-          <div className="mt-2 text-xs text-purple-300/70 italic border-t border-purple-500/20 pt-2">
-            <div className="font-semibold text-purple-400 mb-1">📝 Linguistic Note:</div>
-            {matchingAnnotation.note}
-          </div>
-        )}
-        {showAnnotations.source && !matchingAnnotation && (
-          <div className="mt-2 text-xs text-purple-300/70 italic border-t border-purple-500/20 pt-2">
-            No annotations available for this line.
+        {showAnnotations.source && (
+          <div className="mt-2 text-xs border-t border-purple-500/20 pt-2">
+            {matchingAnnotation ? (
+              <div className="text-purple-300/70 italic">
+                <div className="font-semibold text-purple-400 mb-1">📝 Linguistic Note:</div>
+                {matchingAnnotation.note}
+              </div>
+            ) : (
+              <div className="text-slate-600 text-center">—</div>
+            )}
           </div>
         )}
       </Card>
@@ -186,8 +187,8 @@ function AnalysisTab({
         </div>
         <p className="of-context-text">{subtitle.text}</p>
         {showAnnotations.target && (
-          <div className="mt-2 text-xs text-cyan-300/70 italic border-t border-cyan-500/20 pt-2">
-            Translator notes available.
+          <div className="mt-2 text-xs border-t border-cyan-500/20 pt-2">
+            <div className="text-slate-600 text-center">—</div>
           </div>
         )}
       </Card>
