@@ -10,8 +10,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
  */
 const createInitialState = () => ({
   isPlaying: false,
-  currentTime: 60, // Start at 1 minute for demo
-  duration: 300, // 5 minute video
+  currentTime: 0,
+  duration: 0,
   playbackRate: 1,
   volume: 0.75,
   muted: false
@@ -24,43 +24,6 @@ const createInitialState = () => ({
  */
 export function useVideoState(onTimeUpdate = null) {
   const [state, setState] = useState(createInitialState);
-  const playbackRef = useRef(null);
-  const lastUpdateRef = useRef(Date.now());
-  
-  // Playback loop
-  useEffect(() => {
-    if (state.isPlaying) {
-      lastUpdateRef.current = Date.now();
-      
-      const tick = () => {
-        const now = Date.now();
-        const delta = (now - lastUpdateRef.current) / 1000;
-        lastUpdateRef.current = now;
-        
-        setState(s => {
-          const newTime = s.currentTime + delta * s.playbackRate;
-          
-          // Loop back or stop at end
-          if (newTime >= s.duration) {
-            return { ...s, currentTime: 0, isPlaying: false };
-          }
-          
-          return { ...s, currentTime: newTime };
-        });
-        
-        playbackRef.current = requestAnimationFrame(tick);
-      };
-      
-      playbackRef.current = requestAnimationFrame(tick);
-    }
-    
-    return () => {
-      if (playbackRef.current) {
-        cancelAnimationFrame(playbackRef.current);
-        playbackRef.current = null;
-      }
-    };
-  }, [state.isPlaying, state.playbackRate]);
   
   // Notify time updates
   useEffect(() => {
