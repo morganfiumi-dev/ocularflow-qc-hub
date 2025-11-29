@@ -359,6 +359,8 @@
   left: 0;
   right: 0;
   z-index: 20;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .of-subtitle-pill {
@@ -375,8 +377,10 @@
   color: var(--of-text-secondary);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.15s, left 0.1s linear, width 0.1s linear;
-  will-change: left, width;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .of-subtitle-pill:hover {
