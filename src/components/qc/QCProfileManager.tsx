@@ -351,6 +351,17 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
                                                {qcCheck.measurementType}
                                              </Badge>
                                            )}
+                                           <Badge 
+                                             variant="outline" 
+                                             className={cn(
+                                               "h-4 px-1.5 text-[7px] font-mono uppercase tracking-wider",
+                                               qcCheck.severity === 'ERROR' && "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/30",
+                                               qcCheck.severity === 'WARNING' && "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/30",
+                                               qcCheck.severity === 'INFO' && "bg-[#06b6d4]/10 text-[#06b6d4] border-[#06b6d4]/30"
+                                             )}
+                                           >
+                                             {qcCheck.severity}
+                                           </Badge>
                                          </div>
                                          <div className="text-[9px] text-[#64748b] leading-relaxed">
                                            {description}
@@ -503,36 +514,81 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
                     </div>
                     
                     <div className="bg-[#0f172a] border border-[#334155] rounded p-4 space-y-4">
-                      {/* Formula Display */}
+                       {/* Formula Display */}
                       <div className="bg-[#020617] border border-[#334155]/50 rounded p-4 space-y-3">
-                        <pre className="font-mono text-xs text-center">
-                          <span className="text-[#f1f5f9]">clipScore</span>{' '}
-                          <span className="text-[#64748b]">=</span>{' '}
-                          <span className="text-[#06b6d4]">100</span>{' '}
-                          <span className="text-[#64748b]">-</span>{' '}
-                          <span className="text-[#f1f5f9]">Σ</span>
-                          <span className="text-[#64748b]">(</span>
-                          <span className="text-[#94a3b8]">weight × severity × penalty</span>
-                          <span className="text-[#64748b]">)</span>
-                        </pre>
-                        <div className="flex items-start gap-2 text-[9px] text-[#64748b] leading-relaxed">
-                          <Info className="w-3 h-3 mt-0.5 shrink-0" />
+                        <div className="text-center mb-3">
+                          <div className="text-[9px] text-[#64748b] uppercase tracking-widest mb-2">Quality Score Formula</div>
+                          <pre className="font-mono text-xs">
+                            <span className="text-[#f1f5f9]">clipScore</span>{' '}
+                            <span className="text-[#64748b]">=</span>{' '}
+                            <span className="text-[#06b6d4]">100</span>{' '}
+                            <span className="text-[#64748b]">-</span>{' '}
+                            <span className="text-[#f1f5f9]">Σ</span>
+                            <span className="text-[#64748b]">(</span>
+                            <span className="text-[#94a3b8]">weight × severityMult × categoryMult × penalty</span>
+                            <span className="text-[#64748b]">)</span>
+                          </pre>
+                        </div>
+                        
+                        <div className="space-y-2 pt-3 border-t border-[#334155]/30">
+                          <div className="flex items-start gap-2 text-[9px] leading-relaxed">
+                            <div className="w-2 h-2 rounded-full bg-[#06b6d4] mt-1 shrink-0"></div>
+                            <div>
+                              <span className="text-[#06b6d4] font-bold">Weight (0-1):</span>
+                              <span className="text-[#94a3b8]"> Importance of this specific check within its category. 1.0 = critical, 0.5 = moderate</span>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2 text-[9px] leading-relaxed">
+                            <div className="w-2 h-2 rounded-full bg-[#f59e0b] mt-1 shrink-0"></div>
+                            <div>
+                              <span className="text-[#f59e0b] font-bold">Severity Multiplier:</span>
+                              <span className="text-[#94a3b8]"> Global multiplier for ERROR/WARNING/INFO severity levels (see below)</span>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2 text-[9px] leading-relaxed">
+                            <div className="w-2 h-2 rounded-full bg-[#8b5cf6] mt-1 shrink-0"></div>
+                            <div>
+                              <span className="text-[#8b5cf6] font-bold">Category Multiplier:</span>
+                              <span className="text-[#94a3b8]"> Priority adjustment for entire category (e.g., Channel Integrity = 1.2)</span>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2 text-[9px] leading-relaxed">
+                            <div className="w-2 h-2 rounded-full bg-[#ef4444] mt-1 shrink-0"></div>
+                            <div>
+                              <span className="text-[#ef4444] font-bold">Penalty:</span>
+                              <span className="text-[#94a3b8]"> Base points deducted (0-30). All multipliers apply to this value</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start gap-2 text-[9px] text-[#64748b] leading-relaxed pt-3 border-t border-[#334155]/30">
+                          <Info className="w-3 h-3 mt-0.5 shrink-0 text-[#06b6d4]" />
                           <div>
-                            All clips start at 100 points. Each issue deducts points based on: <span className="text-[#06b6d4]">Weight</span> (importance 0-1) × <span className="text-[#f59e0b]">Severity multiplier</span> × <span className="text-[#ef4444]">Base penalty</span>. Categories can have priority multipliers.
+                            <span className="text-[#f1f5f9] font-bold block mb-1">Example:</span>
+                            ERROR clipping (weight=1.0, penalty=18) in audio_deficiency (catMult=1.0):<br/>
+                            <span className="text-[#06b6d4]">100</span> - <span className="text-[#94a3b8]">(1.0 × 1.2 × 1.0 × 18)</span> = <span className="text-[#10b981]">78.4 points</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Multipliers */}
                       <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <p className="text-[9px] text-[#64748b] uppercase tracking-wide mb-2">Severity Multipliers</p>
-                          <div className="space-y-1.5">
+                        <div className="bg-[#020617] border border-[#334155]/50 rounded p-3">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 rounded-full bg-[#f59e0b]"></div>
+                            <p className="text-[9px] text-[#f59e0b] uppercase tracking-wide font-bold">Severity Multipliers</p>
+                          </div>
+                          <div className="space-y-2">
                             {Object.entries(langConfig.scoring.severityMultipliers || {}).map(
                               ([severity, multiplier]) => (
-                                <div key={severity} className="flex items-center justify-between text-[10px] font-mono">
-                                  <span className="text-[#94a3b8]">{severity}</span>
-                                  <span className="text-[#06b6d4]">{multiplier as number}</span>
+                                <div key={severity} className="flex items-center justify-between text-[10px] font-mono bg-[#1e293b]/30 rounded px-2 py-1.5">
+                                  <span className={cn(
+                                    "font-bold",
+                                    severity === 'ERROR' && "text-[#ef4444]",
+                                    severity === 'WARNING' && "text-[#f59e0b]",
+                                    severity === 'INFO' && "text-[#06b6d4]"
+                                  )}>{severity}</span>
+                                  <span className="text-[#f1f5f9]">×{multiplier as number}</span>
                                 </div>
                               )
                             )}
@@ -540,22 +596,47 @@ export function QCProfileManager({ onClose }: QCProfileManagerProps) {
                         </div>
                         
                         {langConfig.scoring.categoryMultipliers && (
-                          <div>
-                            <p className="text-[9px] text-[#64748b] uppercase tracking-wide mb-2">Category Multipliers</p>
-                            <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                          <div className="bg-[#020617] border border-[#334155]/50 rounded p-3">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-2 h-2 rounded-full bg-[#8b5cf6]"></div>
+                              <p className="text-[9px] text-[#8b5cf6] uppercase tracking-wide font-bold">Category Priority</p>
+                            </div>
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
                               {Object.entries(langConfig.scoring.categoryMultipliers).map(
                                 ([category, multiplier]) => (
-                                  <div key={category} className="flex items-center justify-between text-[10px] font-mono">
-                                    <span className="text-[#94a3b8] truncate pr-2">
+                                  <div key={category} className="flex items-center justify-between text-[10px] font-mono bg-[#1e293b]/30 rounded px-2 py-1.5 gap-2">
+                                    <span className="text-[#94a3b8] truncate flex-1">
                                       {category.replace(/_/g, ' ')}
                                     </span>
-                                    <span className="text-[#06b6d4]">{multiplier as number}</span>
+                                    <span className="text-[#f1f5f9] shrink-0">×{multiplier as number}</span>
                                   </div>
                                 )
                               )}
                             </div>
                           </div>
                         )}
+                      </div>
+                      
+                      {/* Score Ranges */}
+                      <div className="bg-[#020617] border border-[#334155]/50 rounded p-3">
+                        <p className="text-[9px] text-[#64748b] uppercase tracking-wide mb-3 font-bold">Score Interpretation</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-16 h-2 bg-gradient-to-r from-[#10b981] to-[#34d399] rounded-full"></div>
+                            <span className="text-[10px] text-[#10b981] font-mono font-bold">90-100</span>
+                            <span className="text-[9px] text-[#94a3b8]">Pass - Ready for delivery</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-16 h-2 bg-gradient-to-r from-[#f59e0b] to-[#fbbf24] rounded-full"></div>
+                            <span className="text-[10px] text-[#f59e0b] font-mono font-bold">70-89</span>
+                            <span className="text-[9px] text-[#94a3b8]">Review - Needs attention</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-16 h-2 bg-gradient-to-r from-[#ef4444] to-[#dc2626] rounded-full"></div>
+                            <span className="text-[10px] text-[#ef4444] font-mono font-bold">0-69</span>
+                            <span className="text-[9px] text-[#94a3b8]">Fail - Requires rework</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

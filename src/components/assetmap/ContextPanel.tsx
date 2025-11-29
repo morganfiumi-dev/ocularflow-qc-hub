@@ -4,8 +4,9 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { BookOpen, Users, FileText, MessageSquare, Globe, Info } from 'lucide-react';
+import { BookOpen, Users, FileText, MessageSquare, Globe, Info, ChevronDown } from 'lucide-react';
 import { loadContext, ContextMetadata } from '../../demo/loadContextualMetadata';
+import { cn } from '@/lib/utils';
 
 interface ContextPanelProps {
   titleId: string;
@@ -121,84 +122,161 @@ export function ContextPanel({ titleId }: ContextPanelProps) {
 }
 
 function MetadataSection({ metadata }: { metadata: ContextMetadata['metadata'] }) {
+  const [expandedSections, setExpandedSections] = useState({
+    overview: true,
+    genres: true,
+    credits: true,
+    cast: true,
+    themes: true
+  });
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-cyan-950/30 to-purple-950/30 border border-cyan-800/30 rounded-xl p-6">
-        <h3 className="text-2xl font-bold text-cyan-400 mb-3 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
-          {metadata.title}
-        </h3>
-        <div className="flex flex-wrap gap-3 text-xs text-slate-300 mb-4">
-          <span className="px-3 py-1 bg-slate-800/50 rounded-full">{metadata.year}</span>
-          <span className="px-3 py-1 bg-red-900/30 border border-red-700/50 rounded-full">{metadata.rating}</span>
-          <span className="px-3 py-1 bg-slate-800/50 rounded-full">{metadata.runtime}</span>
-        </div>
-        <p className="text-slate-300 text-sm leading-relaxed">{metadata.summary}</p>
+      <div className="bg-gradient-to-br from-cyan-950/30 to-purple-950/30 border border-cyan-800/30 rounded-xl overflow-hidden">
+        <button
+          onClick={() => toggleSection('overview')}
+          className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-900/30 transition-colors"
+        >
+          <h4 className="text-xs uppercase tracking-widest text-slate-400 font-bold">Overview</h4>
+          <ChevronDown className={cn(
+            "w-4 h-4 text-slate-400 transition-transform",
+            expandedSections.overview && "rotate-180"
+          )} />
+        </button>
+        {expandedSections.overview && (
+          <div className="px-6 pb-4">
+            <h3 className="text-2xl font-bold text-cyan-400 mb-3 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
+              {metadata.title}
+            </h3>
+            <div className="flex flex-wrap gap-3 text-xs text-slate-300 mb-4">
+              <span className="px-3 py-1 bg-slate-800/50 rounded-full">{metadata.year}</span>
+              <span className="px-3 py-1 bg-red-900/30 border border-red-700/50 rounded-full">{metadata.rating}</span>
+              <span className="px-3 py-1 bg-slate-800/50 rounded-full">{metadata.runtime}</span>
+            </div>
+            <p className="text-slate-300 text-sm leading-relaxed">{metadata.summary}</p>
+          </div>
+        )}
       </div>
 
       {/* Genres */}
-      <div>
-        <h4 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-3">Genres</h4>
-        <div className="flex flex-wrap gap-2">
-          {metadata.genres.map((genre, idx) => (
-            <span
-              key={genre}
-              className="px-3 py-1.5 bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-700/50 text-purple-300 rounded-lg text-xs font-semibold"
-              style={{ animationDelay: `${idx * 0.1}s` }}
-            >
-              {genre}
-            </span>
-          ))}
-        </div>
+      <div className="bg-slate-950/50 border border-slate-800 rounded-lg overflow-hidden">
+        <button
+          onClick={() => toggleSection('genres')}
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-900/30 transition-colors"
+        >
+          <h4 className="text-xs uppercase tracking-widest text-slate-400 font-bold">Genres</h4>
+          <ChevronDown className={cn(
+            "w-4 h-4 text-slate-400 transition-transform",
+            expandedSections.genres && "rotate-180"
+          )} />
+        </button>
+        {expandedSections.genres && (
+          <div className="px-4 pb-3">
+            <div className="flex flex-wrap gap-2">
+              {metadata.genres.map((genre, idx) => (
+                <span
+                  key={genre}
+                  className="px-3 py-1.5 bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-700/50 text-purple-300 rounded-lg text-xs font-semibold"
+                  style={{ animationDelay: `${idx * 0.1}s` }}
+                >
+                  {genre}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Credits Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
-          <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold">Director</span>
-          <p className="text-slate-200 mt-1">{metadata.director}</p>
-        </div>
-        <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
-          <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold">Studio</span>
-          <p className="text-slate-200 mt-1">{metadata.studio}</p>
-        </div>
-      </div>
-
-      {/* Writers */}
-      <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
-        <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold block mb-2">Writers</span>
-        <p className="text-slate-200 text-sm">{metadata.writers.join(', ')}</p>
-      </div>
-
-      {/* Additional Info */}
-      {(metadata as any).mainCast && (
-        <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
-          <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold block mb-3">Main Cast</span>
-          <div className="space-y-2">
-            {(metadata as any).mainCast.map((cast: string) => (
-              <p key={cast} className="text-slate-300 text-sm flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full"></span>
-                {cast}
-              </p>
-            ))}
+      <div className="bg-slate-950/50 border border-slate-800 rounded-lg overflow-hidden">
+        <button
+          onClick={() => toggleSection('credits')}
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-900/30 transition-colors"
+        >
+          <h4 className="text-xs uppercase tracking-widest text-slate-400 font-bold">Production Credits</h4>
+          <ChevronDown className={cn(
+            "w-4 h-4 text-slate-400 transition-transform",
+            expandedSections.credits && "rotate-180"
+          )} />
+        </button>
+        {expandedSections.credits && (
+          <div className="px-4 pb-3 space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+                <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold">Director</span>
+                <p className="text-slate-200 mt-1">{metadata.director}</p>
+              </div>
+              <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+                <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold">Studio</span>
+                <p className="text-slate-200 mt-1">{metadata.studio}</p>
+              </div>
+            </div>
+            <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+              <span className="text-xs uppercase tracking-wider text-cyan-500 font-bold block mb-2">Writers</span>
+              <p className="text-slate-200 text-sm">{metadata.writers.join(', ')}</p>
+            </div>
           </div>
+        )}
+      </div>
+
+      {/* Main Cast */}
+      {(metadata as any).mainCast && (
+        <div className="bg-slate-950/50 border border-slate-800 rounded-lg overflow-hidden">
+          <button
+            onClick={() => toggleSection('cast')}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-900/30 transition-colors"
+          >
+            <h4 className="text-xs uppercase tracking-widest text-slate-400 font-bold">Main Cast</h4>
+            <ChevronDown className={cn(
+              "w-4 h-4 text-slate-400 transition-transform",
+              expandedSections.cast && "rotate-180"
+            )} />
+          </button>
+          {expandedSections.cast && (
+            <div className="px-4 pb-3 space-y-2">
+              {(metadata as any).mainCast.map((cast: string) => (
+                <p key={cast} className="text-slate-300 text-sm flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full"></span>
+                  {cast}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Themes */}
       {(metadata as any).themes && (
-        <div>
-          <h4 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-3">Themes</h4>
-          <div className="flex flex-wrap gap-2">
-            {(metadata as any).themes.map((theme: string) => (
-              <span
-                key={theme}
-                className="px-3 py-1 bg-amber-900/20 border border-amber-700/40 text-amber-400 rounded text-xs"
-              >
-                {theme}
-              </span>
-            ))}
-          </div>
+        <div className="bg-slate-950/50 border border-slate-800 rounded-lg overflow-hidden">
+          <button
+            onClick={() => toggleSection('themes')}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-900/30 transition-colors"
+          >
+            <h4 className="text-xs uppercase tracking-widest text-slate-400 font-bold">Themes</h4>
+            <ChevronDown className={cn(
+              "w-4 h-4 text-slate-400 transition-transform",
+              expandedSections.themes && "rotate-180"
+            )} />
+          </button>
+          {expandedSections.themes && (
+            <div className="px-4 pb-3">
+              <div className="flex flex-wrap gap-2">
+                {(metadata as any).themes.map((theme: string) => (
+                  <span
+                    key={theme}
+                    className="px-3 py-1 bg-amber-900/20 border border-amber-700/40 text-amber-400 rounded text-xs"
+                  >
+                    {theme}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
