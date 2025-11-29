@@ -4,7 +4,10 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { ChevronDown, ChevronRight, AlertCircle, AlertTriangle, Info, BarChart3 } from 'lucide-react';
+import { ScoreBreakdown } from './ScoreBreakdown';
+import { calculateClipScore } from '@/utils/qcScoring';
+import useQCProfileStore from '@/state/useQCProfileStore';
 
 interface Issue {
   id: number;
@@ -13,7 +16,8 @@ interface Issue {
   type: string;
   severity: 'error' | 'warning' | 'info';
   description: string;
-  category: string;
+  categoryId: string;
+  checkId: string;
 }
 
 interface AudioInspectorProps {
@@ -25,11 +29,11 @@ interface AudioInspectorProps {
 }
 
 const CATEGORIES = [
-  { id: 'technical', label: 'Technical Audio', color: 'red' },
-  { id: 'timing', label: 'Timing & Sync', color: 'amber' },
-  { id: 'dialogue', label: 'Dialogue Integrity', color: 'blue' },
-  { id: 'speaker', label: 'Speaker Checks', color: 'purple' },
-  { id: 'synthetic', label: 'Synthetic Voice', color: 'cyan' },
+  { id: 'audio_deficiency', label: 'Audio Deficiency', color: 'red' },
+  { id: 'channel_integrity', label: 'Channel Integrity', color: 'amber' },
+  { id: 'timing_sync', label: 'Timing & Sync', color: 'blue' },
+  { id: 'dialogue_integrity', label: 'Dialogue Integrity', color: 'purple' },
+  { id: 'synthetic_voice', label: 'Synthetic Voice', color: 'cyan' },
   { id: 'translation', label: 'Translation', color: 'slate' }
 ];
 
@@ -40,11 +44,27 @@ export function AudioInspector({
   notes,
   onNotesChange
 }: AudioInspectorProps) {
+  const [activeTab, setActiveTab] = useState<'issues' | 'score'>('issues');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([
-    'technical',
-    'timing',
-    'dialogue'
+    'audio_deficiency',
+    'timing_sync',
+    'dialogue_integrity'
   ]);
+
+  const { currentLanguageConfig } = useQCProfileStore();
+  const langConfig = currentLanguageConfig();
+
+  // Convert issues to QC format for scoring
+  const qcIssues = issues.map(issue => ({
+    id: String(issue.id),
+    categoryId: issue.categoryId,
+    checkId: issue.checkId,
+    time: issue.timeSeconds,
+    severity: issue.severity.toUpperCase() as 'ERROR' | 'WARNING' | 'INFO',
+    description: issue.description
+  }));
+
+  const clipScore = langConfig ? calculateClipScore(qcIssues, langConfig) : undefined;
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories(prev =>
@@ -55,7 +75,7 @@ export function AudioInspector({
   };
 
   const getCategoryIssues = (categoryId: string) => {
-    return issues.filter(issue => issue.category === categoryId);
+    return issues.filter(issue => issue.categoryId === categoryId);
   };
 
   const getSeverityIcon = (severity: string) => {
@@ -103,95 +123,138 @@ export function AudioInspector({
         </h3>
         <p className="text-[10px] text-slate-600 mt-1">
           {issues.length} issue{issues.length !== 1 ? 's' : ''} detected
+          {clipScore !== undefined && (
+            <span className="ml-2 text-cyan-400 font-bold">
+              • Score: {clipScore.toFixed(1)}
+            </span>
+          )}
         </p>
       </div>
 
-      {/* Issue Categories */}
+      {/* Tabs */}
+      <div className="px-4 py-2 flex gap-1 bg-slate-900/40 border-b border-slate-800">
+        <button
+          onClick={() => setActiveTab('issues')}
+          className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+            activeTab === 'issues'
+              ? 'bg-slate-800 text-cyan-400'
+              : 'text-slate-500 hover:text-slate-300'
+          }`}
+        >
+          <div className="flex items-center justify-center gap-1.5">
+            <AlertCircle className="w-3 h-3" />
+            Issues
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('score')}
+          className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+            activeTab === 'score'
+              ? 'bg-slate-800 text-cyan-400'
+              : 'text-slate-500 hover:text-slate-300'
+          }`}
+        >
+          <div className="flex items-center justify-center gap-1.5">
+            <BarChart3 className="w-3 h-3" />
+            Score
+          </div>
+        </button>
+      </div>
+
+      {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        {CATEGORIES.map((category) => {
-          const categoryIssues = getCategoryIssues(category.id);
-          const isExpanded = expandedCategories.includes(category.id);
-          const hasIssues = categoryIssues.length > 0;
+        {activeTab === 'score' ? (
+          <div className="p-4">
+            <ScoreBreakdown issues={qcIssues} clipScore={clipScore} />
+          </div>
+        ) : (
+          <>
+            {CATEGORIES.map((category) => {
+              const categoryIssues = getCategoryIssues(category.id);
+              const isExpanded = expandedCategories.includes(category.id);
+              const hasIssues = categoryIssues.length > 0;
 
-          return (
-            <div key={category.id} className="border-b border-slate-800/50">
-              {/* Category Header */}
-              <button
-                onClick={() => toggleCategory(category.id)}
-                className={`
-                  w-full px-4 py-2.5 flex items-center justify-between
-                  hover:bg-slate-800/30 transition-colors
-                  ${hasIssues ? getCategoryColor(category.color) : 'bg-slate-900/30'}
-                  border-l-2 ${hasIssues ? '' : 'border-l-transparent'}
-                `}
-              >
-                <div className="flex items-center gap-2">
-                  {isExpanded ? (
-                    <ChevronDown className="w-3 h-3 text-slate-500" />
-                  ) : (
-                    <ChevronRight className="w-3 h-3 text-slate-500" />
-                  )}
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                    {category.label}
-                  </span>
-                </div>
-                {hasIssues && (
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
-                    {categoryIssues.length}
-                  </span>
-                )}
-              </button>
+              return (
+                <div key={category.id} className="border-b border-slate-800/50">
+                  {/* Category Header */}
+                  <button
+                    onClick={() => toggleCategory(category.id)}
+                    className={`
+                      w-full px-4 py-2.5 flex items-center justify-between
+                      hover:bg-slate-800/30 transition-colors
+                      ${hasIssues ? getCategoryColor(category.color) : 'bg-slate-900/30'}
+                      border-l-2 ${hasIssues ? '' : 'border-l-transparent'}
+                    `}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isExpanded ? (
+                        <ChevronDown className="w-3 h-3 text-slate-500" />
+                      ) : (
+                        <ChevronRight className="w-3 h-3 text-slate-500" />
+                      )}
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                        {category.label}
+                      </span>
+                    </div>
+                    {hasIssues && (
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                        {categoryIssues.length}
+                      </span>
+                    )}
+                  </button>
 
-              {/* Category Issues */}
-              {isExpanded && hasIssues && (
-                <div className="bg-slate-950/40">
-                  {categoryIssues.map((issue) => {
-                    const isSelected = issue.id === selectedIssueId;
-                    return (
-                      <div
-                        key={issue.id}
-                        onClick={() => onSelectIssue(issue.id)}
-                        className={`
-                          px-4 py-2.5 border-l-2 cursor-pointer transition-all
-                          ${isSelected
-                            ? 'bg-cyan-500/10 border-l-cyan-500'
-                            : 'border-l-transparent hover:bg-slate-800/30'
-                          }
-                        `}
-                      >
-                        <div className="flex items-start gap-2">
-                          <div className={`mt-0.5 p-1 rounded ${getSeverityColor(issue.severity)}`}>
-                            {getSeverityIcon(issue.severity)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-semibold text-slate-200">
-                                {issue.type}
-                              </span>
-                              <span className="text-[10px] font-mono text-slate-600">
-                                {issue.timecode}
-                              </span>
+                  {/* Category Issues */}
+                  {isExpanded && hasIssues && (
+                    <div className="bg-slate-950/40">
+                      {categoryIssues.map((issue) => {
+                        const isSelected = issue.id === selectedIssueId;
+                        return (
+                          <div
+                            key={issue.id}
+                            onClick={() => onSelectIssue(issue.id)}
+                            className={`
+                              px-4 py-2.5 border-l-2 cursor-pointer transition-all
+                              ${isSelected
+                                ? 'bg-cyan-500/10 border-l-cyan-500'
+                                : 'border-l-transparent hover:bg-slate-800/30'
+                              }
+                            `}
+                          >
+                            <div className="flex items-start gap-2">
+                              <div className={`mt-0.5 p-1 rounded ${getSeverityColor(issue.severity)}`}>
+                                {getSeverityIcon(issue.severity)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-semibold text-slate-200">
+                                    {issue.type}
+                                  </span>
+                                  <span className="text-[10px] font-mono text-slate-600">
+                                    {issue.timecode}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-slate-400 leading-relaxed">
+                                  {issue.description}
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-400 leading-relaxed">
-                              {issue.description}
-                            </p>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                        );
+                      })}
+                    </div>
+                  )}
 
-              {/* Empty State */}
-              {isExpanded && !hasIssues && (
-                <div className="px-4 py-3 text-center">
-                  <p className="text-[10px] text-slate-600">No issues in this category</p>
+                  {/* Empty State */}
+                  {isExpanded && !hasIssues && (
+                    <div className="px-4 py-3 text-center">
+                      <p className="text-[10px] text-slate-600">No issues in this category</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* Issue Details (when selected) */}
