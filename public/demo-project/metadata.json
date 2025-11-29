@@ -1,0 +1,10 @@
+{
+  "projectId": "demo-default",
+  "title": "The Witcher S3E01",
+  "client": "Netflix",
+  "sourceLanguage": "EN",
+  "targetLanguages": ["ES", "DE", "FR"],
+  "version": "1.0",
+  "created": "2024-01-15T10:00:00Z",
+  "lastModified": "2024-01-20T14:30:00Z"
+}

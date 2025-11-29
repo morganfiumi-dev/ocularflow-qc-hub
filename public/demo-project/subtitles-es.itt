@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttp="http://www.w3.org/ns/ttml#parameter">
+  <head>
+    <metadata xmlns:ttm="http://www.w3.org/ns/ttml#metadata">
+      <ttm:title>The Witcher S3E01 - Spanish Subtitles</ttm:title>
+    </metadata>
+  </head>
+  <body>
+    <div>
+      <p begin="00:00:01.000" end="00:00:04.500">
+        El Continente está en guerra una vez más.
+      </p>
+      <p begin="00:00:05.000" end="00:00:08.200">
+        Los reinos suben y bajan como la marea.
+      </p>
+      <p begin="00:00:09.000" end="00:00:12.800">
+        Pero algunas cosas nunca cambian.
+      </p>
+      <p begin="00:00:13.500" end="00:00:17.000">
+        El Brujo todavía caza monstruos.
+      </p>
+      <p begin="00:00:18.000" end="00:00:21.500">
+        Y los monstruos todavía cazan a los inocentes.
+      </p>
+      <p begin="00:00:22.000" end="00:00:25.800">
+        En tiempos como estos, la neutralidad es un lujo.
+      </p>
+      <p begin="00:00:26.500" end="00:00:30.000">
+        Debes elegir un bando, Geralt.
+      </p>
+      <p begin="00:00:31.000" end="00:00:34.200">
+        Hice mi elección hace mucho tiempo.
+      </p>
+      <p begin="00:00:35.000" end="00:00:38.500">
+        Entonces sabes lo que hay que hacer.
+      </p>
+      <p begin="00:00:39.500" end="00:00:43.000">
+        La Cacería Salvaje se acerca desde el norte.
+      </p>
+    </div>
+  </body>
+</tt>

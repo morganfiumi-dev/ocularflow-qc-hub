@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { getDemoVideoUrl } from '../../utils/demoProjectLoader';
 
 /**
  * VideoPlayer component
@@ -14,15 +15,15 @@ export function VideoPlayer({
   contextType = 'DIALOGUE',
   className = ''
 }) {
-  // Demo video URL (using a public domain video)
-  const demoVideoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+  // Get demo video URL
+  const videoUrl = getDemoVideoUrl();
   
   return (
     <div className={`of-video-stage ${className}`}>
       {/* Video element */}
       <video
         className="absolute inset-0 w-full h-full object-cover"
-        src={demoVideoUrl}
+        src={videoUrl}
         controls
         crossOrigin="anonymous"
       >
