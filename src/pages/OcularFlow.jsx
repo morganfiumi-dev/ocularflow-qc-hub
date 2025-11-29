@@ -74,22 +74,22 @@ export default function OcularFlow() {
   const [contextMetadata, setContextMetadata] = useState(null);
   
   // Subtitle store
-  const {
-    subtitles,
-    currentIndex,
-    currentSubtitle,
-    filteredSubtitles,
-    reviewQueue,
-    filter,
-    loading,
-    stats,
-    loadSubtitles,
-    selectSubtitle,
-    selectNext,
-    selectPrevious,
-    updateText,
-    setFilter
-  } = useSubtitleStore();
+  const subtitles = useSubtitleStore((state) => state.subtitles);
+  const currentIndex = useSubtitleStore((state) => state.currentIndex);
+  const filter = useSubtitleStore((state) => state.filter);
+  const loading = useSubtitleStore((state) => state.loading);
+  const loadSubtitles = useSubtitleStore((state) => state.loadSubtitles);
+  const selectSubtitle = useSubtitleStore((state) => state.selectSubtitle);
+  const selectNext = useSubtitleStore((state) => state.selectNext);
+  const selectPrevious = useSubtitleStore((state) => state.selectPrevious);
+  const updateText = useSubtitleStore((state) => state.updateText);
+  const setFilter = useSubtitleStore((state) => state.setFilter);
+  
+  // Computed values
+  const currentSubtitle = useSubtitleStore((state) => state.getCurrentSubtitle());
+  const filteredSubtitles = useSubtitleStore((state) => state.getFilteredSubtitles());
+  const reviewQueue = useSubtitleStore((state) => state.getReviewQueue());
+  const stats = useSubtitleStore((state) => state.getStats());
   
   // Video state
   const {
