@@ -89,9 +89,9 @@ const useQCProfileStore = create<QCProfileStore>()(
   activeLanguage: 'en',
 
       loadProfiles: (profiles) => {
-        // Set default active client to professional_template if available
-        const defaultClient = profiles.find(p => p.id === 'professional_template') 
-          ? 'professional_template' 
+        // Set default active client to apple_plus if available
+        const defaultClient = profiles.find(p => p.id === 'apple_plus') 
+          ? 'apple_plus' 
           : (profiles[0]?.id || 'apple_plus');
         
         set({ 

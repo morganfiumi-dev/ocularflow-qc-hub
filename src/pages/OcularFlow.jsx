@@ -34,6 +34,7 @@ import { Button } from '../components/atoms/Button';
 import { useSubtitleStore } from '../state/useSubtitleStore';
 import { useVideoState } from '../state/useVideoState';
 import { useIssueStore, KNP_GLOSSARY } from '../state/useIssueStore';
+import useQCProfileStore from '../state/useQCProfileStore';
 
 // Hooks
 import { useWaveform } from '../hooks/useWaveform';
@@ -159,6 +160,14 @@ export default function OcularFlow() {
   const toggleSourceAnnotations = useIssueStore((state) => state.toggleSourceAnnotations);
   const toggleTargetAnnotations = useIssueStore((state) => state.toggleTargetAnnotations);
   
+  // QC Profile state
+  const profiles = useQCProfileStore((state) => state.profiles);
+  const activeClientId = useQCProfileStore((state) => state.activeClientId);
+  const loadProfiles = useQCProfileStore((state) => state.loadProfiles);
+  const setClient = useQCProfileStore((state) => state.setClient);
+  const currentProfile = useQCProfileStore((state) => state.currentProfile());
+
+  
   // Waveform state
   const waveform = useWaveform(currentTime, duration);
   
@@ -214,6 +223,44 @@ export default function OcularFlow() {
     
     loadContextData();
   }, []);
+  
+  // Load QC profiles
+  useEffect(() => {
+    async function loadQCProfiles() {
+      try {
+        // Load all profile files
+        const [applePlus, netflix, disney, amazon] = await Promise.all([
+          fetch('/src/qc/profiles/apple_plus.json').then(r => r.json()),
+          fetch('/src/qc/profiles/netflix.json').then(r => r.json()),
+          fetch('/src/qc/profiles/disney_plus.json').then(r => r.json()),
+          fetch('/src/qc/profiles/amazon.json').then(r => r.json())
+        ]);
+        
+        loadProfiles([applePlus, netflix, disney, amazon]);
+      } catch (error) {
+        console.error('Failed to load QC profiles:', error);
+        // Set default profile if loading fails
+        loadProfiles([{
+          id: 'apple_plus',
+          client: 'Apple+',
+          products: {
+            dubbed_audio: {
+              languages: {
+                en: {
+                  checks: {},
+                  scoring: {
+                    severityMultipliers: { ERROR: 1.2, WARNING: 0.6, INFO: 0.15 }
+                  }
+                }
+              }
+            }
+          }
+        }]);
+      }
+    }
+    
+    loadQCProfiles();
+  }, [loadProfiles]);
   
   // =========================================================================
   // HANDLERS
@@ -306,11 +353,16 @@ export default function OcularFlow() {
         
         {/* Right: Actions */}
         <div className="of-topbar-actions">
-          <select className="of-select">
-            <option>Netflix Standard</option>
-            <option>Netflix SDH</option>
-            <option>Amazon Prime</option>
-            <option>Disney+</option>
+          <select 
+            className="of-select"
+            value={activeClientId}
+            onChange={(e) => setClient(e.target.value)}
+          >
+            {profiles.map(profile => (
+              <option key={profile.id} value={profile.id}>
+                {profile.client}
+              </option>
+            ))}
           </select>
           
           <Button variant="primary" icon={PlayCircle}>
