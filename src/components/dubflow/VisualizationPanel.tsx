@@ -16,10 +16,18 @@ interface VisualizationPanelProps {
     timeSeconds: number;
   } | null;
   onClose: () => void;
+  embedded?: boolean; // For embedding in tabs vs overlay
 }
 
-export function VisualizationPanel({ isOpen, selectedIssue, onClose }: VisualizationPanelProps) {
-  if (!isOpen || !selectedIssue) return null;
+export function VisualizationPanel({ isOpen, selectedIssue, onClose, embedded = false }: VisualizationPanelProps) {
+  if (!isOpen && !embedded) return null;
+  if (!selectedIssue) {
+    return embedded ? (
+      <div className="flex items-center justify-center h-64 text-slate-500 text-sm">
+        Select an issue to view visualizations
+      </div>
+    ) : null;
+  }
 
   const isEmotional = selectedIssue.categoryId === 'dialogue_integrity' || selectedIssue.type.toLowerCase().includes('tone');
   const isTruncated = selectedIssue.type.toLowerCase().includes('cutoff') || selectedIssue.type.toLowerCase().includes('truncat');
@@ -28,24 +36,29 @@ export function VisualizationPanel({ isOpen, selectedIssue, onClose }: Visualiza
   const isSyncDrift = selectedIssue.type.toLowerCase().includes('sync') || selectedIssue.type.toLowerCase().includes('drift');
   const isChannelIssue = selectedIssue.categoryId === 'channel_integrity';
 
-  return (
-    <div 
-      className={`absolute right-0 top-0 bottom-0 w-[420px] bg-slate-900/95 backdrop-blur-md border-l border-slate-700 shadow-2xl z-50 transition-transform duration-300 ease-out ${
+  // Conditional wrapper based on mode
+  const containerClass = embedded 
+    ? "bg-slate-950/40 rounded-md border border-slate-800 flex flex-col overflow-hidden"
+    : `absolute right-0 top-0 bottom-0 w-[420px] bg-slate-900/95 backdrop-blur-md border-l border-slate-700 shadow-2xl z-50 transition-transform duration-300 ease-out ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}
-    >
+      }`;
+  
+  return (
+    <div className={containerClass}>
       {/* Header */}
       <div className="h-10 border-b border-slate-800 flex items-center justify-between px-3 bg-slate-950/60 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Eye className="w-3.5 h-3.5 text-cyan-400" />
           <span className="text-xs font-bold text-slate-200">Visual Analysis</span>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
+        {!embedded && (
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {/* Content - Scrollable */}

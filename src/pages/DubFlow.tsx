@@ -1,22 +1,21 @@
 /**
- * DubFlow v2 - Audio QC Cockpit
- * Three-panel cockpit matching OcularFlow design
+ * DubFlow v3 - Audio QC Cockpit (OcularFlow-style)
+ * Three-column layout with OcularFlow's waveform component
+ * UI-only refactor, no logic changes
  */
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Zap, PlayCircle, ChevronUp, ChevronDown } from 'lucide-react';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
+import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
 import { ToolsSidebar } from '../components/dubflow/ToolsSidebar';
 import { WaveformPanel } from '../components/waveform/WaveformPanel';
+import { VideoPanel } from '../components/video/VideoPanel';
 import { DialogueHighlightStrip } from '../components/dubflow/DialogueHighlightStrip';
 import { TabbedInspector } from '../components/dubflow/TabbedInspector';
-import { VisualizationPanel } from '../components/dubflow/VisualizationPanel';
-import { AudioPlaybackControls } from '../components/dubflow/AudioPlaybackControls';
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
-import { calculateClipScore, calculateAssetScore, getScoreColor } from '../utils/qcScoring';
+import { calculateClipScore, calculateAssetScore } from '../utils/qcScoring';
 
 export default function DubFlow() {
   const { assetId } = useParams<{ assetId: string }>();
@@ -35,14 +34,12 @@ export default function DubFlow() {
   
   // Map backend issues to component format with QC Profile categories
   const issues = audioTrack?.issues.map(issue => {
-    // Map issue type to QC profile category and check
     const issueType = issue.type.toLowerCase().replace(/\s+/g, '_');
     
     // Determine category based on actual QC profile structure
     let categoryId = 'audio_deficiency'; // default
     let checkId = issueType;
     
-    // Map to actual QC profile categories
     if (['sync_drift', 'early_entry', 'late_entry', 'late_cutoff', 'duration_mismatch', 'pacing_cps'].includes(issueType)) {
       categoryId = 'timing_sync';
     } else if (['missing_words', 'added_words', 'repetition_stutter', 'tone_mismatch', 'prosody_issues', 'pitch_gender_mismatch', 'pronunciation_incorrect'].includes(issueType)) {
@@ -116,7 +113,7 @@ export default function DubFlow() {
     },
   ];
 
-  // Calculate clip scores using QC profile with properly linked issues
+  // Calculate clip scores using QC profile
   const clipScores = langConfig ? dialogueLines.map(line => {
     const clipIssues = line.issues.map(issue => ({
       id: String(issue.id),
@@ -140,7 +137,7 @@ export default function DubFlow() {
 
   const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
 
-  // Local playback state (not shared with OcularFlow)
+  // Playback state
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const duration = audioTrack?.metadata.duration || 420;
@@ -148,27 +145,16 @@ export default function DubFlow() {
   const [volume, setVolume] = useState(0.75);
   const [muted, setMuted] = useState(false);
   
-  // Waveform zoom state (simple local state, not using OcularFlow hook)
+  // Waveform state (simple local state, matching OcularFlow structure)
   const [zoomLevel, setZoomLevel] = useState(2);
   const [waveformCollapsed, setWaveformCollapsed] = useState(false);
   
-  // Collapsible sections
-  const [dialogueCollapsed, setDialogueCollapsed] = useState(false);
-
   // Inspector state
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
-  
-  // Visualization panel state
-  const [visualizationOpen, setVisualizationOpen] = useState(false);
-  const [visualizationIssue, setVisualizationIssue] = useState<typeof issues[0] | null>(null);
 
-  // Audio playback - simulated with video's audio track
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
+  // Audio playback - simulated with timer
   useEffect(() => {
-    // Try to get audio from the video element in VideoPlayer if it exists
-    // For now, simulate playback with timer
     let interval: number | null = null;
     
     if (isPlaying) {
@@ -203,9 +189,6 @@ export default function DubFlow() {
     const issue = issues.find(i => i.id === id);
     if (issue) {
       seek(issue.timeSeconds);
-      // Open visualization panel with the issue
-      setVisualizationIssue(issue);
-      setVisualizationOpen(true);
     }
   };
 
@@ -230,7 +213,7 @@ export default function DubFlow() {
 
   return (
     <div className="h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
-      {/* Top Bar - Matching OcularFlow */}
+      {/* Top Bar - Matching OcularFlow style */}
       <div className="h-12 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between px-4 flex-shrink-0">
         <div className="flex items-center gap-4">
           <button
@@ -248,7 +231,7 @@ export default function DubFlow() {
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-300">DUB</span>
                 <span className="text-cyan-500 text-xs font-bold">FLOW</span>
-                <span className="text-[10px] text-slate-600">v2.0</span>
+                <span className="text-[10px] text-slate-600">v3.0</span>
               </div>
               <p className="text-[10px] text-slate-500">
                 NFLX_WITCHER_S3 • <span className="font-mono">{assetId}</span>
@@ -295,7 +278,6 @@ export default function DubFlow() {
                 </div>
               </div>
 
-              {/* Live indicator */}
               <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/60 border border-slate-700 rounded">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                 <span className="text-[9px] text-slate-500 uppercase tracking-wider">Live</span>
@@ -313,122 +295,103 @@ export default function DubFlow() {
         </div>
       </div>
 
-      {/* Three-panel cockpit layout with resizable panels */}
-      <div className="flex-1 p-4 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal" className="h-full gap-4">
-          {/* LEFT: Vertically expandable Tools (Not horizontally draggable) */}
-          <div className="w-14 flex-shrink-0">
-            <ToolsSidebar />
+      {/* Three-column layout matching OcularFlow */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* LEFT: Audio Toolbar (OcularFlow-style) */}
+        <div className="flex-shrink-0">
+          <ToolsSidebar />
+        </div>
+
+        {/* CENTER: Video → Waveform → Dialogue (OcularFlow stack) */}
+        <div className="flex-1 flex flex-col min-w-0 p-4 gap-3">
+          {/* Video Panel */}
+          <div className="flex-shrink-0" style={{ height: '300px' }}>
+            <VideoPanel
+              isPlaying={isPlaying}
+              currentTime={currentTime}
+              duration={duration}
+              playbackRate={playbackRate}
+              volume={volume}
+              muted={muted}
+              currentSubtitle={null}
+              contextType="DIALOGUE"
+              onTogglePlayback={togglePlayback}
+              onSkipForward={skipForward}
+              onSkipBackward={skipBackward}
+              onFrameForward={frameForward}
+              onFrameBackward={frameBackward}
+              onSeek={seek}
+              onPlaybackRateChange={setPlaybackRate}
+              onVolumeChange={setVolume}
+              onToggleMute={toggleMute}
+              onDurationChange={() => {}}
+            />
           </div>
 
-          {/* CENTER: Waveform-First Layout with Collapsible Sections */}
-          <ResizablePanel defaultSize={82} minSize={50}>
-            <ResizablePanelGroup direction="vertical" className="h-full">
-              {/* Waveform Section - Uses OcularFlow WaveformPanel */}
-              <ResizablePanel 
-                defaultSize={waveformCollapsed ? 5 : 50} 
-                minSize={waveformCollapsed ? 3 : 25}
-                maxSize={70}
-                collapsible
-              >
-                <WaveformPanel
-                  height={waveformCollapsed ? 32 : 240}
-                  collapsed={waveformCollapsed}
-                  waveformBars={[]}
-                  zoomLevel={zoomLevel}
-                  scrollMode="CENTER"
-                  isolateDialogue={false}
-                  spectrogramMode={false}
-                  issueFilters={{ error: true, warning: true, info: true }}
-                  subtitles={dialogueLinesWithScores.map(line => ({
-                    index: line.id,
-                    inTime: line.timeInSeconds,
-                    outTime: line.timeOutSeconds,
-                    targetText: line.dubText,
-                    issues: line.issues
-                  }))}
-                  currentIndex={selectedLineId || 1}
-                  currentTime={currentTime}
-                  duration={duration}
-                  windowStart={Math.max(0, currentTime - 5)}
-                  visibleWindow={10}
-                  playheadPct={30}
-                  onHeightChange={(delta) => {}}
-                  onToggleCollapse={() => setWaveformCollapsed(!waveformCollapsed)}
-                  onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
-                  onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
-                  onScrollModeChange={() => {}}
-                  onToggleDialogueIsolation={() => {}}
-                  onToggleSpectrogramMode={() => {}}
-                  onToggleIssueFilter={() => {}}
-                  onSeek={seek}
-                  onSubtitleClick={handleSelectLine}
-                />
-              </ResizablePanel>
-
-              <ResizableHandle withHandle />
-
-              {/* Dialogue Section - Collapsible */}
-              <ResizablePanel 
-                defaultSize={dialogueCollapsed ? 5 : 50} 
-                minSize={dialogueCollapsed ? 3 : 25}
-                collapsible
-              >
-                <div className="h-full flex flex-col bg-slate-900/40 border border-slate-800 rounded-lg overflow-hidden">
-                  {/* Collapse Header */}
-                  <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900/60 border-b border-slate-800 flex-shrink-0">
-                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                      {dialogueCollapsed ? 'Dialogue' : 'Dialogue Clips'}
-                    </span>
-                    <button
-                      onClick={() => setDialogueCollapsed(!dialogueCollapsed)}
-                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition-colors"
-                    >
-                      {dialogueCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
-                    </button>
-                  </div>
-
-                  {!dialogueCollapsed && (
-                    <div className="flex-1 min-h-0 overflow-hidden">
-                      <DialogueHighlightStrip
-                        lines={dialogueLinesWithScores}
-                        currentTime={currentTime}
-                        selectedLineId={selectedLineId}
-                        onSelectLine={handleSelectLine}
-                      />
-                    </div>
-                  )}
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-            
-            {/* Visualization Panel - Overlays from right edge of center panel */}
-            <VisualizationPanel
-              isOpen={visualizationOpen}
-              selectedIssue={visualizationIssue}
-              onClose={() => setVisualizationOpen(false)}
-            />
-          </ResizablePanel>
-
-          <ResizableHandle withHandle />
-
-          {/* RIGHT: Tabbed Inspector */}
-          <ResizablePanel defaultSize={18} minSize={15} maxSize={30}>
-            <TabbedInspector
-              issues={issues}
-              dialogueLines={dialogueLinesWithScores}
-              selectedIssueId={selectedIssueId}
-              selectedLineId={selectedLineId}
+          {/* Waveform Panel - Using OcularFlow's component directly */}
+          <div className="flex-1 min-h-0">
+            <WaveformPanel
+              height={waveformCollapsed ? 32 : 240}
+              collapsed={waveformCollapsed}
+              waveformBars={[]}
+              zoomLevel={zoomLevel}
+              scrollMode="CENTER"
+              isolateDialogue={false}
+              spectrogramMode={false}
+              issueFilters={{ error: true, warning: true, info: true }}
+              subtitles={dialogueLinesWithScores.map(line => ({
+                index: line.id,
+                inTime: line.timeInSeconds,
+                outTime: line.timeOutSeconds,
+                targetText: line.dubText,
+                issues: line.issues
+              }))}
+              currentIndex={selectedLineId || 1}
               currentTime={currentTime}
-              notes={notes}
-              assetScore={assetScore}
-              clipScores={clipScores}
-              onSelectIssue={handleSelectIssue}
-              onSelectLine={handleSelectLine}
-              onNotesChange={setNotes}
+              duration={duration}
+              windowStart={Math.max(0, currentTime - 5)}
+              visibleWindow={10}
+              playheadPct={30}
+              onHeightChange={(delta) => {}}
+              onToggleCollapse={() => setWaveformCollapsed(!waveformCollapsed)}
+              onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
+              onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
+              onScrollModeChange={() => {}}
+              onToggleDialogueIsolation={() => {}}
+              onToggleSpectrogramMode={() => {}}
+              onToggleIssueFilter={() => {}}
+              onSeek={seek}
+              onSubtitleClick={handleSelectLine}
             />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </div>
+
+          {/* Dialogue Highlight Strip */}
+          <div className="flex-shrink-0 h-64">
+            <DialogueHighlightStrip
+              lines={dialogueLinesWithScores}
+              currentTime={currentTime}
+              selectedLineId={selectedLineId}
+              onSelectLine={handleSelectLine}
+            />
+          </div>
+        </div>
+
+        {/* RIGHT: Inspector (OcularFlow-style tabs) */}
+        <div className="flex-shrink-0 w-96 p-4">
+          <TabbedInspector
+            issues={issues}
+            dialogueLines={dialogueLinesWithScores}
+            selectedIssueId={selectedIssueId}
+            selectedLineId={selectedLineId}
+            currentTime={currentTime}
+            notes={notes}
+            assetScore={assetScore}
+            clipScores={clipScores}
+            onSelectIssue={handleSelectIssue}
+            onSelectLine={handleSelectLine}
+            onNotesChange={setNotes}
+          />
+        </div>
       </div>
     </div>
   );

@@ -7,11 +7,13 @@ import React, { useState } from 'react';
 import { AlertTriangle, Eye, FileText, Sparkles, BarChart3 } from 'lucide-react';
 import { IssueList } from './IssueList';
 import { IssueDetails } from './IssueDetails';
-import { DialogueEditor } from './DialogueEditor';
+import { EditorTab } from './EditorTab';
 import { ScriptDoctorMode } from './ScriptDoctorMode';
 import { ScoreTab } from './ScoreTab';
+import { VisualizationPanel } from './VisualizationPanel';
+import { RecommendTab } from './RecommendTab';
 
-type TabId = 'incidents' | 'dialogue' | 'score';
+type TabId = 'incidents' | 'visual' | 'editor' | 'recommend' | 'score';
 
 interface Issue {
   id: number;
@@ -28,6 +30,7 @@ interface DialogueLine {
   id: number;
   timeIn: string;
   timeInSeconds: number;
+  timeOutSeconds: number;
   enText: string;
   dubText: string;
   issues: Issue[];
@@ -65,7 +68,9 @@ export function TabbedInspector({
 
   const tabs = [
     { id: 'incidents' as TabId, label: 'Incidents', icon: AlertTriangle },
-    { id: 'dialogue' as TabId, label: 'Dialogue', icon: FileText },
+    { id: 'visual' as TabId, label: 'Visual', icon: Eye },
+    { id: 'editor' as TabId, label: 'Editor', icon: FileText },
+    { id: 'recommend' as TabId, label: 'Recommend', icon: Sparkles },
     { id: 'score' as TabId, label: 'Score', icon: BarChart3 },
   ];
 
@@ -167,13 +172,33 @@ export function TabbedInspector({
           </div>
         )}
 
-        {activeTab === 'dialogue' && (
+        {activeTab === 'visual' && selectedIssue && (
+          <div className="h-full overflow-y-auto">
+            <VisualizationPanel
+              isOpen={true}
+              selectedIssue={selectedIssue}
+              onClose={() => {}}
+              embedded={true}
+            />
+          </div>
+        )}
+
+        {activeTab === 'editor' && (
           <div className="h-full overflow-hidden">
-            <DialogueEditor
+            <EditorTab
               lines={dialogueLines}
               selectedLineId={selectedLineId}
               currentTime={currentTime}
               onSelectLine={onSelectLine}
+            />
+          </div>
+        )}
+
+        {activeTab === 'recommend' && (
+          <div className="h-full overflow-y-auto">
+            <RecommendTab
+              issueCount={issues.length}
+              assetScore={assetScore}
             />
           </div>
         )}
