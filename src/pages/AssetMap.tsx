@@ -9,7 +9,7 @@ import { LayoutGrid, Network } from 'lucide-react';
 import { CardView } from '../components/assetmap/CardView';
 import { TreeView } from '../components/assetmap/TreeView';
 import { Asset } from '../components/assetmap/AssetCard';
-import { trpc } from '../lib/trpc';
+import { trpc } from '../lib/trpc-mock';
 
 export default function AssetMap() {
   const { titleId } = useParams<{ titleId: string }>();
