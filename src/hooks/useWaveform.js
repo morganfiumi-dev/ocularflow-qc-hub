@@ -22,6 +22,11 @@ const createInitialState = () => ({
   scrollMode: 'CENTER', // CENTER or FREE
   isolateDialogue: false,
   spectrogramMode: false,
+  issueFilters: {
+    error: true,
+    warning: true,
+    info: true
+  },
   layers: {
     scenes: true,
     fn: false,
@@ -128,6 +133,17 @@ export function useWaveform(currentTime, duration) {
     }));
   }, []);
   
+  // Toggle issue filter
+  const toggleIssueFilter = useCallback((severity) => {
+    setState(s => ({
+      ...s,
+      issueFilters: {
+        ...s.issueFilters,
+        [severity]: !s.issueFilters[severity]
+      }
+    }));
+  }, []);
+  
   // Convert click to time
   const handleClick = useCallback((clickX, containerWidth) => {
     return clickToTime(
@@ -155,6 +171,7 @@ export function useWaveform(currentTime, duration) {
     scrollMode: state.scrollMode,
     isolateDialogue: state.isolateDialogue,
     spectrogramMode: state.spectrogramMode,
+    issueFilters: state.issueFilters,
     layers: state.layers,
     
     // Calculated values
@@ -175,6 +192,7 @@ export function useWaveform(currentTime, duration) {
     toggleDialogueIsolation,
     toggleSpectrogramMode,
     toggleLayer,
+    toggleIssueFilter,
     handleClick,
     filterVisibleSubtitles
   };

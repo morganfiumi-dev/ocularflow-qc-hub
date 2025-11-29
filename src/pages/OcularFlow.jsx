@@ -308,6 +308,7 @@ export default function OcularFlow() {
             scrollMode={waveform.scrollMode}
             isolateDialogue={waveform.isolateDialogue}
             spectrogramMode={waveform.spectrogramMode}
+            issueFilters={waveform.issueFilters}
             subtitles={subtitles}
             currentIndex={currentIndex}
             windowStart={waveform.windowStart}
@@ -320,6 +321,7 @@ export default function OcularFlow() {
             onScrollModeChange={waveform.setScrollMode}
             onToggleDialogueIsolation={waveform.toggleDialogueIsolation}
             onToggleSpectrogramMode={waveform.toggleSpectrogramMode}
+            onToggleIssueFilter={waveform.toggleIssueFilter}
             onSeek={handleWaveformSeek}
             onSubtitleClick={handleSelectSubtitle}
           />

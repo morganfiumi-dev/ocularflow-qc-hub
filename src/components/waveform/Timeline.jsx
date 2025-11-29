@@ -20,6 +20,7 @@ export function Timeline({
   playheadPct = 30,
   isolateDialogue = false,
   spectrogramMode = false,
+  issueFilters = { error: true, warning: true, info: true },
   onSeek,
   onSubtitleClick,
   className = ''
@@ -45,8 +46,9 @@ export function Timeline({
           if (issue.severity === 'warning') return 'warning';
           return max === 'warning' ? max : 'info';
         }, 'info')
-      }));
-  }, [visibleSubtitles]);
+      }))
+      .filter(marker => issueFilters[marker.severity]); // Filter by active filters
+  }, [visibleSubtitles, issueFilters]);
   
   // Handle click to seek
   const handleClick = (e) => {
