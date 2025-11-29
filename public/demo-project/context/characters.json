@@ -1,6 +1,104 @@
 {
   "characters": [
-    { "name": "Geralt", "description": "A witcher with mutated abilities." },
-    { "name": "Ciri", "description": "Geralt's adoptive daughter, gifted with Elder Blood." }
+    {
+      "name": "Geralt of Rivia",
+      "actor": "Henry Cavill",
+      "role": "Protagonist",
+      "species": "Witcher (Human mutant)",
+      "age": "Nearly 100 years old (appears mid-30s)",
+      "description": "A legendary witcher known as the White Wolf due to his distinctive white hair - a side effect of additional mutations he underwent. Geralt is a professional monster hunter, enhanced through rigorous training and alchemical mutations that give him superhuman abilities including heightened senses, accelerated healing, immunity to disease, and proficiency with magic Signs. Despite his gruff exterior and reputation for being emotionless, Geralt possesses a strong moral compass and dry wit.",
+      "background": "Trained at the witcher fortress Kaer Morhen, Geralt underwent the Trial of the Grasses as a child. He later survived additional experimental mutations that further enhanced his abilities but turned his hair white. His mother was the sorceress Visenna who abandoned him to the witchers.",
+      "abilities": ["Master swordsman", "Alchemy expert", "Witcher Signs (Igni, Aard, Quen, Yrden, Axii)", "Enhanced strength and reflexes", "Accelerated healing", "Extended lifespan"],
+      "relationships": {
+        "Ciri": "Surrogate daughter, Child of Destiny bound to him by the Law of Surprise",
+        "Yennefer": "Love interest with complicated on-again, off-again relationship",
+        "Jaskier": "Best friend and traveling companion, despite constant bickering",
+        "Vesemir": "Mentor and father figure from Kaer Morhen"
+      },
+      "weapons": ["Steel sword (for humans)", "Silver sword (for monsters)", "Crossbow"],
+      "personality": ["Stoic", "Sarcastic", "Honorable", "Protective", "Pragmatic", "Reluctant hero"],
+      "motivations": "Protect Ciri at all costs, maintain his humanity despite witcher mutations, find his place in a world that fears and needs him"
+    },
+    {
+      "name": "Cirilla Fiona Elen Riannon (Ciri)",
+      "actor": "Freya Allan",
+      "role": "Deuteragonist",
+      "species": "Human with Elder Blood",
+      "age": "16-17 years old",
+      "description": "Princess of Cintra and carrier of the Elder Blood (Hen Ichaer), an ancient elven gene that grants her immense magical potential including the ability to travel between dimensions and time. After the fall of Cintra, she becomes Geralt's Child of Surprise and ward. Ciri is brave, impulsive, and determined, struggling with survivor's guilt while discovering the extent of her powers.",
+      "background": "Born to Princess Pavetta and Duny (Emhyr var Emreis in disguise), Ciri was raised by her grandmother Queen Calanthe in Cintra. She survived the Slaughter of Cintra and spent months searching for Geralt before finding him. Her Elder Blood makes her the most sought-after person on the Continent.",
+      "abilities": ["Untrained but powerful magic", "Elder Blood powers (space-time manipulation)", "Combat training (sword fighting)", "Screaming ability (uncontrolled magical outburst)", "Prophetic visions"],
+      "relationships": {
+        "Geralt": "Adoptive father, protector, sword trainer",
+        "Yennefer": "Magical mentor, mother figure",
+        "Queen Calanthe": "Deceased grandmother who raised her",
+        "Jaskier": "Uncle figure, provides levity and support"
+      },
+      "weapons": ["Sword (learning)", "Raw magical power"],
+      "personality": ["Brave", "Stubborn", "Compassionate", "Traumatized", "Determined", "Impulsive"],
+      "motivations": "Master her powers, honor her grandmother's legacy, find where she belongs, protect those she loves"
+    },
+    {
+      "name": "Yennefer of Vengerberg",
+      "actor": "Anya Chalotra",
+      "role": "Protagonist",
+      "species": "Sorceress (Human)",
+      "age": "Nearly 100 years old (appears late 20s)",
+      "description": "One of the most powerful sorceresses on the Continent, known for her beauty, intelligence, and fierce independence. Born with physical deformities, Yennefer underwent magical transformation at Aretuza, trading her fertility for beauty and power. At the Battle of Sodden Hill, she sacrificed her magic to save the Continent, leaving her powerless but determined to protect Ciri.",
+      "background": "Born to an abusive family with a hunched back and facial deformities, Yennefer was sold to Tissaia de Vries for training at Aretuza. She became one of the youngest members of the Brotherhood of Sorcerers and served as advisor to the Kingdom of Aedirn before going independent.",
+      "abilities": ["Former powerful sorceress (currently powerless)", "Strategic thinking", "Political manipulation", "Alchemy knowledge", "Combat tactics (non-magical)"],
+      "relationships": {
+        "Geralt": "True love despite their turbulent relationship",
+        "Ciri": "Adoptive daughter, student, sees herself in Ciri's struggle",
+        "Tissaia de Vries": "Mentor and mother figure",
+        "Triss Merigold": "Friend and fellow sorceress"
+      },
+      "personality": ["Cunning", "Independent", "Vulnerable beneath tough exterior", "Passionate", "Self-sacrificing", "Sharp-tongued"],
+      "motivations": "Regain her magic, protect Ciri, prove her worth beyond her powers, find genuine connection and family"
+    },
+    {
+      "name": "Jaskier (Dandelion)",
+      "actor": "Joey Batey",
+      "role": "Supporting character",
+      "species": "Human",
+      "age": "Late 30s to early 40s",
+      "description": "A charismatic bard and poet who travels with Geralt, chronicling his adventures in song and story. Despite his seemingly frivolous nature, Jaskier is deeply loyal and provides crucial emotional support and comic relief. His songs have made Geralt famous across the Continent.",
+      "abilities": ["Master musician and singer", "Storytelling", "Charm and persuasion", "Surprising combat skills (when necessary)", "Information gathering"],
+      "relationships": {
+        "Geralt": "Best friend despite Geralt's constant irritation",
+        "Ciri": "Protective uncle figure",
+        "Various lovers": "Brief romantic entanglements across the Continent"
+      },
+      "personality": ["Charming", "Optimistic", "Cowardly yet brave when needed", "Romantic", "Talkative", "Loyal"],
+      "motivations": "Create legendary songs, maintain his friendship with Geralt, achieve bardic fame, help protect Ciri"
+    },
+    {
+      "name": "Tissaia de Vries",
+      "actor": "MyAnna Buring",
+      "role": "Supporting character",
+      "species": "Sorceress",
+      "description": "The rectoress of Aretuza, the premier magical academy. Tissaia is a powerful mage and strict teacher who mentored Yennefer. She is torn between her duty to the Brotherhood and her maternal feelings toward her students.",
+      "abilities": ["Extremely powerful magic", "Leadership", "Teaching", "Political influence", "Battle magic"],
+      "relationships": {
+        "Yennefer": "Former student, surrogate daughter",
+        "Vilgefortz": "Romantic involvement, political ally"
+      },
+      "personality": ["Strict", "Principled", "Conflicted", "Powerful", "Caring beneath coldness"],
+      "motivations": "Maintain order among mages, protect the Continent, guide Yennefer, uphold magical traditions"
+    },
+    {
+      "name": "Cahir Mawr Dyffryn aep Ceallach",
+      "actor": "Eamon Farren",
+      "role": "Antagonist turned ally",
+      "species": "Human",
+      "description": "A Nilfgaardian knight ordered to capture Ciri. Haunted by his failures and questioning his orders, Cahir begins a path toward redemption. He is the Black Knight from Ciri's nightmares.",
+      "abilities": ["Expert swordsman", "Military tactics", "Tracking", "Intimidation"],
+      "relationships": {
+        "Ciri": "Ordered to capture her, later becomes protector",
+        "Emhyr": "Serves the Nilfgaardian Emperor"
+      },
+      "personality": ["Dutiful", "Haunted", "Honor-bound", "Conflicted", "Redemption-seeking"],
+      "motivations": "Fulfill his duty, find redemption, protect rather than capture Ciri"
+    }
   ]
 }

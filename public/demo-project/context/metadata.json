@@ -1,11 +1,30 @@
 {
-  "title": "MediaQC Demo Clip",
-  "year": 2024,
-  "genres": ["Fantasy", "Drama"],
-  "runtime": "00:10:00",
+  "title": "The Witcher: Season 3 Episode 1 - Shaerrawedd",
+  "year": 2023,
+  "genres": ["Fantasy", "Action", "Drama", "Adventure"],
+  "runtime": "01:02:34",
   "rating": "TV-MA",
-  "director": "Mock Director",
-  "writers": ["Mock Writer 1", "Mock Writer 2"],
-  "studio": "MediaQC Demo Studio",
-  "summary": "A short excerpt demonstrating media quality control capabilities."
+  "director": "Stephen Surjik",
+  "writers": ["Lauren Schmidt Hissrich", "Declan de Barra", "Matthew D'Ambrosio"],
+  "studio": "Netflix Studios",
+  "originalLanguage": "English",
+  "basedOn": "The Witcher series by Andrzej Sapkowski",
+  "episodes": "8 episodes",
+  "seasons": "3 seasons (2019-2023)",
+  "cinematography": "Romain Lacourbas",
+  "productionCompany": "Platige Image, Sean Daniel Company",
+  "distributor": "Netflix",
+  "budget": "$10-15 million per episode",
+  "mainCast": [
+    "Henry Cavill as Geralt of Rivia",
+    "Anya Chalotra as Yennefer of Vengerberg",
+    "Freya Allan as Cirilla Fiona Elen Riannon (Ciri)",
+    "Joey Batey as Jaskier (Dandelion)",
+    "MyAnna Buring as Tissaia de Vries"
+  ],
+  "summary": "Season 3 opens with Geralt, Yennefer, and Ciri seeking refuge in the mountains after the Battle of Sodden Hill. As the Continent's political landscape shifts dangerously, they must navigate threats from multiple kingdoms, mages, and monsters. Ciri's Elder Blood makes her a target for those who would use her power, while Geralt struggles to protect his found family. The episode sets up an intense season filled with political intrigue, magical warfare, and the deep bonds between the three protagonists as they face their greatest challenges yet.",
+  "themes": ["Family", "Destiny", "Power and Corruption", "Identity", "Sacrifice", "Good vs Evil", "Political Intrigue"],
+  "culturalContext": "Based on Polish author Andrzej Sapkowski's beloved fantasy series, blending Slavic mythology with medieval fantasy",
+  "awards": ["Nominated for 4 Primetime Emmy Awards", "Saturn Award for Best Fantasy Television Series"],
+  "criticalReception": "The series has garnered a dedicated fanbase and critical acclaim for its complex characters, stunning visuals, and faithful adaptation of the source material."
 }
