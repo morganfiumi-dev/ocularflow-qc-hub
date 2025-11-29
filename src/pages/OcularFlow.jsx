@@ -311,6 +311,8 @@ export default function OcularFlow() {
             issueFilters={waveform.issueFilters}
             subtitles={subtitles}
             currentIndex={currentIndex}
+            currentTime={currentTime}
+            duration={duration}
             windowStart={waveform.windowStart}
             visibleWindow={waveform.visibleWindow}
             playheadPct={waveform.playheadPct}
