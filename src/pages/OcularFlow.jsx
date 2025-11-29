@@ -43,6 +43,9 @@ import { useVideoSync } from '../hooks/useVideoSync';
 // tRPC
 import { trpc } from '../lib/trpc-mock';
 
+// Demo project loader
+import { isDemoAsset, getDemoVideoUrl } from '../utils/demoProjectLoader';
+
 // Styles
 import '../styles/ocularflow.css';
 

@@ -4,33 +4,54 @@
 
 import type { Project } from '../schemas/project.schema';
 
+/**
+ * Mock demo project (uses generated data)
+ */
 export function mockDemoProject(): Project {
   return {
-    id: 'demo-001',
-    name: 'Demo Project - The Witcher S03E08',
+    id: 'demo-mock',
+    name: '[MOCK] Sample QC Project',
     type: 'demo-fixture',
     status: 'in-progress',
-    createdAt: new Date('2024-01-01'),
+    createdAt: new Date('2024-01-10'),
+    updatedAt: new Date(),
+    metadata: {
+      originalLanguage: 'EN',
+      duration: 3600,
+      description: 'Mock demo project with generated data',
+    },
+  };
+}
+
+/**
+ * Real demo project (uses real files from /public/demo-project/)
+ */
+export function realDemoProject(): Project {
+  return {
+    id: 'demo-default',
+    name: 'The Witcher S3E01',
+    type: 'demo-fixture',
+    status: 'in-progress',
+    createdAt: new Date('2024-01-15'),
     updatedAt: new Date(),
     metadata: {
       originalLanguage: 'EN',
       releaseDate: '2024-12-15',
-      duration: 3600, // 1 hour
+      duration: 3600,
       videoFormat: 'mp4',
       aspectRatio: '16:9',
       fps: 24,
-      description: 'Demo project for testing MediaQC features',
+      description: 'Real demo project with actual media files',
     },
     storage: {
       masterVideo: '/demo-project/master.mp4',
       audioTracks: {
-        'en': '/demo-project/audio-source.wav',
+        'en': '/demo-project/audio-en.wav',
         'de': '/demo-project/audio-de.wav',
       },
       subtitleFiles: {
         'en': '/demo-project/subtitles-en.itt',
         'es': '/demo-project/subtitles-es.itt',
-        'de': '/demo-project/subtitles-de.itt',
       },
       metadataFiles: {
         sceneCuts: '/demo-project/scene-cuts.json',
@@ -41,10 +62,18 @@ export function mockDemoProject(): Project {
   };
 }
 
+/**
+ * Generate array of mock projects (includes both demo types)
+ */
 export function generateMockProjects(count: number): Project[] {
-  const projects: Project[] = [];
+  const projects: Project[] = [
+    // Real demo project (loads from /public/demo-project/)
+    realDemoProject(),
+    // Mock demo project (generated data)
+    mockDemoProject(),
+  ];
   
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < count - 2; i++) {
     projects.push({
       id: crypto.randomUUID(),
       name: `Project ${i + 1}`,

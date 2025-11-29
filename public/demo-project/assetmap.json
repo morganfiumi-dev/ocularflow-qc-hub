@@ -1,0 +1,44 @@
+{
+  "projectId": "demo-default",
+  "assets": [
+    {
+      "id": "master-video",
+      "name": "NFLX_WITCHER_S3E01_MASTER.mp4",
+      "type": "master",
+      "path": "/demo-project/master.mp4",
+      "status": "ready"
+    },
+    {
+      "id": "subtitle-en",
+      "name": "Subtitles_EN.itt",
+      "type": "subtitle",
+      "language": "EN",
+      "path": "/demo-project/subtitles-en.itt",
+      "status": "qc-required"
+    },
+    {
+      "id": "subtitle-es",
+      "name": "Subtitles_ES.itt",
+      "type": "subtitle",
+      "language": "ES",
+      "path": "/demo-project/subtitles-es.itt",
+      "status": "qc-required"
+    },
+    {
+      "id": "audio-en",
+      "name": "Audio_EN.wav",
+      "type": "audio",
+      "language": "EN",
+      "path": "/demo-project/audio-en.wav",
+      "status": "ready"
+    },
+    {
+      "id": "audio-de",
+      "name": "Audio_DE.wav",
+      "type": "audio",
+      "language": "DE",
+      "path": "/demo-project/audio-de.wav",
+      "status": "ready"
+    }
+  ]
+}
