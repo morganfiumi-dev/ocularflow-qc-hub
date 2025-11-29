@@ -1,14 +1,16 @@
 /**
- * DubFlow v1 - Audio QC Cockpit
- * Standalone audio quality control interface
+ * DubFlow v2 - Audio QC Cockpit
+ * Three-panel cockpit matching OcularFlow design
  */
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Zap } from 'lucide-react';
+import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
 import { AudioPanel } from '../components/dubflow/AudioPanel';
 import { Waveform } from '../components/dubflow/Waveform';
-import { Inspector } from '../components/dubflow/Inspector';
+import { DialogueEditor } from '../components/dubflow/DialogueEditor';
+import { AudioInspector } from '../components/dubflow/AudioInspector';
+import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 
 export default function DubFlow() {
@@ -21,16 +23,80 @@ export default function DubFlow() {
     { enabled: !!assetId }
   );
   
-  // Map backend issues to component format
-  const issues = audioTrack?.issues.map(issue => ({
-    id: issue.id,
-    time: issue.timecode,
-    timeSeconds: issue.timeSeconds,
-    type: issue.type,
-    severity: issue.severity,
-    description: issue.description,
-    suggestedFix: issue.suggestedFix || '',
-  })) || [];
+  // Map backend issues to component format with categories
+  const issues = audioTrack?.issues.map(issue => {
+    // Auto-assign category based on issue type
+    let category = 'technical';
+    const issueType = issue.type.toLowerCase().replace(/\s+/g, '_');
+    
+    if (['sync_drift', 'duration_mismatch', 'early_entry', 'late_cutoff', 'timing_offset'].includes(issueType)) {
+      category = 'timing';
+    } else if (['missing_words', 'added_words', 'repetition', 'tone_mismatch', 'prosody_issue', 'pitch_mismatch'].includes(issueType)) {
+      category = 'dialogue';
+    } else if (issueType.includes('speaker') || issueType.includes('mouth')) {
+      category = 'speaker';
+    } else if (issueType.includes('synthetic') || issueType.includes('ai') || issueType.includes('artifacts')) {
+      category = 'synthetic';
+    } else if (issueType.includes('translation')) {
+      category = 'translation';
+    }
+
+    return {
+      id: issue.id,
+      timecode: issue.timecode,
+      timeSeconds: issue.timeSeconds,
+      type: issue.type,
+      severity: issue.severity as 'error' | 'warning' | 'info',
+      description: issue.description,
+      category,
+    };
+  }) || [];
+
+  // Mock dialogue lines (in production, these would come from backend)
+  const dialogueLines = [
+    {
+      id: 1,
+      timeIn: '00:00:05:12',
+      timeInSeconds: 5.5,
+      enText: 'The Continent is vast, full of monsters and magic.',
+      dubText: 'El Continente es vasto, lleno de monstruos y magia.',
+      issues: issues.filter(i => i.timeSeconds >= 5 && i.timeSeconds < 8)
+    },
+    {
+      id: 2,
+      timeIn: '00:00:09:00',
+      timeInSeconds: 9.0,
+      enText: 'Geralt of Rivia hunts creatures for coin.',
+      dubText: 'Geralt de Rivia caza criaturas por monedas.',
+      issues: issues.filter(i => i.timeSeconds >= 9 && i.timeSeconds < 12)
+    },
+    {
+      id: 3,
+      timeIn: '00:00:13:18',
+      timeInSeconds: 13.75,
+      enText: 'But destiny has other plans for the White Wolf.',
+      dubText: 'Pero el destino tiene otros planes para el Lobo Blanco.',
+      issues: issues.filter(i => i.timeSeconds >= 13 && i.timeSeconds < 17)
+    },
+    {
+      id: 4,
+      timeIn: '00:00:18:06',
+      timeInSeconds: 18.25,
+      enText: 'Princess Cirilla holds a power that could change everything.',
+      dubText: 'La princesa Cirilla posee un poder que podría cambiarlo todo.',
+      issues: issues.filter(i => i.timeSeconds >= 18 && i.timeSeconds < 22)
+    },
+    {
+      id: 5,
+      timeIn: '00:00:23:00',
+      timeInSeconds: 23.0,
+      enText: 'Yennefer seeks to harness ancient magic.',
+      dubText: 'Yennefer busca aprovechar la magia antigua.',
+      issues: []
+    },
+  ];
+
+  const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
 
   // Playback state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -102,6 +168,14 @@ export default function DubFlow() {
       handleSeek(issue.timeSeconds);
     }
   };
+
+  const handleSelectLine = (id: number) => {
+    setSelectedLineId(id);
+    const line = dialogueLines.find(l => l.id === id);
+    if (line) {
+      handleSeek(line.timeInSeconds);
+    }
+  };
   
   // Loading state
   if (isLoading) {
@@ -116,7 +190,7 @@ export default function DubFlow() {
 
   return (
     <div className="h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
-      {/* Top Bar */}
+      {/* Top Bar - Matching OcularFlow */}
       <div className="h-12 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between px-4 flex-shrink-0">
         <div className="flex items-center gap-4">
           <button
@@ -131,28 +205,39 @@ export default function DubFlow() {
               <Zap className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold">DubFlow Audio QC</h1>
-              <p className="text-xs text-slate-500">
-                Asset: <span className="font-mono">{assetId}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-300">DUB</span>
+                <span className="text-cyan-500 text-xs font-bold">FLOW</span>
+                <span className="text-[10px] text-slate-600">v2.0</span>
+              </div>
+              <p className="text-[10px] text-slate-500">
+                NFLX_WITCHER_S3 • <span className="font-mono">{assetId}</span>
               </p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          <select className="px-2 py-1 text-[10px] font-bold bg-slate-800 border border-slate-700 text-slate-300 rounded uppercase">
+            <option>Audio Standard</option>
+            <option>Netflix Audio</option>
+            <option>Amazon Audio</option>
+          </select>
+          
+          <Button variant="primary" icon={PlayCircle} size="sm">
+            RUN QC
+          </Button>
+          
           <button className="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">
             Export Report
-          </button>
-          <button className="px-3 py-1.5 text-xs font-semibold bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-lg hover:bg-cyan-500/20 transition-colors">
-            Save & Close
           </button>
         </div>
       </div>
 
-      {/* Three-column layout */}
-      <div className="flex-1 grid grid-cols-12 gap-4 p-4 overflow-hidden">
-        {/* LEFT: Audio Panel */}
-        <div className="col-span-3 overflow-hidden">
+      {/* Three-panel cockpit layout */}
+      <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+        {/* LEFT: Audio Tools Sidebar */}
+        <div className="w-80 flex-shrink-0 overflow-hidden">
           <AudioPanel
             isPlaying={isPlaying}
             currentTime={currentTime}
@@ -167,22 +252,35 @@ export default function DubFlow() {
           />
         </div>
 
-        {/* CENTER: Waveform */}
-        <div className="col-span-6 overflow-hidden">
-          <Waveform
-            currentTime={currentTime}
-            duration={duration}
-            zoomLevel={zoomLevel}
-            onSeek={handleSeek}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            issues={issues}
-          />
+        {/* CENTER: Dialogue Editor + Waveform Stack */}
+        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+          {/* Dialogue Editor (Top) */}
+          <div className="flex-1 overflow-hidden">
+            <DialogueEditor
+              lines={dialogueLines}
+              selectedLineId={selectedLineId}
+              currentTime={currentTime}
+              onSelectLine={handleSelectLine}
+            />
+          </div>
+
+          {/* Waveform (Bottom) */}
+          <div className="h-64 flex-shrink-0 overflow-hidden">
+            <Waveform
+              currentTime={currentTime}
+              duration={duration}
+              zoomLevel={zoomLevel}
+              onSeek={handleSeek}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              issues={issues}
+            />
+          </div>
         </div>
 
         {/* RIGHT: Inspector */}
-        <div className="col-span-3 overflow-hidden">
-          <Inspector
+        <div className="w-96 flex-shrink-0 overflow-hidden">
+          <AudioInspector
             issues={issues}
             selectedIssueId={selectedIssueId}
             onSelectIssue={handleSelectIssue}
