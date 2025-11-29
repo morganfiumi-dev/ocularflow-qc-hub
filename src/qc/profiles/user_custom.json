@@ -1,0 +1,18 @@
+{
+  "id": "user_custom",
+  "client": "Custom Profile",
+  "products": {
+    "dubbed_audio": {
+      "languages": {
+        "en": {
+          "checks": {
+            "audio_deficiency": {
+              "enabled": true,
+              "checks": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}

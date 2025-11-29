@@ -1,0 +1,20 @@
+{
+  "id": "disney_plus",
+  "client": "Disney+",
+  "products": {
+    "dubbed_audio": {
+      "languages": {
+        "en": {
+          "checks": {
+            "audio_deficiency": {
+              "enabled": true,
+              "checks": {
+                "audio_dropout": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

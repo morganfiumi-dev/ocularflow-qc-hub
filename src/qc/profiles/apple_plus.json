@@ -1,0 +1,159 @@
+{
+  "id": "apple_plus",
+  "client": "Apple+",
+  "products": {
+    "dubbed_audio": {
+      "languages": {
+        "en": {
+          "checks": {
+            "audio_deficiency": {
+              "enabled": true,
+              "checks": {
+                "audio_dropout": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15 },
+                "audio_not_in_sync": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 20 },
+                "clipping": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12, "threshold": -0.1 },
+                "distortion": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12 },
+                "duration_mismatch": { "enabled": true, "severity": "WARNING", "weight": 0.6, "penalty": 8, "threshold": 0.5 },
+                "levels_shift": { "enabled": true, "severity": "WARNING", "weight": 0.5, "penalty": 6 },
+                "levels_too_low": { "enabled": true, "severity": "WARNING", "weight": 0.5, "penalty": 6, "threshold": -24 },
+                "phase_cancellation": { "enabled": true, "severity": "ERROR", "weight": 0.8, "penalty": 10 },
+                "pop": { "enabled": true, "severity": "ERROR", "weight": 0.7, "penalty": 8 },
+                "hit": { "enabled": true, "severity": "ERROR", "weight": 0.7, "penalty": 8 },
+                "tick": { "enabled": true, "severity": "ERROR", "weight": 0.6, "penalty": 7 },
+                "static": { "enabled": true, "severity": "ERROR", "weight": 0.7, "penalty": 9 },
+                "production_error": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12 },
+                "invalid_audio_mix": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15 },
+                "truncated_audio": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 13 },
+                "missing_component": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15 }
+              }
+            },
+            "channel_integrity": {
+              "enabled": true,
+              "checks": {
+                "channel_missing_l": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 20 },
+                "channel_missing_r": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 20 },
+                "channel_missing_c": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 20 },
+                "channel_missing_lfe": { "enabled": true, "severity": "ERROR", "weight": 0.8, "penalty": 15 },
+                "channel_missing_ls": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 18 },
+                "channel_missing_rs": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 18 },
+                "channel_sound_absent_l": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 15 },
+                "channel_sound_absent_r": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 15 },
+                "channel_label_incorrect": { "enabled": true, "severity": "ERROR", "weight": 0.7, "penalty": 10 },
+                "audio_video_mismatch_stereo": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 20 },
+                "audio_video_mismatch_surround": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 20 }
+              }
+            },
+            "timing_sync": {
+              "enabled": true,
+              "checks": {
+                "sync_drift": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 18, "threshold": 0.1 },
+                "early_entry": { "enabled": true, "severity": "WARNING", "weight": 0.6, "penalty": 7, "threshold": 0.05 },
+                "late_entry": { "enabled": true, "severity": "ERROR", "weight": 0.8, "penalty": 10, "threshold": 0.1 },
+                "late_cutoff": { "enabled": true, "severity": "ERROR", "weight": 0.8, "penalty": 10 },
+                "pacing_cps": { "enabled": true, "severity": "WARNING", "weight": 0.5, "penalty": 6, "threshold": 20 }
+              }
+            },
+            "dialogue_integrity": {
+              "enabled": true,
+              "checks": {
+                "missing_words": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15 },
+                "added_words": { "enabled": true, "severity": "WARNING", "weight": 0.6, "penalty": 7 },
+                "repetition_stutter": { "enabled": true, "severity": "INFO", "weight": 0.3, "penalty": 3 },
+                "tone_mismatch": { "enabled": true, "severity": "WARNING", "weight": 0.7, "penalty": 8 },
+                "prosody_issues": { "enabled": true, "severity": "WARNING", "weight": 0.6, "penalty": 7 },
+                "pitch_gender_mismatch": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12 },
+                "pronunciation_incorrect": { "enabled": true, "severity": "ERROR", "weight": 0.8, "penalty": 10 }
+              }
+            },
+            "synthetic_voice": {
+              "enabled": true,
+              "checks": {
+                "ai_voice_detection": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 20 },
+                "over_smoothing": { "enabled": true, "severity": "WARNING", "weight": 0.6, "penalty": 7 },
+                "accent_anomalies": { "enabled": true, "severity": "WARNING", "weight": 0.5, "penalty": 6 },
+                "synthetic_artifacts": { "enabled": true, "severity": "INFO", "weight": 0.4, "penalty": 4 }
+              }
+            },
+            "translation": {
+              "enabled": true,
+              "checks": {
+                "literal_translation": { "enabled": true, "severity": "WARNING", "weight": 0.6, "penalty": 7 },
+                "wrong_domain_term": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12 },
+                "formality_issues": { "enabled": true, "severity": "ERROR", "weight": 0.8, "penalty": 10 },
+                "incorrect_region_subtag": { "enabled": true, "severity": "ERROR", "weight": 0.7, "penalty": 9 },
+                "incorrect_language_tag": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12 },
+                "incorrect_translation": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15 }
+              }
+            }
+          },
+          "scoring": {
+            "severityMultipliers": {
+              "ERROR": 1.0,
+              "WARNING": 0.5,
+              "INFO": 0.2
+            },
+            "categoryMultipliers": {
+              "audio_deficiency": 1.0,
+              "channel_integrity": 1.0,
+              "timing_sync": 0.9,
+              "dialogue_integrity": 0.95,
+              "synthetic_voice": 1.0,
+              "translation": 0.85
+            }
+          }
+        },
+        "es": {
+          "checks": {
+            "audio_deficiency": {
+              "enabled": true,
+              "checks": {
+                "audio_dropout": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 15 },
+                "audio_not_in_sync": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 20 },
+                "clipping": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12, "threshold": -0.1 },
+                "distortion": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12 }
+              }
+            },
+            "timing_sync": {
+              "enabled": true,
+              "checks": {
+                "sync_drift": { "enabled": true, "severity": "ERROR", "weight": 1.0, "penalty": 18 }
+              }
+            }
+          },
+          "scoring": {
+            "severityMultipliers": {
+              "ERROR": 1.0,
+              "WARNING": 0.5,
+              "INFO": 0.2
+            }
+          }
+        }
+      }
+    },
+    "subtitles": {
+      "languages": {
+        "en": {
+          "checks": {
+            "timing": {
+              "enabled": true,
+              "checks": {
+                "min_duration": { "enabled": true, "severity": "ERROR", "weight": 0.8, "penalty": 10, "threshold": 0.8 },
+                "max_duration": { "enabled": true, "severity": "WARNING", "weight": 0.6, "penalty": 7, "threshold": 7.0 },
+                "cps_violation": { "enabled": true, "severity": "ERROR", "weight": 0.9, "penalty": 12, "threshold": 20 },
+                "cpl_violation": { "enabled": true, "severity": "WARNING", "weight": 0.7, "penalty": 8, "threshold": 42 }
+              }
+            },
+            "formatting": {
+              "enabled": true,
+              "checks": {
+                "max_lines": { "enabled": true, "severity": "ERROR", "weight": 0.8, "penalty": 10, "threshold": 2 },
+                "line_balance": { "enabled": true, "severity": "INFO", "weight": 0.3, "penalty": 3 },
+                "safe_area": { "enabled": true, "severity": "WARNING", "weight": 0.5, "penalty": 6 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

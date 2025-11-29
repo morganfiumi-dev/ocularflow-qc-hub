@@ -3,12 +3,46 @@
  * Appears across all MediaQC pages
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from './NavLink';
-import { Zap } from 'lucide-react';
+import { Zap, Settings } from 'lucide-react';
+import { QCProfileManager } from './qc/QCProfileManager';
+import useQCProfileStore from '@/state/useQCProfileStore';
 
 export default function GlobalNav() {
+  const [showProfileManager, setShowProfileManager] = useState(false);
+  const { loadProfiles } = useQCProfileStore();
+
+  useEffect(() => {
+    // Load QC profiles on mount
+    const loadAllProfiles = async () => {
+      try {
+        const profileFiles = [
+          'apple_plus',
+          'netflix',
+          'amazon',
+          'disney_plus',
+          'user_custom'
+        ];
+        
+        const profiles = await Promise.all(
+          profileFiles.map(async (name) => {
+            const response = await fetch(`/src/qc/profiles/${name}.json`);
+            if (!response.ok) throw new Error(`Failed to load ${name}`);
+            return response.json();
+          })
+        );
+        
+        loadProfiles(profiles);
+      } catch (error) {
+        console.error('Failed to load QC profiles:', error);
+      }
+    };
+    loadAllProfiles();
+  }, [loadProfiles]);
+
   return (
+    <>
     <nav className="w-full h-12 bg-slate-950 border-b border-slate-800 flex items-center justify-between px-6 text-sm shadow-lg shadow-black/40 z-50">
       {/* Left section: Brand + Navigation */}
       <div className="flex items-center gap-6">
@@ -58,12 +92,22 @@ export default function GlobalNav() {
         </div>
       </div>
 
-      {/* Right section: Version badge */}
+      {/* Right section: QC Config + Version badge */}
       <div className="flex items-center gap-3">
+        <button
+          onClick={() => setShowProfileManager(true)}
+          className="p-2 rounded-md text-slate-400 hover:text-slate-100 hover:bg-slate-800/50 transition-colors"
+          title="QC Profile Manager"
+        >
+          <Settings className="w-4 h-4" />
+        </button>
         <div className="px-3 py-1 rounded-full bg-slate-900/60 border border-slate-700 text-xs text-slate-400 font-mono tracking-wide">
           OcularFlow v10.5
         </div>
       </div>
     </nav>
+
+    {showProfileManager && <QCProfileManager onClose={() => setShowProfileManager(false)} />}
+    </>
   );
 }
