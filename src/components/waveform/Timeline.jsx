@@ -4,6 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { calculatePillPosition } from '../../utils/waveformProcessing';
 
 /**
@@ -30,6 +31,22 @@ export function Timeline({
       sub.endTime > windowStart && sub.startTime < windowEnd
     );
   }, [subtitles, windowStart, visibleWindow]);
+  
+  // Extract issue markers from visible subtitles
+  const issueMarkers = useMemo(() => {
+    return visibleSubtitles
+      .filter(sub => sub.issues && sub.issues.length > 0)
+      .map(sub => ({
+        time: sub.startTime,
+        issues: sub.issues,
+        severity: sub.issues.reduce((max, issue) => {
+          if (issue.severity === 'error') return 'error';
+          if (max === 'error') return max;
+          if (issue.severity === 'warning') return 'warning';
+          return max === 'warning' ? max : 'info';
+        }, 'info')
+      }));
+  }, [visibleSubtitles]);
   
   // Handle click to seek
   const handleClick = (e) => {
@@ -89,6 +106,24 @@ export function Timeline({
               }}
             >
               {sub.text}
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Issue markers */}
+      <div className="of-issue-markers">
+        {issueMarkers.map((marker, idx) => {
+          const position = ((marker.time - windowStart) / visibleWindow) * 100;
+          
+          return (
+            <div
+              key={`issue-${idx}`}
+              className={`of-issue-marker severity-${marker.severity}`}
+              style={{ left: `${position}%` }}
+              title={`${marker.issues.length} issue${marker.issues.length > 1 ? 's' : ''}`}
+            >
+              <AlertCircle size={8} />
             </div>
           );
         })}
