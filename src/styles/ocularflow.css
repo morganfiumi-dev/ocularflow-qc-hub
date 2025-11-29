@@ -375,7 +375,8 @@
   color: var(--of-text-secondary);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s, left 0.1s linear, width 0.1s linear;
+  will-change: left, width;
 }
 
 .of-subtitle-pill:hover {
