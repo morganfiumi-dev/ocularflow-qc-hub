@@ -92,37 +92,33 @@ export default function OcularFlow() {
   const stats = useSubtitleStore((state) => state.getStats());
   
   // Video state
-  const {
-    isPlaying,
-    currentTime,
-    duration,
-    playbackRate,
-    volume,
-    muted,
-    togglePlayback,
-    seek,
-    skipForward,
-    skipBackward,
-    frameForward,
-    frameBackward,
-    setPlaybackRate,
-    setVolume,
-    toggleMute,
-    setDuration
-  } = useVideoState();
+  const isPlaying = useVideoState((state) => state.isPlaying);
+  const currentTime = useVideoState((state) => state.currentTime);
+  const duration = useVideoState((state) => state.duration);
+  const playbackRate = useVideoState((state) => state.playbackRate);
+  const volume = useVideoState((state) => state.volume);
+  const muted = useVideoState((state) => state.muted);
+  const togglePlayback = useVideoState((state) => state.togglePlayback);
+  const seek = useVideoState((state) => state.seek);
+  const skipForward = useVideoState((state) => state.skipForward);
+  const skipBackward = useVideoState((state) => state.skipBackward);
+  const frameForward = useVideoState((state) => state.frameForward);
+  const frameBackward = useVideoState((state) => state.frameBackward);
+  const setPlaybackRate = useVideoState((state) => state.setPlaybackRate);
+  const setVolume = useVideoState((state) => state.setVolume);
+  const toggleMute = useVideoState((state) => state.toggleMute);
+  const setDuration = useVideoState((state) => state.setDuration);
   
   // Issue/Inspector state
-  const {
-    activeTab,
-    expandedIssueId,
-    showScoreBreakdown,
-    showAnnotations,
-    setActiveTab,
-    toggleIssue,
-    toggleScoreBreakdown,
-    toggleSourceAnnotations,
-    toggleTargetAnnotations
-  } = useIssueStore();
+  const activeTab = useIssueStore((state) => state.activeTab);
+  const expandedIssueId = useIssueStore((state) => state.expandedIssueId);
+  const showScoreBreakdown = useIssueStore((state) => state.showScoreBreakdown);
+  const showAnnotations = useIssueStore((state) => state.showAnnotations);
+  const setActiveTab = useIssueStore((state) => state.setActiveTab);
+  const toggleIssue = useIssueStore((state) => state.toggleIssue);
+  const toggleScoreBreakdown = useIssueStore((state) => state.toggleScoreBreakdown);
+  const toggleSourceAnnotations = useIssueStore((state) => state.toggleSourceAnnotations);
+  const toggleTargetAnnotations = useIssueStore((state) => state.toggleTargetAnnotations);
   
   // Waveform state
   const waveform = useWaveform(currentTime, duration);
