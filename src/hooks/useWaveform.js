@@ -1,9 +1,9 @@
 /**
- * Waveform Store for OcularFlow v10.5
+ * Waveform Hook for OcularFlow v10.5
  * Manages waveform state and calculations
  */
 
-import { create } from 'zustand';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   calculateCenterWindow,
   calculateFreeWindow,
@@ -35,105 +35,167 @@ const createInitialState = () => ({
 });
 
 /**
- * Waveform store using Zustand
+ * Waveform hook
+ * @param {number} currentTime - Current playback time
+ * @param {number} duration - Total duration
+ * @returns {Object} Waveform state and actions
  */
-const useWaveform = create((set, get) => ({
-  // State
-  ...createInitialState(),
+export function useWaveform(currentTime, duration) {
+  const [state, setState] = useState(createInitialState);
+  
+  // Calculate visible window based on scroll mode
+  const windowData = useMemo(() => {
+    if (state.scrollMode === 'CENTER') {
+      return calculateCenterWindow(currentTime, state.zoomLevel, duration);
+    } else {
+      return calculateFreeWindow(currentTime, state.zoomLevel, duration);
+    }
+  }, [currentTime, duration, state.zoomLevel, state.scrollMode]);
+  
+  // Generate waveform bars
+  const waveformBars = useMemo(() => {
+    return generateWaveformBars(
+      windowData.windowStart,
+      windowData.visibleWindow,
+      150,
+      state.isolateDialogue
+    );
+  }, [windowData.windowStart, windowData.visibleWindow, state.isolateDialogue]);
   
   // Set height
-  setHeight: (height) => {
-    set({ height: Math.max(100, Math.min(600, height)) });
-  },
+  const setHeight = useCallback((height) => {
+    setState(s => ({
+      ...s,
+      height: Math.max(100, Math.min(600, height))
+    }));
+  }, []);
   
   // Adjust height by delta
-  adjustHeight: (delta) => {
-    const { height } = get();
-    set({ height: Math.max(100, Math.min(600, height - delta)) });
-  },
+  const adjustHeight = useCallback((delta) => {
+    setState(s => ({
+      ...s,
+      height: Math.max(100, Math.min(600, s.height - delta))
+    }));
+  }, []);
   
   // Toggle collapsed
-  toggleCollapsed: () => {
-    set((state) => ({ collapsed: !state.collapsed }));
-  },
+  const toggleCollapsed = useCallback(() => {
+    setState(s => ({ ...s, collapsed: !s.collapsed }));
+  }, []);
   
   // Set zoom level
-  setZoom: (level) => {
-    set({ zoomLevel: Math.max(0.5, Math.min(4, level)) });
-  },
+  const setZoom = useCallback((level) => {
+    setState(s => ({
+      ...s,
+      zoomLevel: Math.max(0.5, Math.min(4, level))
+    }));
+  }, []);
   
   // Zoom in
-  zoomIn: () => {
-    const { zoomLevel } = get();
-    set({ zoomLevel: Math.min(4, zoomLevel + 0.2) });
-  },
+  const zoomIn = useCallback(() => {
+    setState(s => ({
+      ...s,
+      zoomLevel: Math.min(4, s.zoomLevel + 0.2)
+    }));
+  }, []);
   
   // Zoom out
-  zoomOut: () => {
-    const { zoomLevel } = get();
-    set({ zoomLevel: Math.max(0.5, zoomLevel - 0.2) });
-  },
+  const zoomOut = useCallback(() => {
+    setState(s => ({
+      ...s,
+      zoomLevel: Math.max(0.5, s.zoomLevel - 0.2)
+    }));
+  }, []);
   
   // Set scroll mode
-  setScrollMode: (mode) => {
-    set({ scrollMode: mode });
-  },
+  const setScrollMode = useCallback((mode) => {
+    setState(s => ({ ...s, scrollMode: mode }));
+  }, []);
   
   // Toggle dialogue isolation
-  toggleDialogueIsolation: () => {
-    set((state) => ({ isolateDialogue: !state.isolateDialogue }));
-  },
+  const toggleDialogueIsolation = useCallback(() => {
+    setState(s => ({ ...s, isolateDialogue: !s.isolateDialogue }));
+  }, []);
   
   // Toggle spectrogram mode
-  toggleSpectrogramMode: () => {
-    set((state) => ({ spectrogramMode: !state.spectrogramMode }));
-  },
+  const toggleSpectrogramMode = useCallback(() => {
+    setState(s => ({ ...s, spectrogramMode: !s.spectrogramMode }));
+  }, []);
   
   // Toggle layer
-  toggleLayer: (layer) => {
-    const { layers } = get();
-    set({
+  const toggleLayer = useCallback((layer) => {
+    setState(s => ({
+      ...s,
       layers: {
-        ...layers,
-        [layer]: !layers[layer]
+        ...s.layers,
+        [layer]: !s.layers[layer]
       }
-    });
-  },
+    }));
+  }, []);
   
   // Toggle issue filter
-  toggleIssueFilter: (severity) => {
-    const { issueFilters } = get();
-    set({
+  const toggleIssueFilter = useCallback((severity) => {
+    setState(s => ({
+      ...s,
       issueFilters: {
-        ...issueFilters,
-        [severity]: !issueFilters[severity]
+        ...s.issueFilters,
+        [severity]: !s.issueFilters[severity]
       }
-    });
-  },
+    }));
+  }, []);
   
-  // Computed getters
-  getWindowData: (currentTime, duration) => {
-    const { zoomLevel, scrollMode } = get();
-    if (scrollMode === 'CENTER') {
-      return calculateCenterWindow(currentTime, zoomLevel, duration);
-    } else {
-      return calculateFreeWindow(currentTime, zoomLevel, duration);
-    }
-  },
+  // Convert click to time
+  const handleClick = useCallback((clickX, containerWidth) => {
+    return clickToTime(
+      clickX,
+      containerWidth,
+      windowData.windowStart,
+      windowData.visibleWindow
+    );
+  }, [windowData.windowStart, windowData.visibleWindow]);
   
-  getWaveformBars: (windowStart, visibleWindow) => {
-    const { isolateDialogue } = get();
-    return generateWaveformBars(windowStart, visibleWindow, 150, isolateDialogue);
-  },
+  // Get visible subtitles
+  const filterVisibleSubtitles = useCallback((subtitles) => {
+    return getVisibleSubtitles(
+      subtitles,
+      windowData.windowStart,
+      windowData.windowEnd
+    );
+  }, [windowData.windowStart, windowData.windowEnd]);
   
-  handleClick: (clickX, containerWidth, windowStart, visibleWindow) => {
-    return clickToTime(clickX, containerWidth, windowStart, visibleWindow);
-  },
-  
-  filterVisibleSubtitles: (subtitles, windowStart, windowEnd) => {
-    return getVisibleSubtitles(subtitles, windowStart, windowEnd);
-  }
-}));
+  return {
+    // State
+    height: state.height,
+    collapsed: state.collapsed,
+    zoomLevel: state.zoomLevel,
+    scrollMode: state.scrollMode,
+    isolateDialogue: state.isolateDialogue,
+    spectrogramMode: state.spectrogramMode,
+    issueFilters: state.issueFilters,
+    layers: state.layers,
+    
+    // Calculated values
+    windowStart: windowData.windowStart,
+    windowEnd: windowData.windowEnd,
+    visibleWindow: windowData.visibleWindow,
+    playheadPct: windowData.playheadPct,
+    waveformBars,
+    
+    // Actions
+    setHeight,
+    adjustHeight,
+    toggleCollapsed,
+    setZoom,
+    zoomIn,
+    zoomOut,
+    setScrollMode,
+    toggleDialogueIsolation,
+    toggleSpectrogramMode,
+    toggleLayer,
+    toggleIssueFilter,
+    handleClick,
+    filterVisibleSubtitles
+  };
+}
 
 export default useWaveform;
-export { useWaveform };

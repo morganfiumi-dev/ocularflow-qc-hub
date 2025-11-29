@@ -121,33 +121,7 @@ export default function OcularFlow() {
   const toggleTargetAnnotations = useIssueStore((state) => state.toggleTargetAnnotations);
   
   // Waveform state
-  const height = useWaveform((state) => state.height);
-  const collapsed = useWaveform((state) => state.collapsed);
-  const zoomLevel = useWaveform((state) => state.zoomLevel);
-  const scrollMode = useWaveform((state) => state.scrollMode);
-  const isolateDialogue = useWaveform((state) => state.isolateDialogue);
-  const spectrogramMode = useWaveform((state) => state.spectrogramMode);
-  const issueFilters = useWaveform((state) => state.issueFilters);
-  const layers = useWaveform((state) => state.layers);
-  const setHeight = useWaveform((state) => state.setHeight);
-  const adjustHeight = useWaveform((state) => state.adjustHeight);
-  const toggleCollapsed = useWaveform((state) => state.toggleCollapsed);
-  const setZoom = useWaveform((state) => state.setZoom);
-  const zoomIn = useWaveform((state) => state.zoomIn);
-  const zoomOut = useWaveform((state) => state.zoomOut);
-  const setScrollMode = useWaveform((state) => state.setScrollMode);
-  const toggleDialogueIsolation = useWaveform((state) => state.toggleDialogueIsolation);
-  const toggleSpectrogramMode = useWaveform((state) => state.toggleSpectrogramMode);
-  const toggleLayer = useWaveform((state) => state.toggleLayer);
-  const toggleIssueFilter = useWaveform((state) => state.toggleIssueFilter);
-  const getWindowData = useWaveform((state) => state.getWindowData);
-  const getWaveformBars = useWaveform((state) => state.getWaveformBars);
-  const handleWaveformClick = useWaveform((state) => state.handleClick);
-  const filterVisibleSubtitles = useWaveform((state) => state.filterVisibleSubtitles);
-  
-  // Calculate window data and waveform bars
-  const windowData = getWindowData(currentTime, duration);
-  const waveformBars = getWaveformBars(windowData.windowStart, windowData.visibleWindow);
+  const waveform = useWaveform(currentTime, duration);
   
   // Video sync
   const videoSync = useVideoSync({
@@ -231,8 +205,8 @@ export default function OcularFlow() {
   
   // Handle waveform height change
   const handleWaveformHeightChange = useCallback((delta) => {
-    adjustHeight(delta);
-  }, [adjustHeight]);
+    waveform.adjustHeight(delta);
+  }, [waveform]);
   
   // Handle inspector width change
   const handleInspectorWidthChange = useCallback((delta) => {
@@ -342,29 +316,29 @@ export default function OcularFlow() {
           
           {/* Waveform Panel */}
           <WaveformPanel
-            height={height}
-            collapsed={collapsed}
-            waveformBars={waveformBars}
-            zoomLevel={zoomLevel}
-            scrollMode={scrollMode}
-            isolateDialogue={isolateDialogue}
-            spectrogramMode={spectrogramMode}
-            issueFilters={issueFilters}
+            height={waveform.height}
+            collapsed={waveform.collapsed}
+            waveformBars={waveform.waveformBars}
+            zoomLevel={waveform.zoomLevel}
+            scrollMode={waveform.scrollMode}
+            isolateDialogue={waveform.isolateDialogue}
+            spectrogramMode={waveform.spectrogramMode}
+            issueFilters={waveform.issueFilters}
             subtitles={subtitles}
             currentIndex={currentIndex}
             currentTime={currentTime}
             duration={duration}
-            windowStart={windowData.windowStart}
-            visibleWindow={windowData.visibleWindow}
-            playheadPct={windowData.playheadPct}
+            windowStart={waveform.windowStart}
+            visibleWindow={waveform.visibleWindow}
+            playheadPct={waveform.playheadPct}
             onHeightChange={handleWaveformHeightChange}
-            onToggleCollapse={toggleCollapsed}
-            onZoomIn={zoomIn}
-            onZoomOut={zoomOut}
-            onScrollModeChange={setScrollMode}
-            onToggleDialogueIsolation={toggleDialogueIsolation}
-            onToggleSpectrogramMode={toggleSpectrogramMode}
-            onToggleIssueFilter={toggleIssueFilter}
+            onToggleCollapse={waveform.toggleCollapsed}
+            onZoomIn={waveform.zoomIn}
+            onZoomOut={waveform.zoomOut}
+            onScrollModeChange={waveform.setScrollMode}
+            onToggleDialogueIsolation={waveform.toggleDialogueIsolation}
+            onToggleSpectrogramMode={waveform.toggleSpectrogramMode}
+            onToggleIssueFilter={waveform.toggleIssueFilter}
             onSeek={handleWaveformSeek}
             onSubtitleClick={handleSelectSubtitle}
           />
