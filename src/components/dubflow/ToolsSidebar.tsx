@@ -8,33 +8,17 @@ import { ChevronLeft, ChevronRight, Activity, Volume2, Waves, Radio } from 'luci
 import { Button } from '../atoms/Button';
 
 interface ToolsSidebarProps {
-  isPlaying: boolean;
-  currentTime: number;
-  duration: number;
-  volume: number;
-  language: string;
-  codec: string;
-  profileCode: string;
-  onTogglePlay: () => void;
-  onJumpBackward: () => void;
-  onJumpForward: () => void;
-  onVolumeChange: (volume: number) => void;
+  collapsed?: boolean;
 }
 
-export function ToolsSidebar({
-  isPlaying,
-  currentTime,
-  duration,
-  volume,
-  language,
-  codec,
-  profileCode,
-  onTogglePlay,
-  onJumpBackward,
-  onJumpForward,
-  onVolumeChange,
-}: ToolsSidebarProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+export function ToolsSidebar({ collapsed = false }: ToolsSidebarProps) {
+  const [isExpanded, setIsExpanded] = useState(!collapsed);
+  
+  // Mock values for UI display
+  const isPlaying = false;
+  const currentTime = 0;
+  const volume = 75;
+  const profileCode = 'NFLX-ES';
 
   const formatTimecode = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
@@ -110,28 +94,9 @@ export function ToolsSidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Playback Controls */}
-        <div className="space-y-3">
-          <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Playback</h3>
-          
-          <div className="flex items-center gap-2">
-            <Button onClick={onJumpBackward} size="sm" variant="secondary">-2s</Button>
-            <Button onClick={onTogglePlay} size="sm" variant="primary">
-              {isPlaying ? 'Pause' : 'Play'}
-            </Button>
-            <Button onClick={onJumpForward} size="sm" variant="secondary">+2s</Button>
-          </div>
-
-          <div className="bg-slate-950/60 rounded p-3 border border-slate-800">
-            <div className="text-[9px] text-slate-600 uppercase tracking-wider mb-1">Timecode</div>
-            <div className="font-mono text-sm text-cyan-400">{formatTimecode(currentTime)}</div>
-          </div>
-        </div>
-
         {/* VU Meters */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">VU Meters</h3>
-          
           <div className="bg-slate-950/60 rounded p-3 border border-slate-800">
             <div className="flex gap-4">
               <div className="flex-1">
@@ -156,69 +121,97 @@ export function ToolsSidebar({
           </div>
         </div>
 
-        {/* LUFS Meter */}
-        <div className="space-y-3">
-          <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">LUFS</h3>
-          
-          <div className="bg-slate-950/60 rounded p-3 border border-slate-800">
-            <div className="text-2xl font-mono font-bold text-cyan-400">
-              {lufs.toFixed(1)}
+        {/* LUFS */}
+        <div className="space-y-2">
+          <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Loudness</h3>
+          <div className="bg-slate-950/60 rounded border border-slate-800 p-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[9px] text-slate-600">Integrated</span>
+              <span className="text-xs font-mono text-cyan-400">-23.5 LUFS</span>
             </div>
-            <div className="text-[9px] text-slate-600 uppercase tracking-wider">LUFS Integrated</div>
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] text-slate-600">True Peak</span>
+              <span className="text-xs font-mono text-green-400">-2.1 dBTP</span>
+            </div>
           </div>
         </div>
 
-        {/* Channel Activity */}
-        <div className="space-y-3">
+        {/* Channel activity */}
+        <div className="space-y-2">
           <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Channels</h3>
-          
-          <div className="bg-slate-950/60 rounded p-3 border border-slate-800 space-y-2">
-            {['L', 'R', 'C', 'LFE', 'LS', 'RS'].map(channel => (
-              <div key={channel} className="flex items-center justify-between">
-                <span className="text-xs text-slate-400 font-mono">{channel}</span>
-                <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`} />
+          <div className="grid grid-cols-3 gap-1.5">
+            {['L', 'R', 'C', 'LFE', 'LS', 'RS'].map((ch) => (
+              <div
+                key={ch}
+                className="bg-slate-950/60 border border-slate-800 rounded px-2 py-1.5 text-center"
+              >
+                <div className="text-[9px] text-slate-500 mb-0.5">{ch}</div>
+                <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-cyan-500" style={{ width: '70%' }} />
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Volume Control */}
-        <div className="space-y-3">
-          <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Volume</h3>
-          
-          <div className="bg-slate-950/60 rounded p-3 border border-slate-800">
-            <div className="flex items-center gap-3">
-              <Volume2 className="w-4 h-4 text-slate-500" />
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={volume}
-                onChange={(e) => onVolumeChange(Number(e.target.value))}
-                className="flex-1"
-              />
-              <span className="text-xs text-slate-400 font-mono w-10">{volume}%</span>
-            </div>
+        {/* Audio isolation controls */}
+        <div className="space-y-2">
+          <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Audio Isolation</h3>
+          <div className="space-y-1.5">
+            <button className="w-full p-2 rounded bg-slate-950/60 border border-slate-800 hover:border-cyan-500/50 hover:bg-cyan-500/10 text-xs text-slate-300 transition-colors text-left">
+              Isolate Dialogue
+            </button>
+            <button className="w-full p-2 rounded bg-slate-950/60 border border-slate-800 hover:border-amber-500/50 hover:bg-amber-500/10 text-xs text-slate-300 transition-colors text-left">
+              Isolate Music
+            </button>
+            <button className="w-full p-2 rounded bg-slate-950/60 border border-slate-800 hover:border-purple-500/50 hover:bg-purple-500/10 text-xs text-slate-300 transition-colors text-left">
+              Isolate SFX
+            </button>
           </div>
         </div>
 
-        {/* Profile Info */}
-        <div className="space-y-3">
-          <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Profile</h3>
-          
-          <div className="bg-slate-950/60 rounded p-3 border border-slate-800 space-y-2">
-            <div>
-              <div className="text-[9px] text-slate-600 uppercase tracking-wider">Client</div>
-              <div className="text-xs text-slate-300 font-mono">{profileCode}</div>
-            </div>
-            <div>
-              <div className="text-[9px] text-slate-600 uppercase tracking-wider">Language</div>
-              <div className="text-xs text-slate-300 font-mono">{language}</div>
-            </div>
-            <div>
-              <div className="text-[9px] text-slate-600 uppercase tracking-wider">Codec</div>
-              <div className="text-xs text-slate-300 font-mono">{codec}</div>
-            </div>
+        {/* Solo/Mute controls */}
+        <div className="space-y-2">
+          <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Solo / Mute</h3>
+          <div className="grid grid-cols-2 gap-1.5">
+            {['Dialogue', 'Music', 'SFX', 'Ambience'].map((track) => (
+              <div key={track} className="flex gap-1">
+                <button className="flex-1 px-2 py-1 text-[9px] font-semibold rounded bg-slate-950/60 border border-slate-800 hover:border-amber-500/50 text-slate-400 hover:text-amber-400 transition-colors">
+                  S
+                </button>
+                <button className="flex-1 px-2 py-1 text-[9px] font-semibold rounded bg-slate-950/60 border border-slate-800 hover:border-red-500/50 text-slate-400 hover:text-red-400 transition-colors">
+                  M
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Playback options */}
+        <div className="space-y-2">
+          <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Audio Options</h3>
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-2 p-2 rounded bg-slate-950/60 border border-slate-800 hover:border-cyan-500/30 cursor-pointer transition-colors">
+              <input type="checkbox" className="w-3 h-3 rounded border-slate-700 bg-slate-900 checked:bg-cyan-500" />
+              <span className="text-xs text-slate-300">Normalize</span>
+            </label>
+            <label className="flex items-center gap-2 p-2 rounded bg-slate-950/60 border border-slate-800 hover:border-cyan-500/30 cursor-pointer transition-colors">
+              <input type="checkbox" className="w-3 h-3 rounded border-slate-700 bg-slate-900 checked:bg-cyan-500" />
+              <span className="text-xs text-slate-300">Phase invert</span>
+            </label>
+            <label className="flex items-center gap-2 p-2 rounded bg-slate-950/60 border border-slate-800 hover:border-cyan-500/30 cursor-pointer transition-colors">
+              <input type="checkbox" className="w-3 h-3 rounded border-slate-700 bg-slate-900 checked:bg-cyan-500" />
+              <span className="text-xs text-slate-300">Loop region</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Profile info */}
+        <div className="space-y-2">
+          <h3 className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">QC Profile</h3>
+          <div className="bg-slate-950/60 rounded border border-slate-800 p-3 space-y-1">
+            <div className="text-xs text-cyan-400 font-mono">{profileCode}</div>
+            <div className="text-[10px] text-slate-500">Netflix Spanish Dub</div>
           </div>
         </div>
       </div>

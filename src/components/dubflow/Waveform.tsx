@@ -6,6 +6,14 @@
 import React, { useRef, useState } from 'react';
 import { ZoomIn, ZoomOut, Maximize2, Move } from 'lucide-react';
 
+interface DialogueLine {
+  id: number;
+  timeInSeconds: number;
+  timeOutSeconds: number;
+  enText: string;
+  dubText: string;
+}
+
 interface WaveformProps {
   currentTime: number;
   duration: number;
@@ -19,7 +27,9 @@ interface WaveformProps {
     timeSeconds: number; 
     type: string; 
     severity: 'error' | 'warning' | 'info';
+    description: string;
   }>;
+  dialogueLines: DialogueLine[];
 }
 
 export function Waveform({
@@ -29,12 +39,14 @@ export function Waveform({
   onSeek,
   onZoomIn,
   onZoomOut,
-  issues
+  issues,
+  dialogueLines
 }: WaveformProps) {
   const waveformRef = useRef<HTMLDivElement>(null);
   const [regionStart, setRegionStart] = useState<number | null>(null);
   const [regionEnd, setRegionEnd] = useState<number | null>(null);
   const [timelinePrecision, setTimelinePrecision] = useState<'fine' | 'medium' | 'coarse'>('medium');
+  const [hoveredIssue, setHoveredIssue] = useState<number | null>(null);
 
   // Generate mock waveform bars
   const barCount = 200;
@@ -193,17 +205,61 @@ export function Waveform({
             />
           )}
 
-          {/* Issue markers - color coded by severity */}
+          {/* Dialogue pills - overlayed on waveform */}
+          {dialogueLines.map((line) => {
+            const startPercent = (line.timeInSeconds / duration) * 100;
+            const widthPercent = ((line.timeOutSeconds - line.timeInSeconds) / duration) * 100;
+            
+            return (
+              <div
+                key={line.id}
+                className="absolute bottom-2 h-8 bg-purple-500/20 border border-purple-500/40 rounded-sm flex items-center px-2 cursor-pointer hover:bg-purple-500/30 transition-colors"
+                style={{
+                  left: `${startPercent}%`,
+                  width: `${widthPercent}%`
+                }}
+                title={`EN: ${line.enText}\nDub: ${line.dubText}`}
+              >
+                <span className="text-[9px] text-purple-300 truncate font-mono">
+                  {line.dubText}
+                </span>
+              </div>
+            );
+          })}
+
+          {/* Issue markers - prominent with hover tooltip */}
           {issues.map((issue) => {
             const percent = (issue.timeSeconds / duration) * 100;
+            const isHovered = hoveredIssue === issue.id;
+            
             return (
               <div
                 key={issue.id}
-                className={`absolute top-0 bottom-0 w-1 cursor-pointer transition-colors ${getSeverityColor(issue.severity)}`}
+                className="absolute top-0 bottom-0 w-1.5 cursor-pointer transition-all z-20"
                 style={{ left: `${percent}%` }}
-                title={`${issue.type} at ${issue.timecode}`}
+                onMouseEnter={() => setHoveredIssue(issue.id)}
+                onMouseLeave={() => setHoveredIssue(null)}
               >
-                <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full ${getSeverityColor(issue.severity)}`} />
+                {/* Marker line */}
+                <div className={`absolute inset-0 ${getSeverityColor(issue.severity)} ${isHovered ? 'w-2' : ''}`} />
+                
+                {/* Marker dot */}
+                <div className={`absolute top-1 left-1/2 -translate-x-1/2 rounded-full ${getSeverityColor(issue.severity)} ${isHovered ? 'w-3 h-3' : 'w-2.5 h-2.5'}`} />
+                
+                {/* Hover tooltip */}
+                {isHovered && (
+                  <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 rounded-lg p-3 shadow-2xl z-50 min-w-[250px]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-2 h-2 rounded-full ${getSeverityColor(issue.severity)}`} />
+                      <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        {issue.severity}
+                      </span>
+                      <span className="text-[10px] text-slate-500 ml-auto font-mono">{issue.timecode}</span>
+                    </div>
+                    <div className="text-xs text-cyan-400 font-semibold mb-1">{issue.type}</div>
+                    <div className="text-xs text-slate-400">{issue.description}</div>
+                  </div>
+                )}
               </div>
             );
           })}

@@ -6,13 +6,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 import { ToolsSidebar } from '../components/dubflow/ToolsSidebar';
 import { Waveform } from '../components/dubflow/Waveform';
 import { DialogueHighlightStrip } from '../components/dubflow/DialogueHighlightStrip';
 import { TabbedInspector } from '../components/dubflow/TabbedInspector';
+import { AudioPlaybackControls } from '../components/dubflow/AudioPlaybackControls';
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
+import { useVideoState } from '../state/useVideoState';
 import { calculateClipScore, calculateAssetScore, getScoreColor } from '../utils/qcScoring';
 
 export default function DubFlow() {
@@ -70,6 +73,7 @@ export default function DubFlow() {
       id: 1,
       timeIn: '00:00:05:12',
       timeInSeconds: 5.5,
+      timeOutSeconds: 7.8,
       enText: 'The Continent is vast, full of monsters and magic.',
       dubText: 'El Continente es vasto, lleno de monstruos y magia.',
       issues: issues.filter(i => i.timeSeconds >= 5 && i.timeSeconds < 8)
@@ -78,6 +82,7 @@ export default function DubFlow() {
       id: 2,
       timeIn: '00:00:09:00',
       timeInSeconds: 9.0,
+      timeOutSeconds: 11.5,
       enText: 'Geralt of Rivia hunts creatures for coin.',
       dubText: 'Geralt de Rivia caza criaturas por monedas.',
       issues: issues.filter(i => i.timeSeconds >= 9 && i.timeSeconds < 12)
@@ -86,6 +91,7 @@ export default function DubFlow() {
       id: 3,
       timeIn: '00:00:13:18',
       timeInSeconds: 13.75,
+      timeOutSeconds: 16.8,
       enText: 'But destiny has other plans for the White Wolf.',
       dubText: 'Pero el destino tiene otros planes para el Lobo Blanco.',
       issues: issues.filter(i => i.timeSeconds >= 13 && i.timeSeconds < 17)
@@ -94,6 +100,7 @@ export default function DubFlow() {
       id: 4,
       timeIn: '00:00:18:06',
       timeInSeconds: 18.25,
+      timeOutSeconds: 21.9,
       enText: 'Princess Cirilla holds a power that could change everything.',
       dubText: 'La princesa Cirilla posee un poder que podría cambiarlo todo.',
       issues: issues.filter(i => i.timeSeconds >= 18 && i.timeSeconds < 22)
@@ -102,6 +109,7 @@ export default function DubFlow() {
       id: 5,
       timeIn: '00:00:23:00',
       timeInSeconds: 23.0,
+      timeOutSeconds: 25.5,
       enText: 'Yennefer seeks to harness ancient magic.',
       dubText: 'Yennefer busca aprovechar la magia antigua.',
       issues: []
@@ -132,74 +140,42 @@ export default function DubFlow() {
 
   const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
 
-  // Playback state
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+  // Video state (for playback)
+  const isPlaying = useVideoState((state) => state.isPlaying);
+  const currentTime = useVideoState((state) => state.currentTime);
+  const playbackRate = useVideoState((state) => state.playbackRate);
+  const volume = useVideoState((state) => state.volume);
+  const muted = useVideoState((state) => state.muted);
+  const togglePlayback = useVideoState((state) => state.togglePlayback);
+  const seek = useVideoState((state) => state.seek);
+  const skipForward = useVideoState((state) => state.skipForward);
+  const skipBackward = useVideoState((state) => state.skipBackward);
+  const frameForward = useVideoState((state) => state.frameForward);
+  const frameBackward = useVideoState((state) => state.frameBackward);
+  const setPlaybackRate = useVideoState((state) => state.setPlaybackRate);
+  const setVolume = useVideoState((state) => state.setVolume);
+  const toggleMute = useVideoState((state) => state.toggleMute);
+  const setDuration = useVideoState((state) => state.setDuration);
+  
   const duration = audioTrack?.metadata.duration || 420;
-  const [volume, setVolume] = useState(75);
   const [zoomLevel, setZoomLevel] = useState(1);
 
   // Inspector state
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
 
-  // Playback simulation
-  const playbackInterval = useRef<number | null>(null);
-
+  // Set duration on load
   useEffect(() => {
-    if (isPlaying) {
-      playbackInterval.current = window.setInterval(() => {
-        setCurrentTime(prev => {
-          if (prev >= duration) {
-            setIsPlaying(false);
-            return duration;
-          }
-          return prev + 0.1;
-        });
-      }, 100);
-    } else {
-      if (playbackInterval.current) {
-        clearInterval(playbackInterval.current);
-        playbackInterval.current = null;
-      }
+    if (duration) {
+      setDuration(duration);
     }
-
-    return () => {
-      if (playbackInterval.current) {
-        clearInterval(playbackInterval.current);
-      }
-    };
-  }, [isPlaying, duration]);
-
-  const handleTogglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleJumpBackward = () => {
-    setCurrentTime(prev => Math.max(0, prev - 2));
-  };
-
-  const handleJumpForward = () => {
-    setCurrentTime(prev => Math.min(duration, prev + 2));
-  };
-
-  const handleSeek = (time: number) => {
-    setCurrentTime(time);
-  };
-
-  const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(4, prev + 0.5));
-  };
-
-  const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(0.5, prev - 0.5));
-  };
+  }, [duration, setDuration]);
 
   const handleSelectIssue = (id: number) => {
     setSelectedIssueId(id);
     const issue = issues.find(i => i.id === id);
     if (issue) {
-      handleSeek(issue.timeSeconds);
+      seek(issue.timeSeconds);
     }
   };
 
@@ -207,7 +183,7 @@ export default function DubFlow() {
     setSelectedLineId(id);
     const line = dialogueLinesWithScores.find(l => l.id === id);
     if (line) {
-      handleSeek(line.timeInSeconds);
+      seek(line.timeInSeconds);
     }
   };
   
@@ -307,65 +283,85 @@ export default function DubFlow() {
         </div>
       </div>
 
-      {/* Three-panel cockpit layout - NEW WAVEFORM-FIRST DESIGN */}
-      <div className="flex-1 flex gap-4 p-4 overflow-hidden">
-        {/* LEFT: Collapsible Tools Sidebar */}
-        <ToolsSidebar
-          isPlaying={isPlaying}
-          currentTime={currentTime}
-          duration={duration}
-          volume={volume}
-          language={audioTrack?.metadata.language || 'EN-US'}
-          codec={audioTrack?.metadata.codec || 'AAC'}
-          profileCode={profile?.client || 'N/A'}
-          onTogglePlay={handleTogglePlay}
-          onJumpBackward={handleJumpBackward}
-          onJumpForward={handleJumpForward}
-          onVolumeChange={setVolume}
-        />
+      {/* Three-panel cockpit layout with resizable panels */}
+      <div className="flex-1 p-4 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal" className="h-full gap-4">
+          {/* LEFT: Collapsible Tools Sidebar */}
+          <ResizablePanel defaultSize={15} minSize={5} maxSize={25}>
+            <ToolsSidebar />
+          </ResizablePanel>
 
-        {/* CENTER: Waveform-First Layout */}
-        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
-          {/* Waveform (Primary - Top 70%) */}
-          <div className="flex-[7] overflow-hidden">
-            <Waveform
-              currentTime={currentTime}
-              duration={duration}
-              zoomLevel={zoomLevel}
-              onSeek={handleSeek}
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
+          <ResizableHandle withHandle className="w-1" />
+
+          {/* CENTER: Waveform-First Layout */}
+          <ResizablePanel defaultSize={60} minSize={40}>
+            <div className="h-full flex flex-col gap-4">
+              {/* Playback controls */}
+              <div className="h-12 flex-shrink-0">
+                <AudioPlaybackControls
+                  isPlaying={isPlaying}
+                  currentTime={currentTime}
+                  duration={duration}
+                  playbackRate={playbackRate}
+                  volume={volume}
+                  muted={muted}
+                  onTogglePlayback={togglePlayback}
+                  onSkipForward={skipForward}
+                  onSkipBackward={skipBackward}
+                  onFrameForward={frameForward}
+                  onFrameBackward={frameBackward}
+                  onSeek={seek}
+                  onPlaybackRateChange={setPlaybackRate}
+                  onVolumeChange={setVolume}
+                  onToggleMute={toggleMute}
+                />
+              </div>
+
+              {/* Waveform (Primary - Top 70%) */}
+              <div className="flex-[7] overflow-hidden">
+                <Waveform
+                  currentTime={currentTime}
+                  duration={duration}
+                  zoomLevel={zoomLevel}
+                  onSeek={seek}
+                  onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
+                  onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
+                  issues={issues}
+                  dialogueLines={dialogueLines}
+                />
+              </div>
+
+              {/* Dialogue Highlight Strip (Bottom 30%) */}
+              <div className="flex-[3] overflow-hidden">
+                <DialogueHighlightStrip
+                  lines={dialogueLinesWithScores}
+                  currentTime={currentTime}
+                  selectedLineId={selectedLineId}
+                  onSelectLine={handleSelectLine}
+                />
+              </div>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle className="w-1" />
+
+          {/* RIGHT: Tabbed Inspector */}
+          <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
+            <TabbedInspector
               issues={issues}
-            />
-          </div>
-
-          {/* Dialogue Highlight Strip (Bottom 30%) */}
-          <div className="flex-[3] overflow-hidden">
-            <DialogueHighlightStrip
-              lines={dialogueLinesWithScores}
-              currentTime={currentTime}
+              dialogueLines={dialogueLinesWithScores}
+              selectedIssueId={selectedIssueId}
               selectedLineId={selectedLineId}
+              currentTime={currentTime}
+              notes={notes}
+              assetScore={assetScore}
+              clipScores={clipScores}
+              onSelectIssue={handleSelectIssue}
               onSelectLine={handleSelectLine}
+              onNotesChange={setNotes}
             />
-          </div>
-        </div>
-
-        {/* RIGHT: Tabbed Inspector */}
-        <div className="w-96 flex-shrink-0 overflow-hidden">
-          <TabbedInspector
-            issues={issues}
-            dialogueLines={dialogueLinesWithScores}
-            selectedIssueId={selectedIssueId}
-            selectedLineId={selectedLineId}
-            currentTime={currentTime}
-            notes={notes}
-            assetScore={assetScore}
-            clipScores={clipScores}
-            onSelectIssue={handleSelectIssue}
-            onSelectLine={handleSelectLine}
-            onNotesChange={setNotes}
-          />
-        </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );
