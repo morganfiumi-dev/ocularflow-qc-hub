@@ -329,41 +329,41 @@ export default function DubFlow() {
 
           {/* Waveform Panel - Using OcularFlow's component directly */}
           <WaveformPanel
-              height={waveformCollapsed ? 32 : 240}
-              collapsed={waveformCollapsed}
-              waveformBars={[]}
-              zoomLevel={zoomLevel}
-              scrollMode="CENTER"
-              isolateDialogue={false}
-              spectrogramMode={false}
-              issueFilters={{ error: true, warning: true, info: true }}
-              subtitles={dialogueLinesWithScores.map(line => ({
-                index: line.id,
-                inTime: line.timeInSeconds,
-                outTime: line.timeOutSeconds,
-                targetText: line.dubText,
-                issues: line.issues
-              }))}
-              currentIndex={selectedLineId || 1}
-              currentTime={currentTime}
-              duration={duration}
-              windowStart={Math.max(0, currentTime - 5)}
-              visibleWindow={10}
-              playheadPct={30}
-              onHeightChange={(delta) => {}}
-              onToggleCollapse={() => setWaveformCollapsed(!waveformCollapsed)}
-              onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
-              onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
-              onScrollModeChange={() => {}}
-              onToggleDialogueIsolation={() => {}}
-              onToggleSpectrogramMode={() => {}}
-              onToggleIssueFilter={() => {}}
+            height={waveformCollapsed ? 32 : 240}
+            collapsed={waveformCollapsed}
+            waveformBars={[]}
+            zoomLevel={zoomLevel}
+            scrollMode="CENTER"
+            isolateDialogue={false}
+            spectrogramMode={false}
+            issueFilters={{ error: true, warning: true, info: true }}
+            subtitles={dialogueLinesWithScores.map(line => ({
+              index: line.id,
+              inTime: line.timeInSeconds,
+              outTime: line.timeOutSeconds,
+              targetText: line.dubText,
+              issues: line.issues
+            }))}
+            currentIndex={selectedLineId || 1}
+            currentTime={currentTime}
+            duration={duration}
+            windowStart={Math.max(0, currentTime - 5)}
+            visibleWindow={10}
+            playheadPct={30}
+            onHeightChange={(delta) => {}}
+            onToggleCollapse={() => setWaveformCollapsed(!waveformCollapsed)}
+            onZoomIn={() => setZoomLevel(z => Math.min(4, z + 0.5))}
+            onZoomOut={() => setZoomLevel(z => Math.max(0.5, z - 0.5))}
+            onScrollModeChange={() => {}}
+            onToggleDialogueIsolation={() => {}}
+            onToggleSpectrogramMode={() => {}}
+            onToggleIssueFilter={() => {}}
             onSeek={seek}
             onSubtitleClick={handleSelectLine}
           />
           
           {/* Dialogue Highlight Strip */}
-          <div className="flex-shrink-0 h-64">
+          <div className="of-editor-panel">
             <DialogueHighlightStrip
               lines={dialogueLinesWithScores}
               currentTime={currentTime}
