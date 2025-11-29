@@ -23,6 +23,7 @@ export function WaveformPanel({
   scrollMode = 'CENTER',
   isolateDialogue = false,
   spectrogramMode = false,
+  issueFilters = { error: true, warning: true, info: true },
   
   // Timeline state
   subtitles = [],
@@ -39,6 +40,7 @@ export function WaveformPanel({
   onScrollModeChange,
   onToggleDialogueIsolation,
   onToggleSpectrogramMode,
+  onToggleIssueFilter,
   onSeek,
   onSubtitleClick,
   
@@ -70,12 +72,14 @@ export function WaveformPanel({
           zoomLevel={zoomLevel}
           isolateDialogue={isolateDialogue}
           spectrogramMode={spectrogramMode}
+          issueFilters={issueFilters}
           onToggleCollapse={onToggleCollapse}
           onScrollModeChange={onScrollModeChange}
           onZoomIn={onZoomIn}
           onZoomOut={onZoomOut}
           onToggleDialogueIsolation={onToggleDialogueIsolation}
           onToggleSpectrogramMode={onToggleSpectrogramMode}
+          onToggleIssueFilter={onToggleIssueFilter}
         />
         
         {/* Timeline (hidden when collapsed) */}
@@ -89,6 +93,7 @@ export function WaveformPanel({
             playheadPct={playheadPct}
             isolateDialogue={isolateDialogue}
             spectrogramMode={spectrogramMode}
+            issueFilters={issueFilters}
             onSeek={onSeek}
             onSubtitleClick={onSubtitleClick}
           />

@@ -11,7 +11,10 @@ import {
   ArrowRight,
   Activity,
   ZoomOut,
-  ZoomIn
+  ZoomIn,
+  AlertCircle,
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import { IconButton, ToggleButton } from '../atoms/Button';
 
@@ -25,12 +28,14 @@ export function WaveformControls({
   zoomLevel = 1,
   isolateDialogue = false,
   spectrogramMode = false,
+  issueFilters = { error: true, warning: true, info: true },
   onToggleCollapse,
   onScrollModeChange,
   onZoomIn,
   onZoomOut,
   onToggleDialogueIsolation,
   onToggleSpectrogramMode,
+  onToggleIssueFilter,
   className = ''
 }) {
   return (
@@ -83,6 +88,37 @@ export function WaveformControls({
           title="Toggle spectrogram"
           onClick={onToggleSpectrogramMode}
         />
+        
+        {/* Separator */}
+        <div className="h-3 w-px bg-slate-800" />
+        
+        {/* Issue filters */}
+        <div className="flex items-center gap-1">
+          <IconButton
+            icon={AlertCircle}
+            size={12}
+            active={issueFilters.error}
+            title="Show errors"
+            onClick={() => onToggleIssueFilter?.('error')}
+            className={issueFilters.error ? 'text-red-500' : 'text-slate-600'}
+          />
+          <IconButton
+            icon={AlertTriangle}
+            size={12}
+            active={issueFilters.warning}
+            title="Show warnings"
+            onClick={() => onToggleIssueFilter?.('warning')}
+            className={issueFilters.warning ? 'text-amber-500' : 'text-slate-600'}
+          />
+          <IconButton
+            icon={Info}
+            size={12}
+            active={issueFilters.info}
+            title="Show info"
+            onClick={() => onToggleIssueFilter?.('info')}
+            className={issueFilters.info ? 'text-cyan-500' : 'text-slate-600'}
+          />
+        </div>
       </div>
       
       {/* Right controls: Zoom */}
