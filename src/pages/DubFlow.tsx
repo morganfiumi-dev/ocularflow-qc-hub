@@ -12,6 +12,7 @@ import { Waveform } from '../components/dubflow/Waveform';
 import { DialogueHighlightStrip } from '../components/dubflow/DialogueHighlightStrip';
 import { TimelineMinimap } from '../components/dubflow/TimelineMinimap';
 import { TabbedInspector } from '../components/dubflow/TabbedInspector';
+import { VisualizationPanel } from '../components/dubflow/VisualizationPanel';
 import { AudioPlaybackControls } from '../components/dubflow/AudioPlaybackControls';
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
@@ -159,6 +160,10 @@ export default function DubFlow() {
   // Inspector state
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
+  
+  // Visualization panel state
+  const [visualizationOpen, setVisualizationOpen] = useState(false);
+  const [visualizationIssue, setVisualizationIssue] = useState<typeof issues[0] | null>(null);
 
   // Playback simulation with interval
   const playbackInterval = useRef<number | null>(null);
@@ -202,6 +207,9 @@ export default function DubFlow() {
     const issue = issues.find(i => i.id === id);
     if (issue) {
       seek(issue.timeSeconds);
+      // Open visualization panel with the issue
+      setVisualizationIssue(issue);
+      setVisualizationOpen(true);
     }
   };
 
@@ -448,6 +456,13 @@ export default function DubFlow() {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
+      
+      {/* Visualization Panel - Overlays from right */}
+      <VisualizationPanel
+        isOpen={visualizationOpen}
+        selectedIssue={visualizationIssue}
+        onClose={() => setVisualizationOpen(false)}
+      />
     </div>
   );
 }
