@@ -1,12 +1,25 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export type MeasurementType = 'binary' | 'threshold' | 'range' | 'percentage';
+
 export interface QCCheck {
   enabled: boolean;
   severity: 'ERROR' | 'WARNING' | 'INFO';
   weight: number;
   penalty: number;
+  measurementType: MeasurementType;
   threshold?: number;
+  range?: {
+    min?: number;
+    max?: number;
+    unit?: string;
+  };
+  acceptableLevels?: {
+    pass: string;
+    warn: string;
+    fail: string;
+  };
 }
 
 export interface QCCheckCategory {
@@ -58,6 +71,7 @@ interface QCProfileStore {
   setSeverity: (categoryId: string, checkId: string, severity: 'ERROR' | 'WARNING' | 'INFO') => void;
   setWeight: (categoryId: string, checkId: string, weight: number) => void;
   setPenalty: (categoryId: string, checkId: string, penalty: number) => void;
+  setMeasurementType: (categoryId: string, checkId: string, type: MeasurementType) => void;
   cloneProfile: (profileId: string, newId: string, newClient: string) => void;
   saveProfile: (profile: QCProfile) => void;
   
@@ -72,9 +86,19 @@ const useQCProfileStore = create<QCProfileStore>()(
       profiles: [],
       activeClientId: 'apple_plus',
       activeProduct: 'dubbed_audio',
-      activeLanguage: 'en',
+  activeLanguage: 'en',
 
-      loadProfiles: (profiles) => set({ profiles }),
+      loadProfiles: (profiles) => {
+        // Set default active client to professional_template if available
+        const defaultClient = profiles.find(p => p.id === 'professional_template') 
+          ? 'professional_template' 
+          : (profiles[0]?.id || 'apple_plus');
+        
+        set({ 
+          profiles,
+          activeClientId: defaultClient
+        });
+      },
 
       setClient: (clientId) => set({ activeClientId: clientId }),
 
@@ -209,6 +233,28 @@ const useQCProfileStore = create<QCProfileStore>()(
 
           if (category.checks[checkId]) {
             category.checks[checkId].penalty = penalty;
+          }
+
+          return { profiles };
+        }),
+
+      setMeasurementType: (categoryId, checkId, type) =>
+        set((state) => {
+          const profiles = [...state.profiles];
+          const profile = profiles.find((p) => p.id === state.activeClientId);
+          if (!profile) return state;
+
+          const product = profile.products[state.activeProduct];
+          if (!product) return state;
+
+          const langConfig = product.languages[state.activeLanguage];
+          if (!langConfig) return state;
+
+          const category = langConfig.checks[categoryId];
+          if (!category) return state;
+
+          if (category.checks[checkId]) {
+            category.checks[checkId].measurementType = type;
           }
 
           return { profiles };
