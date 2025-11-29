@@ -32,17 +32,13 @@ export function ContextPanel({ titleId }: ContextPanelProps) {
       }
     }
 
-    // Only load for demo project
-    if (titleId === 'demo-default') {
-      loadContextData();
-    } else {
-      setLoading(false);
-    }
+    // Load context data for all projects (demo data for now)
+    loadContextData();
   }, [titleId]);
 
   if (loading) {
     return (
-      <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-6 animate-pulse">
+      <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-6 animate-pulse mb-8">
         <div className="h-4 bg-slate-800 rounded w-1/3 mb-4"></div>
         <div className="h-3 bg-slate-800 rounded w-full mb-2"></div>
         <div className="h-3 bg-slate-800 rounded w-2/3"></div>
@@ -51,7 +47,11 @@ export function ContextPanel({ titleId }: ContextPanelProps) {
   }
 
   if (error || !context) {
-    return null; // Don't show panel if no context available
+    return (
+      <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-6 mb-8">
+        <p className="text-slate-500 text-sm text-center">No contextual metadata available for this title.</p>
+      </div>
+    );
   }
 
   const sections = [
