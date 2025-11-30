@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { WaveformPanel } from '../components/waveform/WaveformPanel';
 import { VideoPanel } from '../components/video/VideoPanel';
 import { DialogueTable } from '../components/dubflow/DialogueTable';
@@ -205,14 +206,17 @@ export default function DubFlow() {
   const [showAnnotations, setShowAnnotations] = useState(true);
   const annotations = [
     { time: 3, type: 'scene' as const, label: 'INT. CASTLE' },
+    { time: 5.5, type: 'on_screen_text' as const, label: 'THE CONTINENT' },
     { time: 8, type: 'forced_narrative' as const, label: 'NARRATOR' },
     { time: 15, type: 'song' as const, label: 'TOSS A COIN' },
     { time: 20, type: 'scene' as const, label: 'EXT. FOREST' },
-    { time: 24, type: 'title' as const, label: 'MAIN TITLE' },
+    { time: 24, type: 'on_screen_text' as const, label: 'YEAR 1264' },
     { time: 180, type: 'scene' as const, label: 'INT. TAVERN' },
+    { time: 225.5, type: 'on_screen_text' as const, label: 'KAER MORHEN' },
     { time: 240, type: 'song' as const, label: 'BATTLE THEME' },
     { time: 300, type: 'scene' as const, label: 'EXT. MOUNTAIN' },
     { time: 360, type: 'forced_narrative' as const, label: 'VOICEOVER' },
+    { time: 376, type: 'on_screen_text' as const, label: 'THE END' },
     { time: 405, type: 'scene' as const, label: 'FINAL SCENE' },
   ];
 
@@ -373,103 +377,114 @@ export default function DubFlow() {
       <div className="of-main">
         {/* CENTER COLUMN: Video + Waveform + Dialogue Table */}
         <div className="of-left-panel">
-          {/* Video Panel */}
-          <VideoPanel
-            isPlaying={isPlaying}
-            currentTime={currentTime}
-            duration={duration}
-            playbackRate={playbackRate}
-            volume={volume}
-            muted={muted}
-            currentSubtitle={null}
-            contextType="DIALOGUE"
-            onTogglePlayback={togglePlayback}
-            onSkipForward={skipForward}
-            onSkipBackward={skipBackward}
-            onFrameForward={frameForward}
-            onFrameBackward={frameBackward}
-            onSeek={seek}
-            onPlaybackRateChange={setPlaybackRate}
-            onVolumeChange={setVolume}
-            onToggleMute={toggleMute}
-            onDurationChange={() => {}}
-          />
+          {/* Resizable Video + Waveform/Dialogue sections */}
+          <PanelGroup direction="vertical">
+            {/* Video Panel - Resizable */}
+            <Panel defaultSize={30} minSize={15} maxSize={50}>
+              <VideoPanel
+                isPlaying={isPlaying}
+                currentTime={currentTime}
+                duration={duration}
+                playbackRate={playbackRate}
+                volume={volume}
+                muted={muted}
+                currentSubtitle={null}
+                contextType="DIALOGUE"
+                onTogglePlayback={togglePlayback}
+                onSkipForward={skipForward}
+                onSkipBackward={skipBackward}
+                onFrameForward={frameForward}
+                onFrameBackward={frameBackward}
+                onSeek={seek}
+                onPlaybackRateChange={setPlaybackRate}
+                onVolumeChange={setVolume}
+                onToggleMute={toggleMute}
+                onDurationChange={() => {}}
+              />
+            </Panel>
 
-          {/* Audio Toolbar */}
-          <AudioToolbar
-            spectrogramMode={waveform.spectrogramMode}
-            loopMode={loopMode}
-            onToggleSpectrogram={waveform.toggleSpectrogramMode}
-            onToggleLoop={() => setLoopMode(!loopMode)}
-          />
+            {/* Resize Handle */}
+            <PanelResizeHandle className="h-1 bg-slate-800 hover:bg-cyan-500/30 transition-colors cursor-row-resize" />
 
-          {/* Waveform Panel - Using OcularFlow's component with DubFlow overlays */}
-          <div className="relative">
-            <WaveformPanel
-              height={waveform.height}
-              collapsed={waveform.collapsed}
-              waveformBars={waveform.waveformBars}
-              zoomLevel={waveform.zoomLevel}
-              scrollMode={waveform.scrollMode}
-              isolateDialogue={waveform.isolateDialogue}
-              spectrogramMode={waveform.spectrogramMode}
-              issueFilters={waveform.issueFilters}
-              subtitles={dialogueLinesWithScores.map(line => ({
-                index: line.id,
-                startTime: line.timeInSeconds,
-                endTime: line.timeOutSeconds,
-                text: line.dubText,
-                issues: line.issues.map(issue => ({
-                  id: String(issue.id),
-                  severity: issue.severity,
-                  type: issue.type,
-                  description: issue.description
-                }))
-              }))}
-              currentIndex={selectedLineId || 1}
-              currentTime={currentTime}
-              duration={duration}
-              windowStart={waveform.windowStart}
-              visibleWindow={waveform.visibleWindow}
-              playheadPct={waveform.playheadPct}
-              onHeightChange={waveform.adjustHeight}
-              onToggleCollapse={waveform.toggleCollapsed}
-              onZoomIn={waveform.zoomIn}
-              onZoomOut={waveform.zoomOut}
-              onScrollModeChange={waveform.setScrollMode}
-              onToggleDialogueIsolation={waveform.toggleDialogueIsolation}
-              onToggleSpectrogramMode={waveform.toggleSpectrogramMode}
-              onToggleIssueFilter={waveform.toggleIssueFilter}
-              onSeek={seek}
-              onSubtitleClick={handleSelectLine}
-            />
-            
-            {/* Timeline Annotations Overlay */}
-            <TimelineAnnotations
-              annotations={annotations}
-              windowStart={waveform.windowStart}
-              visibleWindow={waveform.visibleWindow}
-              show={showAnnotations}
-            />
-            
-            {/* Inline Recommendations */}
-            <InlineRecommendations
-              lines={dialogueLinesWithScores}
-              windowStart={waveform.windowStart}
-              visibleWindow={waveform.visibleWindow}
-              onApplyFix={(lineId, fixType) => {
-                console.log(`Apply ${fixType} to line ${lineId}`);
-              }}
-            />
-          </div>
-          
-          {/* Dialogue Table (Bottom) */}
-          <DialogueTable
-            lines={dialogueLinesWithScores}
-            selectedLineId={selectedLineId}
-            currentTime={currentTime}
-            onSelectLine={handleSelectLine}
-          />
+            {/* Bottom Panel - Waveform + Dialogue */}
+            <Panel defaultSize={70}>
+              {/* Audio Toolbar */}
+              <AudioToolbar
+                spectrogramMode={waveform.spectrogramMode}
+                loopMode={loopMode}
+                onToggleSpectrogram={waveform.toggleSpectrogramMode}
+                onToggleLoop={() => setLoopMode(!loopMode)}
+              />
+
+              {/* Waveform Panel - Using OcularFlow's component with DubFlow overlays */}
+              <div className="relative">
+                <WaveformPanel
+                  height={waveform.height}
+                  collapsed={waveform.collapsed}
+                  waveformBars={waveform.waveformBars}
+                  zoomLevel={waveform.zoomLevel}
+                  scrollMode={waveform.scrollMode}
+                  isolateDialogue={waveform.isolateDialogue}
+                  spectrogramMode={waveform.spectrogramMode}
+                  issueFilters={waveform.issueFilters}
+                  subtitles={dialogueLinesWithScores.map(line => ({
+                    index: line.id,
+                    startTime: line.timeInSeconds,
+                    endTime: line.timeOutSeconds,
+                    text: line.dubText,
+                    issues: line.issues.map(issue => ({
+                      id: String(issue.id),
+                      severity: issue.severity,
+                      type: issue.type,
+                      description: issue.description
+                    }))
+                  }))}
+                  currentIndex={selectedLineId || 1}
+                  currentTime={currentTime}
+                  duration={duration}
+                  windowStart={waveform.windowStart}
+                  visibleWindow={waveform.visibleWindow}
+                  playheadPct={waveform.playheadPct}
+                  onHeightChange={waveform.adjustHeight}
+                  onToggleCollapse={waveform.toggleCollapsed}
+                  onZoomIn={waveform.zoomIn}
+                  onZoomOut={waveform.zoomOut}
+                  onScrollModeChange={waveform.setScrollMode}
+                  onToggleDialogueIsolation={waveform.toggleDialogueIsolation}
+                  onToggleSpectrogramMode={waveform.toggleSpectrogramMode}
+                  onToggleIssueFilter={waveform.toggleIssueFilter}
+                  onSeek={seek}
+                  onSubtitleClick={handleSelectLine}
+                />
+                
+                {/* Timeline Annotations Overlay */}
+                <TimelineAnnotations
+                  annotations={annotations}
+                  windowStart={waveform.windowStart}
+                  visibleWindow={waveform.visibleWindow}
+                  show={showAnnotations}
+                />
+                
+                {/* Inline Recommendations */}
+                <InlineRecommendations
+                  lines={dialogueLinesWithScores}
+                  windowStart={waveform.windowStart}
+                  visibleWindow={waveform.visibleWindow}
+                  onApplyFix={(lineId, fixType) => {
+                    console.log(`Apply ${fixType} to line ${lineId}`);
+                  }}
+                />
+              </div>
+              
+              {/* Dialogue Table (Bottom) */}
+              <DialogueTable
+                lines={dialogueLinesWithScores}
+                selectedLineId={selectedLineId}
+                currentTime={currentTime}
+                onSelectLine={handleSelectLine}
+              />
+            </Panel>
+          </PanelGroup>
         </div>
 
         {/* RIGHT COLUMN: 5-Tab Inspector */}

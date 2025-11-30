@@ -8,7 +8,7 @@ import { Music, Film, Type, MessageSquare } from 'lucide-react';
 
 interface Annotation {
   time: number;
-  type: 'scene' | 'song' | 'title' | 'forced_narrative';
+  type: 'scene' | 'song' | 'on_screen_text' | 'forced_narrative';
   label: string;
 }
 
@@ -36,7 +36,7 @@ export function TimelineAnnotations({
     switch (type) {
       case 'scene': return <Film className="w-2.5 h-2.5" />;
       case 'song': return <Music className="w-2.5 h-2.5" />;
-      case 'title': return <Type className="w-2.5 h-2.5" />;
+      case 'on_screen_text': return <Type className="w-2.5 h-2.5" />;
       case 'forced_narrative': return <MessageSquare className="w-2.5 h-2.5" />;
     }
   };
@@ -45,7 +45,7 @@ export function TimelineAnnotations({
     switch (type) {
       case 'scene': return 'bg-purple-500/20 border-purple-500/40 text-purple-300';
       case 'song': return 'bg-pink-500/20 border-pink-500/40 text-pink-300';
-      case 'title': return 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300';
+      case 'on_screen_text': return 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300';
       case 'forced_narrative': return 'bg-blue-500/20 border-blue-500/40 text-blue-300';
     }
   };
