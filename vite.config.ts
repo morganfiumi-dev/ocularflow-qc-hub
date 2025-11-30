@@ -18,14 +18,12 @@ export default defineConfig(({ mode }) => ({
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
       'react/jsx-runtime': path.resolve(__dirname, './node_modules/react/jsx-runtime'),
       'react/jsx-dev-runtime': path.resolve(__dirname, './node_modules/react/jsx-dev-runtime'),
-      // Force Zustand to use the same React
-      'zustand': path.resolve(__dirname, './node_modules/zustand'),
     },
     dedupe: ['react', 'react-dom', 'zustand', '@tanstack/react-query', '@trpc/react-query', '@trpc/client'],
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
-    exclude: ['zustand'],
+    include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'zustand'],
+    exclude: [],
     esbuildOptions: {
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
     },
