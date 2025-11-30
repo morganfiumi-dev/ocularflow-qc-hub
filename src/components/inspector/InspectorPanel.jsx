@@ -366,6 +366,18 @@ function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
     </div>
   );
 }
+
+/**
+ * Glossary (KNP) Tab Content
+ */
+function GlossaryTab({ glossary = [], onItemClick }) {
+  if (glossary.length === 0) {
+    return (
+      <div className="text-center text-slate-600 text-xs py-8">
+        No glossary entries
+      </div>
+    );
+  }
   
   return (
     <div className="of-glossary-list">
