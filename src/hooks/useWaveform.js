@@ -3,7 +3,7 @@
  * Manages waveform state and calculations
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   calculateCenterWindow,
   calculateFreeWindow,
