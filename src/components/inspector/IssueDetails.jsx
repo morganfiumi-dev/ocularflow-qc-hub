@@ -66,9 +66,13 @@ function LLMVoteCard({ model, score, vote, note }) {
   // Format model name
   const formatModel = (m) => {
     const names = {
-      gemini: 'Gemini 1.5',
-      gpt4: 'GPT-4o',
-      claude: 'Claude 3.5'
+      alg1: 'Alg 1',
+      alg2: 'Alg 2',
+      alg3: 'Alg 3',
+      alg4: 'Alg 4',
+      gemini: 'Alg 1',
+      gpt4: 'Alg 2',
+      claude: 'Alg 3'
     };
     return names[m.toLowerCase()] || m;
   };
