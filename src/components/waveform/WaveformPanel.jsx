@@ -46,6 +46,8 @@ export function WaveformPanel({
   onToggleIssueFilter,
   onSeek,
   onSubtitleClick,
+  onNextSubtitle,
+  onNextIssue,
   
   className = ''
 }) {
@@ -83,6 +85,8 @@ export function WaveformPanel({
           onToggleDialogueIsolation={onToggleDialogueIsolation}
           onToggleSpectrogramMode={onToggleSpectrogramMode}
           onToggleIssueFilter={onToggleIssueFilter}
+          onNextSubtitle={onNextSubtitle}
+          onNextIssue={onNextIssue}
         />
         
         {/* Timeline (hidden when collapsed) */}
