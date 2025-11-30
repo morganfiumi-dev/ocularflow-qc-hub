@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Layout, List, BookOpen, AlertOctagon, Eye } from 'lucide-react';
+import { Layout, List, BookOpen, AlertOctagon, Eye, ChevronUp, ChevronDown } from 'lucide-react';
 import { PanelTabs, ResizeHandle, Card } from '../atoms/Panel';
 import { MetricBadge } from '../atoms/Badge';
 import { IssueList } from './IssueList';
@@ -260,6 +260,8 @@ function AnalysisTab({
  * Queue Tab Content
  */
 function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
+  const [expandedId, setExpandedId] = React.useState(null);
+  
   if (queue.length === 0) {
     return (
       <div className="text-center text-slate-600 text-xs py-8">
@@ -267,28 +269,6 @@ function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
       </div>
     );
   }
-  
-  const getSeverityIcon = (severity) => {
-    switch (severity) {
-      case 'error':
-        return <AlertOctagon size={14} className="text-rose-400" />;
-      case 'warning':
-        return <AlertOctagon size={14} className="text-amber-400" />;
-      default:
-        return <AlertOctagon size={14} className="text-blue-400" />;
-    }
-  };
-  
-  const getSeverityStyle = (severity) => {
-    switch (severity) {
-      case 'error':
-        return 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/15';
-      case 'warning':
-        return 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/15';
-      default:
-        return 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/15';
-    }
-  };
   
   const formatTimecode = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -298,83 +278,94 @@ function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
     return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}:${String(frames).padStart(2, '0')}`;
   };
   
+  const handleToggle = (id, e) => {
+    e.stopPropagation();
+    setExpandedId(expandedId === id ? null : id);
+  };
+  
   return (
-    <div className="space-y-1.5 p-3">
-      <div className="text-[9px] text-slate-500 uppercase tracking-wider mb-2">
-        {queue.length} incident{queue.length !== 1 ? 's' : ''} detected
+    <div className="px-3 pt-3 pb-2">
+      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-3">
+        Priority Review ({queue.length})
       </div>
       
-      {queue.map((item, idx) => {
-        const subtitle = subtitles.find(s => s.index === item.subIndex);
-        const timecode = subtitle ? formatTimecode(subtitle.startTime) : '00:00:00:00';
-        
-        return (
-          <div
-            key={`${item.subIndex}-${item.id}-${idx}`}
-            className={`
-              rounded-lg border transition-all cursor-pointer
-              ${getSeverityStyle(item.severity)}
-            `}
-            onClick={() => onItemClick?.(item.subIndex)}
-          >
-            <div className="p-2.5">
-              <div className="flex items-start gap-2">
-                <div className="flex-shrink-0 mt-0.5">
-                  {getSeverityIcon(item.severity)}
+      <div className="of-issue-list">
+        {queue.map((item, idx) => {
+          const subtitle = subtitles.find(s => s.index === item.subIndex);
+          const timecode = subtitle ? formatTimecode(subtitle.startTime) : '00:00:00:00';
+          const isExpanded = expandedId === `${item.subIndex}-${item.id}`;
+          
+          return (
+            <div
+              key={`${item.subIndex}-${item.id}-${idx}`}
+              className={`of-issue-item ${item.severity}`}
+            >
+              <button
+                className="of-issue-header"
+                onClick={() => onItemClick?.(item.subIndex)}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="of-issue-dot" />
+                    <span className="of-issue-title">{item.ruleName}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[9px] font-mono text-slate-500">
+                    <span>Sub #{item.subIndex}</span>
+                    <span>•</span>
+                    <span>{timecode}</span>
+                  </div>
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
-                      #{idx + 1}
+                <button
+                  className="flex-shrink-0 p-1 hover:bg-slate-700/30 rounded transition-colors"
+                  onClick={(e) => handleToggle(`${item.subIndex}-${item.id}`, e)}
+                >
+                  {isExpanded ? (
+                    <ChevronUp size={10} className="text-slate-500" />
+                  ) : (
+                    <ChevronDown size={10} className="text-slate-500" />
+                  )}
+                </button>
+              </button>
+              
+              {isExpanded && (
+                <div className="of-issue-details">
+                  <div className="of-issue-explanation">
+                    {item.description}
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-slate-500">Score Impact</span>
+                    <span className={`font-bold ${
+                      item.severity === 'error' ? 'text-rose-400' : 
+                      item.severity === 'warning' ? 'text-amber-400' : 
+                      'text-blue-400'
+                    }`}>
+                      {item.scoreHit}
                     </span>
-                    <div className="flex items-center gap-1 text-[9px] font-mono text-slate-400">
-                      <span>🕐</span>
-                      {timecode}
+                  </div>
+                  
+                  <div className="mt-3 pt-3 border-t border-slate-800">
+                    <div className="flex justify-between text-[10px]">
+                      <span className="text-slate-500">Quality Score</span>
+                      <span className={`font-bold ${
+                        item.score >= 90 ? 'text-emerald-400' : 
+                        item.score >= 70 ? 'text-amber-400' : 
+                        'text-rose-400'
+                      }`}>
+                        {item.score}
+                      </span>
                     </div>
                   </div>
-                  
-                  <h4 className="text-[11px] font-semibold text-slate-200 leading-tight">
-                    {item.ruleName}
-                  </h4>
-                  
-                  <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-1 mt-0.5">
-                    {item.description}
-                  </p>
-                  
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                      item.severity === 'error' ? 'bg-rose-500/20 text-rose-400' :
-                      item.severity === 'warning' ? 'bg-amber-500/20 text-amber-400' :
-                      'bg-blue-500/20 text-blue-400'
-                    }`}>
-                      {item.severity}
-                    </span>
-                    <span className="text-[9px] text-slate-600">
-                      Sub #{item.subIndex}
-                    </span>
-                  </div>
                 </div>
-              </div>
+              )}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
-
-/**
- * Glossary (KNP) Tab Content
- */
-function GlossaryTab({ glossary = [], onItemClick }) {
-  if (glossary.length === 0) {
-    return (
-      <div className="text-center text-slate-600 text-xs py-8">
-        No glossary entries
-      </div>
-    );
-  }
   
   return (
     <div className="of-glossary-list">
