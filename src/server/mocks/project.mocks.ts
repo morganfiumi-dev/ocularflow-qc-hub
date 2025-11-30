@@ -10,7 +10,7 @@ import type { Project } from '../schemas/project.schema';
 export function mockDemoProject(): Project {
   return {
     id: 'demo-mock',
-    name: '[MOCK] Sample QC Project',
+    name: 'The Witcher: Season 3 Episode 1 - Shaerrawedd',
     type: 'demo-fixture',
     status: 'in-progress',
     createdAt: new Date('2024-01-10'),
