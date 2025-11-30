@@ -36,6 +36,8 @@ export function WaveformControls({
   onToggleDialogueIsolation,
   onToggleSpectrogramMode,
   onToggleIssueFilter,
+  onNextSubtitle,
+  onNextIssue,
   className = ''
 }) {
   return (
@@ -121,25 +123,48 @@ export function WaveformControls({
         </div>
       </div>
       
-      {/* Right controls: Zoom */}
-      <div className="flex items-center gap-1">
-        <IconButton
-          icon={ZoomOut}
-          size={12}
-          title="Zoom out"
-          onClick={onZoomOut}
-          disabled={zoomLevel <= 0.5}
-        />
-        <span className="text-[9px] font-mono text-slate-500 w-8 text-center">
-          {zoomLevel.toFixed(1)}x
-        </span>
-        <IconButton
-          icon={ZoomIn}
-          size={12}
-          title="Zoom in"
-          onClick={onZoomIn}
-          disabled={zoomLevel >= 4}
-        />
+      {/* Right controls: Navigation + Zoom */}
+      <div className="flex items-center gap-2">
+        {/* Navigation buttons */}
+        <button
+          onClick={onNextSubtitle}
+          className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-slate-800 border border-slate-700 text-slate-300 rounded hover:bg-slate-700 transition-colors"
+          title="Jump to next subtitle"
+        >
+          Next Sub
+        </button>
+        
+        <button
+          onClick={onNextIssue}
+          className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-red-900/30 border border-red-700/50 text-red-400 rounded hover:bg-red-900/50 transition-colors"
+          title="Jump to next issue"
+        >
+          Next Issue
+        </button>
+        
+        {/* Separator */}
+        <div className="h-3 w-px bg-slate-800" />
+        
+        {/* Zoom controls */}
+        <div className="flex items-center gap-1">
+          <IconButton
+            icon={ZoomOut}
+            size={12}
+            title="Zoom out"
+            onClick={onZoomOut}
+            disabled={zoomLevel <= 0.5}
+          />
+          <span className="text-[9px] font-mono text-slate-500 w-8 text-center">
+            {zoomLevel.toFixed(1)}x
+          </span>
+          <IconButton
+            icon={ZoomIn}
+            size={12}
+            title="Zoom in"
+            onClick={onZoomIn}
+            disabled={zoomLevel >= 4}
+          />
+        </div>
       </div>
     </div>
   );

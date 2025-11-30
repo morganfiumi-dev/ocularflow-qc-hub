@@ -275,6 +275,24 @@ export default function OcularFlow() {
     setInspectorWidth(w => Math.max(300, Math.min(600, w + delta)));
   }, []);
   
+  // Handle next subtitle
+  const handleNextSubtitle = useCallback(() => {
+    selectNext();
+    videoSync.seekToIndex(currentIndex + 1);
+  }, [selectNext, videoSync, currentIndex]);
+  
+  // Handle next issue
+  const handleNextIssue = useCallback(() => {
+    const nextIssueIndex = subtitles.findIndex((sub, idx) => 
+      idx > currentIndex && sub.issues && sub.issues.length > 0
+    );
+    
+    if (nextIssueIndex !== -1) {
+      const nextSub = subtitles[nextIssueIndex];
+      handleSelectSubtitle(nextSub.index);
+    }
+  }, [subtitles, currentIndex, handleSelectSubtitle]);
+  
   // =========================================================================
   // HOTKEYS
   // =========================================================================
@@ -408,6 +426,8 @@ export default function OcularFlow() {
             onToggleIssueFilter={waveform.toggleIssueFilter}
             onSeek={handleWaveformSeek}
             onSubtitleClick={handleSelectSubtitle}
+            onNextSubtitle={handleNextSubtitle}
+            onNextIssue={handleNextIssue}
           />
           
           {/* Editor Panel */}
