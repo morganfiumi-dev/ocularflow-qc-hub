@@ -294,7 +294,9 @@ export default function DubFlow() {
     setSelectedIssueId(id);
     const issue = issues.find(i => i.id === id);
     if (issue) {
+      // Seek to the issue time and start playback briefly for context
       seek(issue.timeSeconds);
+      setIsPlaying(false); // Pause so user can see exactly where we are
     }
   };
 
