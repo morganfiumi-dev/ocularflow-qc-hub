@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => ({
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
     },
   },
+  ssr: {
+    noExternal: ['zustand'],
+  },
   define: {
     // Ensure React is treated as a singleton
     'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : 'development'),
