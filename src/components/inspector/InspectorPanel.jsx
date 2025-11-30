@@ -298,6 +298,9 @@ function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
           // Find the full subtitle's analysisDetails for this issue
           const analysisDetails = subtitle?.analysisDetails;
           
+          // Find next subtitle with issues
+          const nextIssueItem = queue[idx + 1];
+          
           return (
             <div
               key={`${item.subIndex}-${item.id}-${idx}`}
@@ -349,10 +352,38 @@ function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
               </button>
               
               {isExpanded && (
-                <IssueDetails
-                  issue={item}
-                  analysisDetails={analysisDetails}
-                />
+                <>
+                  <IssueDetails
+                    issue={item}
+                    analysisDetails={analysisDetails}
+                  />
+                  
+                  {/* Quick Actions */}
+                  <div className="px-3 pb-2 flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onItemClick?.(item.subIndex);
+                      }}
+                      className="flex-1 px-2 py-1.5 text-[9px] font-bold uppercase tracking-wider bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded hover:bg-cyan-500/20 transition-colors"
+                    >
+                      Jump to Timeline
+                    </button>
+                    
+                    {nextIssueItem && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onItemClick?.(nextIssueItem.subIndex);
+                          handleToggleIssue(nextIssueItem.id);
+                        }}
+                        className="flex-1 px-2 py-1.5 text-[9px] font-bold uppercase tracking-wider bg-slate-800 border border-slate-700 text-slate-400 rounded hover:bg-slate-700 transition-colors"
+                      >
+                        Next Issue →
+                      </button>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           );
