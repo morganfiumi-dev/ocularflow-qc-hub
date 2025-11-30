@@ -47,6 +47,7 @@ import { trpc } from '../lib/trpc-mock';
 // Demo project loader
 import { isDemoAsset, getDemoVideoUrl } from '../utils/demoProjectLoader';
 import { loadContext } from '../demo/loadContextualMetadata';
+import { buildReviewQueue } from '../utils/issueDetection';
 
 // Styles
 import '../styles/ocularflow.css';
@@ -108,15 +109,7 @@ export default function OcularFlow() {
   }, [subtitles, filter]);
   
   const reviewQueue = useMemo(() => {
-    return subtitles
-      .filter(s => s.issues && s.issues.length > 0)
-      .sort((a, b) => {
-        const aHasError = a.issues.some(i => i.severity === 'error');
-        const bHasError = b.issues.some(i => i.severity === 'error');
-        if (aHasError && !bHasError) return -1;
-        if (!aHasError && bHasError) return 1;
-        return 0;
-      });
+    return buildReviewQueue(subtitles, 90);
   }, [subtitles]);
   
   const stats = useMemo(() => {
