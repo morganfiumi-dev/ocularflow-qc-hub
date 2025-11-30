@@ -44,20 +44,6 @@ export function BipolarDivergenceGraph({ eventTime }: BipolarDivergenceGraphProp
           {/* Center line */}
           <line x1="0" y1="64" x2="500" y2="64" stroke="rgb(71 85 105)" strokeWidth="1" strokeDasharray="4 4" />
           
-          {/* Event marker */}
-          {eventTime && (
-            <line 
-              x1={centerPoint * 50} 
-              y1="10" 
-              x2={centerPoint * 50} 
-              y2="118" 
-              stroke="rgb(34 211 238)" 
-              strokeWidth="2" 
-              strokeDasharray="4 4"
-              opacity="0.5"
-            />
-          )}
-          
           {/* Source line (top half) */}
           <polyline
             points={dataPoints.map((d, i) => `${i * 10},${64 - d.source}`).join(' ')}
@@ -73,6 +59,42 @@ export function BipolarDivergenceGraph({ eventTime }: BipolarDivergenceGraphProp
             stroke="rgb(251 146 60)"
             strokeWidth="2"
           />
+          
+          {/* Event marker pill */}
+          {eventTime !== undefined && (
+            <g>
+              <line 
+                x1={centerPoint * 50} 
+                y1="10" 
+                x2={centerPoint * 50} 
+                y2="118" 
+                stroke="rgb(34 211 238)" 
+                strokeWidth="2" 
+                strokeDasharray="4 4"
+                opacity="0.3"
+              />
+              <rect
+                x={centerPoint * 50 - 25}
+                y="2"
+                width="50"
+                height="16"
+                rx="8"
+                fill="rgb(6 182 212)"
+                opacity="0.9"
+              />
+              <text
+                x={centerPoint * 50}
+                y="12"
+                textAnchor="middle"
+                fill="rgb(8 51 68)"
+                fontSize="9"
+                fontWeight="bold"
+                fontFamily="monospace"
+              >
+                {eventTime.toFixed(1)}s
+              </text>
+            </g>
+          )}
         </svg>
       </div>
 
