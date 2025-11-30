@@ -311,14 +311,33 @@ function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
                 }}
               >
                 <div className="flex-1 min-w-0">
-                  <span className="of-issue-title">
+                  {/* First line: Index and Timecode */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+                      #{idx + 1}
+                    </span>
+                    <div className="flex items-center gap-1 text-[9px] font-mono text-slate-400">
+                      <span>🕐</span>
+                      {timecode}
+                    </div>
+                  </div>
+                  
+                  {/* Second line: Issue Type (prominent) */}
+                  <h4 className="of-issue-title">
                     <div className="of-issue-dot" />
                     {item.ruleName}
-                  </span>
-                  <div className="flex items-center gap-2 text-[9px] font-mono text-slate-500 mt-1">
-                    <span>Sub #{item.subIndex}</span>
-                    <span>•</span>
-                    <span>{timecode}</span>
+                  </h4>
+                  
+                  {/* Third line: Brief description (collapsed state only) */}
+                  {!isExpanded && (
+                    <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-1 mt-1">
+                      {item.description}
+                    </p>
+                  )}
+                  
+                  {/* Subtitle reference */}
+                  <div className="text-[9px] text-slate-600 mt-1">
+                    Sub #{item.subIndex}
                   </div>
                 </div>
                 
