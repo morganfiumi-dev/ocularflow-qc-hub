@@ -58,6 +58,14 @@ export function IssueDetails({
               <span className="text-[9px] text-slate-400">
                 Avg: <span className="font-bold text-slate-300">{consensusMetrics.avgScore}</span>
               </span>
+              <span className="text-[9px] text-slate-400">•</span>
+              <span className="text-[9px] text-slate-400">
+                Confidence: <span className={`font-bold ${
+                  consensusMetrics.confidence >= 80 ? 'text-emerald-400' :
+                  consensusMetrics.confidence >= 60 ? 'text-cyan-400' :
+                  'text-amber-400'
+                }`}>{consensusMetrics.confidence}%</span>
+              </span>
             </div>
             <div className={`
               text-[8px] font-bold uppercase tracking-wider
@@ -152,6 +160,7 @@ export function IssueDetails({
 function calculateConsensus(llmScores) {
   const entries = Object.entries(llmScores);
   const total = entries.length;
+  const scores = entries.map(([_, data]) => data.score);
   
   // Count votes
   const failCount = entries.filter(([_, data]) => data.vote === 'FAIL').length;
@@ -159,8 +168,18 @@ function calculateConsensus(llmScores) {
   
   // Calculate average score
   const avgScore = Math.round(
-    entries.reduce((sum, [_, data]) => sum + data.score, 0) / total
+    scores.reduce((sum, score) => sum + score, 0) / total
   );
+  
+  // Calculate variance and confidence
+  const variance = scores.reduce((sum, score) => {
+    return sum + Math.pow(score - avgScore, 2);
+  }, 0) / total;
+  const stdDev = Math.sqrt(variance);
+  
+  // Convert to confidence percentage (lower variance = higher confidence)
+  // Max reasonable stdDev is ~30 (scores 0-100), normalize to 0-100%
+  const confidence = Math.round(Math.max(0, Math.min(100, 100 - (stdDev * 3.33))));
   
   // Group by vote
   const voteGroups = {
@@ -184,6 +203,8 @@ function calculateConsensus(llmScores) {
     failCount,
     passCount,
     avgScore,
+    confidence,
+    stdDev: Math.round(stdDev),
     voteGroups,
     majorityVote,
     strength,
