@@ -14,6 +14,7 @@ import { AudioToolbar } from '../components/dubflow/AudioToolbar';
 import { RightInspector } from '../components/dubflow/tabs/RightInspector';
 import { TimelineAnnotations } from '../components/dubflow/TimelineAnnotations';
 import { InlineRecommendations } from '../components/dubflow/InlineRecommendations';
+import { TimelineMinimap } from '../components/dubflow/TimelineMinimap';
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
@@ -300,6 +301,17 @@ export default function DubFlow() {
     }
   };
 
+  const handleMinimapSeek = (time: number) => {
+    seek(time);
+    // Find and select the closest issue to this time
+    const closestIssue = issues.reduce((prev, curr) => {
+      return Math.abs(curr.timeSeconds - time) < Math.abs(prev.timeSeconds - time) ? curr : prev;
+    }, issues[0]);
+    if (closestIssue && Math.abs(closestIssue.timeSeconds - time) < 2) {
+      setSelectedIssueId(closestIssue.id);
+    }
+  };
+
   const handleSelectLine = (id: number) => {
     setSelectedLineId(id);
     const line = dialogueLinesWithScores.find(l => l.id === id);
@@ -454,6 +466,16 @@ export default function DubFlow() {
             className="h-1 bg-slate-800 hover:bg-cyan-500/30 transition-colors cursor-row-resize active:bg-cyan-500/50"
             style={{ cursor: isResizing ? 'row-resize' : 'row-resize' }}
           />
+
+          {/* Timeline Minimap - Overview of all incidents */}
+          <div className="h-28 px-4 py-2">
+            <TimelineMinimap
+              duration={duration}
+              currentTime={currentTime}
+              issues={issues}
+              onSeek={handleMinimapSeek}
+            />
+          </div>
 
           {/* Bottom Section - Waveform + Dialogue */}
           <div>
