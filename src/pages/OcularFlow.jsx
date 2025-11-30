@@ -327,7 +327,7 @@ export default function OcularFlow() {
           <div className="h-4 w-px bg-slate-800" />
           
           <div className="of-project-info">
-            <span className="text-slate-300">NFLX_WITCHER_S3</span>
+            <span className="text-slate-300">The Witcher: Season 3 Episode 1 - Shaerrawedd</span>
             <span className="text-cyan-600 flex items-center gap-1">
               EN <ArrowRight size={8} /> ES
             </span>
