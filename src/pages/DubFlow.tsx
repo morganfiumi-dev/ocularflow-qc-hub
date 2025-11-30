@@ -305,6 +305,22 @@ export default function DubFlow() {
       seek(line.timeInSeconds);
     }
   };
+
+  const handleNextSubtitle = () => {
+    const currentIdx = dialogueLinesWithScores.findIndex(l => l.id === selectedLineId);
+    if (currentIdx < dialogueLinesWithScores.length - 1) {
+      const nextLine = dialogueLinesWithScores[currentIdx + 1];
+      handleSelectLine(nextLine.id);
+    }
+  };
+
+  const handleNextIncident = () => {
+    // Find next issue after current time
+    const nextIssue = issues.find(i => i.timeSeconds > currentTime);
+    if (nextIssue) {
+      handleSelectIssue(nextIssue.id);
+    }
+  };
   
   // Loading state
   if (isLoading) {
@@ -445,6 +461,8 @@ export default function DubFlow() {
                 loopMode={loopMode}
                 onToggleSpectrogram={waveform.toggleSpectrogramMode}
                 onToggleLoop={() => setLoopMode(!loopMode)}
+                onNextSubtitle={handleNextSubtitle}
+                onNextIncident={handleNextIncident}
               />
 
               {/* Waveform Panel - Using OcularFlow's component with DubFlow overlays */}
