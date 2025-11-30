@@ -68,50 +68,50 @@ export default function DubFlow() {
     };
   }) || [];
 
-  // Mock dialogue lines (in production, these would come from backend)
-  // Redistributed across the timeline with issues throughout
+  // Mock dialogue lines - adjusted to realistic dialogue timing
+  // Starting later to avoid appearing during intro/credits
   const dialogueLines = [
     {
       id: 1,
-      timeIn: '00:00:05:12',
-      timeInSeconds: 5.5,
-      timeOutSeconds: 7.8,
+      timeIn: '00:00:28:12',
+      timeInSeconds: 28.5,
+      timeOutSeconds: 31.2,
       enText: 'The Continent is vast, full of monsters and magic.',
       dubText: 'El Continente es vasto, lleno de monstruos y magia.',
-      issues: issues.filter(i => i.timeSeconds >= 5 && i.timeSeconds < 8)
+      issues: issues.filter(i => i.timeSeconds >= 28 && i.timeSeconds < 32)
     },
     {
       id: 2,
-      timeIn: '00:00:09:00',
-      timeInSeconds: 9.0,
-      timeOutSeconds: 11.5,
+      timeIn: '00:00:35:00',
+      timeInSeconds: 35.0,
+      timeOutSeconds: 37.8,
       enText: 'Geralt of Rivia hunts creatures for coin.',
       dubText: 'Geralt de Rivia caza criaturas por monedas.',
       issues: []
     },
     {
       id: 3,
-      timeIn: '00:00:13:18',
-      timeInSeconds: 13.75,
-      timeOutSeconds: 16.8,
+      timeIn: '00:00:42:18',
+      timeInSeconds: 42.75,
+      timeOutSeconds: 45.9,
       enText: 'But destiny has other plans for the White Wolf.',
       dubText: 'Pero el destino tiene otros planes para el Lobo Blanco.',
       issues: []
     },
     {
       id: 4,
-      timeIn: '00:00:18:06',
-      timeInSeconds: 18.25,
-      timeOutSeconds: 21.9,
+      timeIn: '00:01:15:06',
+      timeInSeconds: 75.25,
+      timeOutSeconds: 78.8,
       enText: 'Princess Cirilla holds a power that could change everything.',
       dubText: 'La princesa Cirilla posee un poder que podría cambiarlo todo.',
       issues: []
     },
     {
       id: 5,
-      timeIn: '00:00:23:00',
-      timeInSeconds: 23.0,
-      timeOutSeconds: 25.5,
+      timeIn: '00:01:48:00',
+      timeInSeconds: 108.0,
+      timeOutSeconds: 110.9,
       enText: 'Yennefer seeks to harness ancient magic.',
       dubText: 'Yennefer busca aprovechar la magia antigua.',
       issues: []
