@@ -229,33 +229,145 @@ export function calculateVectorData(issues) {
  */
 export function generateMockIssues(subtitles) {
   return subtitles.map((sub, i) => {
-    const isSemantic = i === 1;
-    const isContextual = i === 2;
-    const isTiming = i === 7;
-    
-    const issues = detectIssues(sub, { isSemantic, isContextual });
-    const qualityScore = calculateQualityScore(issues);
-    const vectorData = calculateVectorData(issues);
-    
+    let customIssues = [];
     let analysisDetails = null;
-    if (isSemantic) {
-      analysisDetails = {
-        explanation: "The formal register 'haciendo banca' does not match the urgency of the action. Consider using 'girando' for aviation context.",
-        llmScores: {
-          gemini: { score: 35, vote: 'FAIL', note: 'Register mismatch.' },
-          gpt4: { score: 42, vote: 'FAIL', note: 'Wrong tone.' },
-          claude: { score: 38, vote: 'FAIL', note: 'Formal in informal context.' }
-        }
-      };
+    
+    // Distribute various issue types across ~10 subtitles
+    switch(i) {
+      case 1: // Wrong translation with LLM consensus
+        customIssues.push({
+          id: `iss_${i}_translation`,
+          ruleName: 'Wrong Translation',
+          severity: 'error',
+          type: 'semantic',
+          description: 'Translation does not match source meaning.',
+          scoreHit: -25
+        });
+        analysisDetails = {
+          explanation: "The phrase 'haciendo banca' is a literal translation that doesn't convey the intended meaning. The source refers to a banking maneuver in aviation. Consider 'girando bruscamente' or 'virando con fuerza'.",
+          llmScores: {
+            alg1: { score: 32, vote: 'FAIL', note: 'Incorrect idiom translation - loses aviation context.' },
+            alg2: { score: 38, vote: 'FAIL', note: 'Literal translation fails to convey urgency of maneuver.' },
+            alg3: { score: 35, vote: 'FAIL', note: 'Technical term mistranslated as financial term.' },
+            alg4: { score: 40, vote: 'FAIL', note: 'Does not match register or domain context.' }
+          }
+        };
+        break;
+        
+      case 3: // Reading speed violation
+        customIssues.push({
+          id: `iss_${i}_cps`,
+          ruleName: 'Reading Speed',
+          severity: 'warning',
+          type: 'technical',
+          description: 'CPS (23.4) exceeds threshold (20).',
+          scoreHit: -8
+        });
+        break;
+        
+      case 5: // Character overlap
+        customIssues.push({
+          id: `iss_${i}_overlap`,
+          ruleName: 'Character Overlap',
+          severity: 'error',
+          type: 'timing',
+          description: 'Subtitle overlaps with previous subtitle.',
+          scoreHit: -15
+        });
+        break;
+        
+      case 7: // Line length
+        customIssues.push({
+          id: `iss_${i}_cpl`,
+          ruleName: 'Line Length',
+          severity: 'warning',
+          type: 'technical',
+          description: 'CPL (45) exceeds threshold (42).',
+          scoreHit: -5
+        });
+        break;
+        
+      case 9: // Tone mismatch
+        customIssues.push({
+          id: `iss_${i}_tone`,
+          ruleName: 'Tone Mismatch',
+          severity: 'warning',
+          type: 'semantic',
+          description: 'Formal register used in informal context.',
+          scoreHit: -12
+        });
+        break;
+        
+      case 12: // Missing text
+        customIssues.push({
+          id: `iss_${i}_missing`,
+          ruleName: 'Missing Text',
+          severity: 'error',
+          type: 'semantic',
+          description: 'Source dialogue not fully translated.',
+          scoreHit: -20
+        });
+        break;
+        
+      case 15: // Shot change violation
+        customIssues.push({
+          id: `iss_${i}_shotchange`,
+          ruleName: 'Shot Change Violation',
+          severity: 'warning',
+          type: 'timing',
+          description: 'Subtitle crosses shot boundary.',
+          scoreHit: -7
+        });
+        break;
+        
+      case 18: // Terminology inconsistency
+        customIssues.push({
+          id: `iss_${i}_terminology`,
+          ruleName: 'Terminology Inconsistency',
+          severity: 'warning',
+          type: 'contextual',
+          description: 'Incorrect domain terminology for fantasy setting.',
+          scoreHit: -10
+        });
+        break;
+        
+      case 22: // Minimum duration
+        customIssues.push({
+          id: `iss_${i}_mindur`,
+          ruleName: 'Minimum Duration',
+          severity: 'error',
+          type: 'timing',
+          description: 'Subtitle duration below minimum (0.833s).',
+          scoreHit: -10
+        });
+        break;
+        
+      case 28: // Grammar error
+        customIssues.push({
+          id: `iss_${i}_grammar`,
+          ruleName: 'Grammar Error',
+          severity: 'warning',
+          type: 'grammar',
+          description: 'Subject-verb agreement error.',
+          scoreHit: -6
+        });
+        break;
     }
+    
+    // Also detect standard issues
+    const detectedIssues = detectIssues(sub, {});
+    const allIssues = [...customIssues, ...detectedIssues];
+    
+    const qualityScore = calculateQualityScore(allIssues);
+    const vectorData = calculateVectorData(allIssues);
     
     return {
       ...sub,
-      issues,
+      issues: allIssues,
       qualityScore,
       vectorData,
       analysisDetails,
-      contextType: isSemantic ? 'FN' : 'DIALOGUE'
+      contextType: i === 1 ? 'FN' : 'DIALOGUE'
     };
   });
 }
