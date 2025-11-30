@@ -3,7 +3,6 @@
  * Manages subtitle data, selection, and editing state
  */
 
-import React from 'react';
 import { create } from 'zustand';
 import { generateMockSubtitles, calculateCPS, calculateCPL } from '../utils/subtitleParser';
 import { generateMockIssues, buildReviewQueue } from '../utils/issueDetection';
