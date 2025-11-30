@@ -8,6 +8,7 @@ import { Layout, List, BookOpen, AlertOctagon, Eye, ChevronUp, ChevronDown } fro
 import { PanelTabs, ResizeHandle, Card } from '../atoms/Panel';
 import { MetricBadge } from '../atoms/Badge';
 import { IssueList } from './IssueList';
+import { IssueDetails } from './IssueDetails';
 import { isCPSExceeded, isCPLExceeded } from '../../utils/subtitleParser';
 
 /**
@@ -260,7 +261,7 @@ function AnalysisTab({
  * Queue Tab Content
  */
 function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
-  const [expandedId, setExpandedId] = React.useState(null);
+  const [expandedIssueId, setExpandedIssueId] = React.useState(null);
   
   if (queue.length === 0) {
     return (
@@ -278,9 +279,8 @@ function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
     return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}:${String(frames).padStart(2, '0')}`;
   };
   
-  const handleToggle = (id, e) => {
-    e.stopPropagation();
-    setExpandedId(expandedId === id ? null : id);
+  const handleToggleIssue = (issueId) => {
+    setExpandedIssueId(expandedIssueId === issueId ? null : issueId);
   };
   
   return (
@@ -293,7 +293,10 @@ function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
         {queue.map((item, idx) => {
           const subtitle = subtitles.find(s => s.index === item.subIndex);
           const timecode = subtitle ? formatTimecode(subtitle.startTime) : '00:00:00:00';
-          const isExpanded = expandedId === `${item.subIndex}-${item.id}`;
+          const isExpanded = expandedIssueId === item.id;
+          
+          // Find the full subtitle's analysisDetails for this issue
+          const analysisDetails = subtitle?.analysisDetails;
           
           return (
             <div
@@ -302,62 +305,35 @@ function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
             >
               <button
                 className="of-issue-header"
-                onClick={() => onItemClick?.(item.subIndex)}
+                onClick={() => {
+                  onItemClick?.(item.subIndex);
+                  handleToggleIssue(item.id);
+                }}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="of-issue-dot" />
-                    <span className="of-issue-title">{item.ruleName}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[9px] font-mono text-slate-500">
+                  <span className="of-issue-title">
+                    <div className="of-issue-dot" />
+                    {item.ruleName}
+                  </span>
+                  <div className="flex items-center gap-2 text-[9px] font-mono text-slate-500 mt-1">
                     <span>Sub #{item.subIndex}</span>
                     <span>•</span>
                     <span>{timecode}</span>
                   </div>
                 </div>
                 
-                <button
-                  className="flex-shrink-0 p-1 hover:bg-slate-700/30 rounded transition-colors"
-                  onClick={(e) => handleToggle(`${item.subIndex}-${item.id}`, e)}
-                >
-                  {isExpanded ? (
-                    <ChevronUp size={10} className="text-slate-500" />
-                  ) : (
-                    <ChevronDown size={10} className="text-slate-500" />
-                  )}
-                </button>
+                {isExpanded ? (
+                  <ChevronUp size={10} className="text-slate-500" />
+                ) : (
+                  <ChevronDown size={10} className="text-slate-500" />
+                )}
               </button>
               
               {isExpanded && (
-                <div className="of-issue-details">
-                  <div className="of-issue-explanation">
-                    {item.description}
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-slate-500">Score Impact</span>
-                    <span className={`font-bold ${
-                      item.severity === 'error' ? 'text-rose-400' : 
-                      item.severity === 'warning' ? 'text-amber-400' : 
-                      'text-blue-400'
-                    }`}>
-                      {item.scoreHit}
-                    </span>
-                  </div>
-                  
-                  <div className="mt-3 pt-3 border-t border-slate-800">
-                    <div className="flex justify-between text-[10px]">
-                      <span className="text-slate-500">Quality Score</span>
-                      <span className={`font-bold ${
-                        item.score >= 90 ? 'text-emerald-400' : 
-                        item.score >= 70 ? 'text-amber-400' : 
-                        'text-rose-400'
-                      }`}>
-                        {item.score}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <IssueDetails
+                  issue={item}
+                  analysisDetails={analysisDetails}
+                />
               )}
             </div>
           );
