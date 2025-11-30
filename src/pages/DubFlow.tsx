@@ -370,7 +370,7 @@ export default function DubFlow() {
                 <span className="text-[10px] text-slate-600">v3.0</span>
               </div>
               <p className="text-[10px] text-slate-500">
-                NFLX_WITCHER_S3 • <span className="font-mono">{assetId}</span>
+                The Witcher: Season 3 Episode 1 - Shaerrawedd • <span className="font-mono">{assetId}</span>
               </p>
             </div>
           </div>

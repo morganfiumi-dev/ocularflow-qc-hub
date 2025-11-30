@@ -29,7 +29,7 @@ export function mockDemoProject(): Project {
 export function realDemoProject(): Project {
   return {
     id: 'demo-default',
-    name: 'The Witcher S3E01',
+    name: 'The Witcher: Season 3 Episode 1 - Shaerrawedd',
     type: 'demo-fixture',
     status: 'in-progress',
     createdAt: new Date('2024-01-15'),
