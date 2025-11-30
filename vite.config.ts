@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => ({
       'react/jsx-runtime': path.resolve(__dirname, './node_modules/react/jsx-runtime'),
       'react/jsx-dev-runtime': path.resolve(__dirname, './node_modules/react/jsx-dev-runtime'),
     },
-    dedupe: ['react', 'react-dom', '@tanstack/react-query', '@trpc/react-query', '@trpc/client'],
+    dedupe: ['react', 'react-dom', 'zustand', '@tanstack/react-query', '@trpc/react-query', '@trpc/client'],
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
