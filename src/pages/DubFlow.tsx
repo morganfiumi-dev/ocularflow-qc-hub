@@ -13,6 +13,7 @@ import { DialogueTable } from '../components/dubflow/DialogueTable';
 import { AudioToolbar } from '../components/dubflow/AudioToolbar';
 import { RightInspector } from '../components/dubflow/tabs/RightInspector';
 import { TimelineAnnotations } from '../components/dubflow/TimelineAnnotations';
+import { InlineRecommendations } from '../components/dubflow/InlineRecommendations';
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
@@ -68,6 +69,7 @@ export default function DubFlow() {
   }) || [];
 
   // Mock dialogue lines (in production, these would come from backend)
+  // Redistributed across the timeline with issues throughout
   const dialogueLines = [
     {
       id: 1,
@@ -85,7 +87,7 @@ export default function DubFlow() {
       timeOutSeconds: 11.5,
       enText: 'Geralt of Rivia hunts creatures for coin.',
       dubText: 'Geralt de Rivia caza criaturas por monedas.',
-      issues: issues.filter(i => i.timeSeconds >= 9 && i.timeSeconds < 12)
+      issues: []
     },
     {
       id: 3,
@@ -94,7 +96,7 @@ export default function DubFlow() {
       timeOutSeconds: 16.8,
       enText: 'But destiny has other plans for the White Wolf.',
       dubText: 'Pero el destino tiene otros planes para el Lobo Blanco.',
-      issues: issues.filter(i => i.timeSeconds >= 13 && i.timeSeconds < 17)
+      issues: []
     },
     {
       id: 4,
@@ -103,7 +105,7 @@ export default function DubFlow() {
       timeOutSeconds: 21.9,
       enText: 'Princess Cirilla holds a power that could change everything.',
       dubText: 'La princesa Cirilla posee un poder que podría cambiarlo todo.',
-      issues: issues.filter(i => i.timeSeconds >= 18 && i.timeSeconds < 22)
+      issues: []
     },
     {
       id: 5,
@@ -113,6 +115,51 @@ export default function DubFlow() {
       enText: 'Yennefer seeks to harness ancient magic.',
       dubText: 'Yennefer busca aprovechar la magia antigua.',
       issues: []
+    },
+    {
+      id: 6,
+      timeIn: '00:03:45:00',
+      timeInSeconds: 225.0,
+      timeOutSeconds: 228.5,
+      enText: 'The witcher must hunt the beast before nightfall.',
+      dubText: 'El brujo debe cazar a la bestia antes del anochecer.',
+      issues: issues.filter(i => i.timeSeconds >= 225 && i.timeSeconds < 229)
+    },
+    {
+      id: 7,
+      timeIn: '00:04:12:18',
+      timeInSeconds: 252.75,
+      timeOutSeconds: 256.2,
+      enText: 'Her power grows stronger with each passing day.',
+      dubText: 'Su poder se vuelve más fuerte con cada día que pasa.',
+      issues: issues.filter(i => i.timeSeconds >= 252 && i.timeSeconds < 257)
+    },
+    {
+      id: 8,
+      timeIn: '00:05:30:00',
+      timeInSeconds: 330.0,
+      timeOutSeconds: 333.8,
+      enText: 'The mages gather in secret to plot their revenge.',
+      dubText: 'Los magos se reúnen en secreto para planear su venganza.',
+      issues: []
+    },
+    {
+      id: 9,
+      timeIn: '00:06:15:12',
+      timeInSeconds: 375.5,
+      timeOutSeconds: 379.0,
+      enText: 'Blood and steel will decide the fate of kingdoms.',
+      dubText: 'Sangre y acero decidirán el destino de los reinos.',
+      issues: issues.filter(i => i.timeSeconds >= 375 && i.timeSeconds < 380)
+    },
+    {
+      id: 10,
+      timeIn: '00:06:50:00',
+      timeInSeconds: 410.0,
+      timeOutSeconds: 413.5,
+      enText: 'The final battle approaches, destiny awaits.',
+      dubText: 'La batalla final se acerca, el destino aguarda.',
+      issues: issues.filter(i => i.timeSeconds >= 410 && i.timeSeconds < 415)
     },
   ];
 
@@ -154,7 +201,7 @@ export default function DubFlow() {
   // Waveform state - using OcularFlow's hook for smooth syncing
   const waveform = useWaveform(currentTime, duration);
 
-  // Timeline annotations (mock data)
+  // Timeline annotations (mock data) - distributed across full timeline
   const [showAnnotations, setShowAnnotations] = useState(true);
   const annotations = [
     { time: 3, type: 'scene' as const, label: 'INT. CASTLE' },
@@ -162,6 +209,11 @@ export default function DubFlow() {
     { time: 15, type: 'song' as const, label: 'TOSS A COIN' },
     { time: 20, type: 'scene' as const, label: 'EXT. FOREST' },
     { time: 24, type: 'title' as const, label: 'MAIN TITLE' },
+    { time: 180, type: 'scene' as const, label: 'INT. TAVERN' },
+    { time: 240, type: 'song' as const, label: 'BATTLE THEME' },
+    { time: 300, type: 'scene' as const, label: 'EXT. MOUNTAIN' },
+    { time: 360, type: 'forced_narrative' as const, label: 'VOICEOVER' },
+    { time: 405, type: 'scene' as const, label: 'FINAL SCENE' },
   ];
 
   // Audio playback - simulated with timer
@@ -398,6 +450,16 @@ export default function DubFlow() {
               windowStart={waveform.windowStart}
               visibleWindow={waveform.visibleWindow}
               show={showAnnotations}
+            />
+            
+            {/* Inline Recommendations */}
+            <InlineRecommendations
+              lines={dialogueLinesWithScores}
+              windowStart={waveform.windowStart}
+              visibleWindow={waveform.visibleWindow}
+              onApplyFix={(lineId, fixType) => {
+                console.log(`Apply ${fixType} to line ${lineId}`);
+              }}
             />
           </div>
           

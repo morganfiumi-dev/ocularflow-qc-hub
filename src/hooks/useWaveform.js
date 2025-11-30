@@ -74,7 +74,7 @@ export function useWaveform(currentTime, duration) {
   const adjustHeight = useCallback((delta) => {
     setState(s => ({
       ...s,
-      height: Math.max(100, Math.min(600, s.height - delta))
+      height: Math.max(100, Math.min(600, s.height + delta))
     }));
   }, []);
   
