@@ -31,6 +31,8 @@ interface AudioPlaybackControlsProps {
   onPlaybackRateChange: (rate: number) => void;
   onVolumeChange: (volume: number) => void;
   onToggleMute: () => void;
+  onNextSubtitle?: () => void;
+  onNextIncident?: () => void;
 }
 
 const formatTimecode = (seconds: number) => {
@@ -56,6 +58,8 @@ export function AudioPlaybackControls({
   onPlaybackRateChange,
   onVolumeChange,
   onToggleMute,
+  onNextSubtitle,
+  onNextIncident,
 }: AudioPlaybackControlsProps) {
   const playbackRates = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
 
@@ -112,6 +116,28 @@ export function AudioPlaybackControls({
         <div className="ml-3 font-mono text-sm text-cyan-400">
           {formatTimecode(currentTime)} / {formatTimecode(duration)}
         </div>
+      </div>
+
+      {/* Center: Navigation buttons */}
+      <div className="flex items-center gap-2">
+        {onNextSubtitle && (
+          <button
+            onClick={onNextSubtitle}
+            className="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded transition-colors border border-slate-700"
+            title="Jump to next subtitle (N)"
+          >
+            Next Sub
+          </button>
+        )}
+        {onNextIncident && (
+          <button
+            onClick={onNextIncident}
+            className="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-amber-400 rounded transition-colors border border-slate-700"
+            title="Jump to next incident (I)"
+          >
+            Next Issue
+          </button>
+        )}
       </div>
 
       {/* Right: Rate and volume */}

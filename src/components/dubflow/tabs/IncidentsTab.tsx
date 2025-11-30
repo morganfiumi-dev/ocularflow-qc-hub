@@ -67,7 +67,7 @@ export function IncidentsTab({ issues, selectedIssueId, onSelectIssue }: Inciden
               This graph compares the emotional tone and pacing between the original source audio and the dub. 
               Large differences indicate the dub doesn't match the original's feel or rhythm.
             </p>
-            <BipolarDivergenceGraph />
+            <BipolarDivergenceGraph eventTime={issue.timeSeconds} />
           </div>
           
           <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800">
@@ -144,7 +144,7 @@ export function IncidentsTab({ issues, selectedIssueId, onSelectIssue }: Inciden
               Translation issues can affect timing and tone delivery. Review both graphs to see if the translation 
               caused pacing problems or emotional mismatch.
             </p>
-            <BipolarDivergenceGraph />
+            <BipolarDivergenceGraph eventTime={issue.timeSeconds} />
           </div>
           <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800">
             <SyncDriftBar />
@@ -157,7 +157,7 @@ export function IncidentsTab({ issues, selectedIssueId, onSelectIssue }: Inciden
     return (
       <div className="space-y-3">
         <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800">
-          <BipolarDivergenceGraph />
+          <BipolarDivergenceGraph eventTime={issue.timeSeconds} />
         </div>
       </div>
     );

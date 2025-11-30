@@ -4,20 +4,24 @@
  */
 
 import React from 'react';
-import { Volume2, VolumeX, Repeat, Activity, FlipVertical } from 'lucide-react';
+import { Volume2, VolumeX, Repeat, Activity, FlipVertical, ChevronRight, AlertTriangle } from 'lucide-react';
 
 interface AudioToolbarProps {
   spectrogramMode: boolean;
   loopMode: boolean;
   onToggleSpectrogram: () => void;
   onToggleLoop: () => void;
+  onNextSubtitle?: () => void;
+  onNextIncident?: () => void;
 }
 
 export function AudioToolbar({
   spectrogramMode,
   loopMode,
   onToggleSpectrogram,
-  onToggleLoop
+  onToggleLoop,
+  onNextSubtitle,
+  onNextIncident
 }: AudioToolbarProps) {
   const [activeChannels, setActiveChannels] = React.useState({ L: true, C: true, R: true });
   const [normalized, setNormalized] = React.useState(false);
@@ -116,6 +120,32 @@ export function AudioToolbar({
       >
         <FlipVertical className="w-3.5 h-3.5" />
       </button>
+
+      <div className="flex-1" />
+
+      {/* Navigation Controls */}
+      <div className="flex items-center gap-1.5">
+        {onNextSubtitle && (
+          <button
+            onClick={onNextSubtitle}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition-all"
+            title="Jump to next subtitle (N)"
+          >
+            <ChevronRight className="w-3 h-3" />
+            NEXT SUB
+          </button>
+        )}
+        {onNextIncident && (
+          <button
+            onClick={onNextIncident}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-all"
+            title="Jump to next incident (I)"
+          >
+            <AlertTriangle className="w-3 h-3" />
+            NEXT ISSUE
+          </button>
+        )}
+      </div>
     </div>
   );
 }
