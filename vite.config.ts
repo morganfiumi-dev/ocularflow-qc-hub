@@ -22,9 +22,7 @@ export default defineConfig(({ mode }) => ({
     dedupe: ['react', 'react-dom', 'zustand', '@tanstack/react-query', '@trpc/react-query', '@trpc/client'],
   },
   optimizeDeps: {
-    force: true, // Force cache clear
     include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'zustand'],
-    exclude: [],
     esbuildOptions: {
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
     },
