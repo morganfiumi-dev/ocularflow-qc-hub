@@ -31,6 +31,7 @@ export function InspectorPanel({
   // Queue and glossary
   reviewQueue = [],
   knpGlossary = [],
+  subtitles = [],
   
   // Callbacks
   onWidthChange,
@@ -95,6 +96,7 @@ export function InspectorPanel({
           {activeTab === 'QUEUE' && (
             <QueueTab
               queue={reviewQueue}
+              subtitles={subtitles}
               onItemClick={onQueueItemClick}
             />
           )}
@@ -257,7 +259,7 @@ function AnalysisTab({
 /**
  * Queue Tab Content
  */
-function QueueTab({ queue = [], onItemClick }) {
+function QueueTab({ queue = [], onItemClick, subtitles = [] }) {
   if (queue.length === 0) {
     return (
       <div className="text-center text-slate-600 text-xs py-8">
@@ -266,25 +268,98 @@ function QueueTab({ queue = [], onItemClick }) {
     );
   }
   
+  const getSeverityIcon = (severity) => {
+    switch (severity) {
+      case 'error':
+        return <AlertOctagon size={14} className="text-rose-400" />;
+      case 'warning':
+        return <AlertOctagon size={14} className="text-amber-400" />;
+      default:
+        return <AlertOctagon size={14} className="text-blue-400" />;
+    }
+  };
+  
+  const getSeverityStyle = (severity) => {
+    switch (severity) {
+      case 'error':
+        return 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/15';
+      case 'warning':
+        return 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/15';
+      default:
+        return 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/15';
+    }
+  };
+  
+  const formatTimecode = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    const frames = Math.floor((seconds % 1) * 24);
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}:${String(frames).padStart(2, '0')}`;
+  };
+  
   return (
-    <div className="space-y-2">
-      <div className="text-[9px] font-bold text-slate-500 uppercase mb-3">
-        Priority Review ({queue.length})
+    <div className="space-y-1.5 p-3">
+      <div className="text-[9px] text-slate-500 uppercase tracking-wider mb-2">
+        {queue.length} incident{queue.length !== 1 ? 's' : ''} detected
       </div>
       
-      <div className="of-queue-list">
-        {queue.map((item, idx) => (
+      {queue.map((item, idx) => {
+        const subtitle = subtitles.find(s => s.index === item.subIndex);
+        const timecode = subtitle ? formatTimecode(subtitle.startTime) : '00:00:00:00';
+        
+        return (
           <div
             key={`${item.subIndex}-${item.id}-${idx}`}
-            className="of-queue-item"
+            className={`
+              rounded-lg border transition-all cursor-pointer
+              ${getSeverityStyle(item.severity)}
+            `}
             onClick={() => onItemClick?.(item.subIndex)}
           >
-            <span className="of-queue-index">#{item.subIndex}</span>
-            <span className="of-queue-rule">{item.ruleName}</span>
-            <span className="of-queue-score">{item.score}</span>
+            <div className="p-2.5">
+              <div className="flex items-start gap-2">
+                <div className="flex-shrink-0 mt-0.5">
+                  {getSeverityIcon(item.severity)}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+                      #{idx + 1}
+                    </span>
+                    <div className="flex items-center gap-1 text-[9px] font-mono text-slate-400">
+                      <span>🕐</span>
+                      {timecode}
+                    </div>
+                  </div>
+                  
+                  <h4 className="text-[11px] font-semibold text-slate-200 leading-tight">
+                    {item.ruleName}
+                  </h4>
+                  
+                  <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-1 mt-0.5">
+                    {item.description}
+                  </p>
+                  
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                      item.severity === 'error' ? 'bg-rose-500/20 text-rose-400' :
+                      item.severity === 'warning' ? 'bg-amber-500/20 text-amber-400' :
+                      'bg-blue-500/20 text-blue-400'
+                    }`}>
+                      {item.severity}
+                    </span>
+                    <span className="text-[9px] text-slate-600">
+                      Sub #{item.subIndex}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }

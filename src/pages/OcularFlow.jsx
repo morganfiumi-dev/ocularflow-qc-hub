@@ -441,6 +441,7 @@ export default function OcularFlow() {
           showAnnotations={showAnnotations}
           reviewQueue={reviewQueue}
           knpGlossary={KNP_GLOSSARY}
+          subtitles={subtitles}
           onWidthChange={handleInspectorWidthChange}
           onTabChange={setActiveTab}
           onToggleIssue={toggleIssue}
