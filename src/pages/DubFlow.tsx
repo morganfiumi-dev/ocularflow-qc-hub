@@ -4,14 +4,14 @@
  * UI-only refactor, no logic changes
  */
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
-import { ToolsSidebar } from '../components/dubflow/ToolsSidebar';
 import { WaveformPanel } from '../components/waveform/WaveformPanel';
 import { VideoPanel } from '../components/video/VideoPanel';
-import { DialogueHighlightStrip } from '../components/dubflow/DialogueHighlightStrip';
-import { TabbedInspector } from '../components/dubflow/TabbedInspector';
+import { DialogueTable } from '../components/dubflow/DialogueTable';
+import { AudioToolbar } from '../components/dubflow/AudioToolbar';
+import { RightInspector } from '../components/dubflow/tabs/RightInspector';
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
@@ -138,6 +138,7 @@ export default function DubFlow() {
   }));
 
   const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
+  const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
 
   // Playback state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -146,10 +147,8 @@ export default function DubFlow() {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [volume, setVolume] = useState(0.75);
   const [muted, setMuted] = useState(false);
-  
-  // Inspector state
-  const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
+  const [loopMode, setLoopMode] = useState(false);
 
   // Waveform state - using OcularFlow's hook for smooth syncing
   const waveform = useWaveform(currentTime, duration);
@@ -307,14 +306,9 @@ export default function DubFlow() {
         </div>
       </div>
 
-      {/* Three-column layout with Audio Toolbar */}
+      {/* Two-column layout: CENTER + RIGHT */}
       <div className="of-main">
-        {/* AUDIO TOOLBAR (leftmost column) */}
-        <div className="flex-shrink-0 p-4">
-          <ToolsSidebar />
-        </div>
-
-        {/* LEFT PANEL: Video + Waveform + Dialogue (OcularFlow structure) */}
+        {/* CENTER COLUMN: Video + Waveform + Dialogue Table */}
         <div className="of-left-panel">
           {/* Video Panel */}
           <VideoPanel
@@ -336,6 +330,14 @@ export default function DubFlow() {
             onVolumeChange={setVolume}
             onToggleMute={toggleMute}
             onDurationChange={() => {}}
+          />
+
+          {/* Audio Toolbar */}
+          <AudioToolbar
+            spectrogramMode={waveform.spectrogramMode}
+            loopMode={loopMode}
+            onToggleSpectrogram={waveform.toggleSpectrogramMode}
+            onToggleLoop={() => setLoopMode(!loopMode)}
           />
 
           {/* Waveform Panel - Using OcularFlow's component directly */}
@@ -373,20 +375,18 @@ export default function DubFlow() {
             onSubtitleClick={handleSelectLine}
           />
           
-          {/* Dialogue Highlight Strip */}
-          <div className="of-editor-panel">
-            <DialogueHighlightStrip
-              lines={dialogueLinesWithScores}
-              currentTime={currentTime}
-              selectedLineId={selectedLineId}
-              onSelectLine={handleSelectLine}
-            />
-          </div>
+          {/* Dialogue Table (Bottom) */}
+          <DialogueTable
+            lines={dialogueLinesWithScores}
+            selectedLineId={selectedLineId}
+            currentTime={currentTime}
+            onSelectLine={handleSelectLine}
+          />
         </div>
 
-        {/* RIGHT PANEL: Inspector (OcularFlow structure) */}
-        <div className="of-right-panel p-4">
-          <TabbedInspector
+        {/* RIGHT COLUMN: 5-Tab Inspector */}
+        <div className="of-right-panel">
+          <RightInspector
             issues={issues}
             dialogueLines={dialogueLinesWithScores}
             selectedIssueId={selectedIssueId}
