@@ -4,10 +4,9 @@
  * UI-only refactor, no logic changes
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Zap, PlayCircle } from 'lucide-react';
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { WaveformPanel } from '../components/waveform/WaveformPanel';
 import { VideoPanel } from '../components/video/VideoPanel';
 import { DialogueTable } from '../components/dubflow/DialogueTable';
@@ -199,6 +198,35 @@ export default function DubFlow() {
   const [notes, setNotes] = useState('');
   const [loopMode, setLoopMode] = useState(false);
 
+  // Video panel resize state
+  const [videoHeight, setVideoHeight] = useState(280);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeRef = useRef<HTMLDivElement>(null);
+
+  // Handle video resize
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newHeight = e.clientY - 60; // 60px for topbar
+      if (newHeight >= 150 && newHeight <= 500) {
+        setVideoHeight(newHeight);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
   // Waveform state - using OcularFlow's hook for smooth syncing
   const waveform = useWaveform(currentTime, duration);
 
@@ -377,37 +405,40 @@ export default function DubFlow() {
       <div className="of-main">
         {/* CENTER COLUMN: Video + Waveform + Dialogue Table */}
         <div className="of-left-panel">
-          {/* Resizable Video + Waveform/Dialogue sections */}
-          <PanelGroup direction="vertical">
-            {/* Video Panel - Resizable */}
-            <Panel defaultSize={30} minSize={15} maxSize={50}>
-              <VideoPanel
-                isPlaying={isPlaying}
-                currentTime={currentTime}
-                duration={duration}
-                playbackRate={playbackRate}
-                volume={volume}
-                muted={muted}
-                currentSubtitle={null}
-                contextType="DIALOGUE"
-                onTogglePlayback={togglePlayback}
-                onSkipForward={skipForward}
-                onSkipBackward={skipBackward}
-                onFrameForward={frameForward}
-                onFrameBackward={frameBackward}
-                onSeek={seek}
-                onPlaybackRateChange={setPlaybackRate}
-                onVolumeChange={setVolume}
-                onToggleMute={toggleMute}
-                onDurationChange={() => {}}
-              />
-            </Panel>
+          {/* Video Panel - Resizable */}
+          <div style={{ height: `${videoHeight}px` }}>
+            <VideoPanel
+              isPlaying={isPlaying}
+              currentTime={currentTime}
+              duration={duration}
+              playbackRate={playbackRate}
+              volume={volume}
+              muted={muted}
+              currentSubtitle={null}
+              contextType="DIALOGUE"
+              onTogglePlayback={togglePlayback}
+              onSkipForward={skipForward}
+              onSkipBackward={skipBackward}
+              onFrameForward={frameForward}
+              onFrameBackward={frameBackward}
+              onSeek={seek}
+              onPlaybackRateChange={setPlaybackRate}
+              onVolumeChange={setVolume}
+              onToggleMute={toggleMute}
+              onDurationChange={() => {}}
+            />
+          </div>
 
-            {/* Resize Handle */}
-            <PanelResizeHandle className="h-1 bg-slate-800 hover:bg-cyan-500/30 transition-colors cursor-row-resize" />
+          {/* Resize Handle */}
+          <div
+            ref={resizeRef}
+            onMouseDown={() => setIsResizing(true)}
+            className="h-1 bg-slate-800 hover:bg-cyan-500/30 transition-colors cursor-row-resize active:bg-cyan-500/50"
+            style={{ cursor: isResizing ? 'row-resize' : 'row-resize' }}
+          />
 
-            {/* Bottom Panel - Waveform + Dialogue */}
-            <Panel defaultSize={70}>
+          {/* Bottom Section - Waveform + Dialogue */}
+          <div>
               {/* Audio Toolbar */}
               <AudioToolbar
                 spectrogramMode={waveform.spectrogramMode}
@@ -480,11 +511,10 @@ export default function DubFlow() {
               <DialogueTable
                 lines={dialogueLinesWithScores}
                 selectedLineId={selectedLineId}
-                currentTime={currentTime}
-                onSelectLine={handleSelectLine}
-              />
-            </Panel>
-          </PanelGroup>
+              currentTime={currentTime}
+              onSelectLine={handleSelectLine}
+            />
+          </div>
         </div>
 
         {/* RIGHT COLUMN: 5-Tab Inspector */}
