@@ -11,9 +11,14 @@ export function VisemeConnector() {
 
   return (
     <div className="p-4 bg-slate-900/40 rounded-lg border border-slate-800">
-      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
-        Viseme Sync Analysis
-      </h4>
+      <div className="flex items-start justify-between mb-3">
+        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          Lip Sync Analysis
+        </h4>
+        <p className="text-[9px] text-slate-500 max-w-[55%] text-right leading-relaxed">
+          Compares mouth shapes (video) with phoneme sounds (audio). Red = mismatch.
+        </p>
+      </div>
 
       <div className="space-y-4">
         {/* Source */}

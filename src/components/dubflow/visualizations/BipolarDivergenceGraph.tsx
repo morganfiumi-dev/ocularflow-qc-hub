@@ -15,9 +15,14 @@ export function BipolarDivergenceGraph() {
 
   return (
     <div className="p-4 bg-slate-900/40 rounded-lg border border-slate-800">
-      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
-        Prosody Divergence
-      </h4>
+      <div className="flex items-start justify-between mb-3">
+        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          Prosody Divergence
+        </h4>
+        <p className="text-[9px] text-slate-500 max-w-[55%] text-right leading-relaxed">
+          Shows emotional tone differences between original and dub
+        </p>
+      </div>
 
       <div className="relative h-32 bg-slate-950/50 rounded border border-slate-800">
         <svg className="w-full h-full" viewBox="0 0 500 128">
