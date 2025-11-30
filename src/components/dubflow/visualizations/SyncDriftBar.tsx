@@ -14,9 +14,14 @@ export function SyncDriftBar() {
 
   return (
     <div className="p-4 bg-slate-900/40 rounded-lg border border-slate-800">
-      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
-        Sync Drift Analysis
-      </h4>
+      <div className="flex items-start justify-between mb-3">
+        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          Sync Drift Analysis
+        </h4>
+        <p className="text-[9px] text-slate-500 max-w-[55%] text-right leading-relaxed">
+          Timeline shows if dialogue starts early/late relative to tolerance thresholds
+        </p>
+      </div>
 
       <div className="relative">
         <div className="h-8 bg-slate-950/50 rounded border border-slate-800 relative overflow-hidden">

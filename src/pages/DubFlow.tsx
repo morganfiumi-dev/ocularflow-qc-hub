@@ -12,6 +12,7 @@ import { VideoPanel } from '../components/video/VideoPanel';
 import { DialogueTable } from '../components/dubflow/DialogueTable';
 import { AudioToolbar } from '../components/dubflow/AudioToolbar';
 import { RightInspector } from '../components/dubflow/tabs/RightInspector';
+import { TimelineAnnotations } from '../components/dubflow/TimelineAnnotations';
 import { Button } from '../components/atoms/Button';
 import { trpc } from '../lib/trpc';
 import useQCProfileStore from '../state/useQCProfileStore';
@@ -152,6 +153,16 @@ export default function DubFlow() {
 
   // Waveform state - using OcularFlow's hook for smooth syncing
   const waveform = useWaveform(currentTime, duration);
+
+  // Timeline annotations (mock data)
+  const [showAnnotations, setShowAnnotations] = useState(true);
+  const annotations = [
+    { time: 3, type: 'scene' as const, label: 'INT. CASTLE' },
+    { time: 8, type: 'forced_narrative' as const, label: 'NARRATOR' },
+    { time: 15, type: 'song' as const, label: 'TOSS A COIN' },
+    { time: 20, type: 'scene' as const, label: 'EXT. FOREST' },
+    { time: 24, type: 'title' as const, label: 'MAIN TITLE' },
+  ];
 
   // Audio playback - simulated with timer
   useEffect(() => {
@@ -340,40 +351,55 @@ export default function DubFlow() {
             onToggleLoop={() => setLoopMode(!loopMode)}
           />
 
-          {/* Waveform Panel - Using OcularFlow's component directly */}
-          <WaveformPanel
-            height={waveform.height}
-            collapsed={waveform.collapsed}
-            waveformBars={waveform.waveformBars}
-            zoomLevel={waveform.zoomLevel}
-            scrollMode={waveform.scrollMode}
-            isolateDialogue={waveform.isolateDialogue}
-            spectrogramMode={waveform.spectrogramMode}
-            issueFilters={waveform.issueFilters}
-            subtitles={dialogueLinesWithScores.map(line => ({
-              index: line.id,
-              inTime: line.timeInSeconds,
-              outTime: line.timeOutSeconds,
-              targetText: line.dubText,
-              issues: line.issues
-            }))}
-            currentIndex={selectedLineId || 1}
-            currentTime={currentTime}
-            duration={duration}
-            windowStart={waveform.windowStart}
-            visibleWindow={waveform.visibleWindow}
-            playheadPct={waveform.playheadPct}
-            onHeightChange={waveform.adjustHeight}
-            onToggleCollapse={waveform.toggleCollapsed}
-            onZoomIn={waveform.zoomIn}
-            onZoomOut={waveform.zoomOut}
-            onScrollModeChange={waveform.setScrollMode}
-            onToggleDialogueIsolation={waveform.toggleDialogueIsolation}
-            onToggleSpectrogramMode={waveform.toggleSpectrogramMode}
-            onToggleIssueFilter={waveform.toggleIssueFilter}
-            onSeek={seek}
-            onSubtitleClick={handleSelectLine}
-          />
+          {/* Waveform Panel - Using OcularFlow's component with DubFlow overlays */}
+          <div className="relative">
+            <WaveformPanel
+              height={waveform.height}
+              collapsed={waveform.collapsed}
+              waveformBars={waveform.waveformBars}
+              zoomLevel={waveform.zoomLevel}
+              scrollMode={waveform.scrollMode}
+              isolateDialogue={waveform.isolateDialogue}
+              spectrogramMode={waveform.spectrogramMode}
+              issueFilters={waveform.issueFilters}
+              subtitles={dialogueLinesWithScores.map(line => ({
+                index: line.id,
+                startTime: line.timeInSeconds,
+                endTime: line.timeOutSeconds,
+                text: line.dubText,
+                issues: line.issues.map(issue => ({
+                  id: String(issue.id),
+                  severity: issue.severity,
+                  type: issue.type,
+                  description: issue.description
+                }))
+              }))}
+              currentIndex={selectedLineId || 1}
+              currentTime={currentTime}
+              duration={duration}
+              windowStart={waveform.windowStart}
+              visibleWindow={waveform.visibleWindow}
+              playheadPct={waveform.playheadPct}
+              onHeightChange={waveform.adjustHeight}
+              onToggleCollapse={waveform.toggleCollapsed}
+              onZoomIn={waveform.zoomIn}
+              onZoomOut={waveform.zoomOut}
+              onScrollModeChange={waveform.setScrollMode}
+              onToggleDialogueIsolation={waveform.toggleDialogueIsolation}
+              onToggleSpectrogramMode={waveform.toggleSpectrogramMode}
+              onToggleIssueFilter={waveform.toggleIssueFilter}
+              onSeek={seek}
+              onSubtitleClick={handleSelectLine}
+            />
+            
+            {/* Timeline Annotations Overlay */}
+            <TimelineAnnotations
+              annotations={annotations}
+              windowStart={waveform.windowStart}
+              visibleWindow={waveform.visibleWindow}
+              show={showAnnotations}
+            />
+          </div>
           
           {/* Dialogue Table (Bottom) */}
           <DialogueTable
