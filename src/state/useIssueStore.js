@@ -3,6 +3,7 @@
  * Manages inspector panel state and issue interactions
  */
 
+import React from 'react';
 import { create } from 'zustand';
 
 /**

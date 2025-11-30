@@ -3,6 +3,7 @@
  * Manages video playback, timing, and transport controls
  */
 
+import React from 'react';
 import { create } from 'zustand';
 
 /**
