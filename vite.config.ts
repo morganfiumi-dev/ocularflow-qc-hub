@@ -22,9 +22,8 @@ export default defineConfig(({ mode }) => ({
     dedupe: ['react', 'react-dom', 'zustand', '@tanstack/react-query', '@trpc/react-query', '@trpc/client'],
   },
   optimizeDeps: {
-    force: true, // Force re-bundling to fix React duplicate instance
-    include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'zustand'],
-    exclude: [],
+    include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+    exclude: ['zustand'],
     esbuildOptions: {
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
     },
